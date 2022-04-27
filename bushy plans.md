@@ -1,6 +1,6 @@
 Consider the following *spikey* graph, where the middle spikes are longer than the rest: 
 
-![[spikey.png]] 
+![spikey.png](spikey.png) 
 
 Suppose the 2 middle spikes are 3-long each, and all other spikes are 2-long, and we want to compute the join: 
 $$Q(a_1, a_2, a_3, x, b_3, b_2, b_1) :- R_1(a_1, a_2), R_2(a_2, a_3), R_3(a_3, x), S_3(x, b_3), S_2(b_3, b_2), S_1(b_2, b_1).$$
