@@ -36,6 +36,11 @@ We will implement different algorithms for generic join based on which data stru
 
 **Segmented array.** This is the same way TACO stores sparse tensors (in CSF). It's pretty much the same as the sorted trie, except that the tuples themselves are stored in a single array, and instead of pointers, each trie node stores offsets to that array. This combines some benefits of the previous two storage formats. 
 
+## Indexing
+Generic join incurs a linear-ish (linear for hash tries and $O(n \log (n))$ for sorted tries) overhead to load the input relations into tries. This is fine in most cases, since both merge-sort join and hash join need to scan the entire input relations. However, an index join may touch only a tiny fraction of the indexed relation, so we cannot afford to sort the entire relation for generic join. 
+
+The solution is to also create indices for generic join. An index is simply a partially sorted trie. For example, an index for `R(x,y,z,w)` on `x` is a 2-level trie, where the first level stores `x` in sorted order, and each `x` points to an unsorted set of tuples `(y,z,w)`. During generic join execution, we may directly intersect with the pre-sorted `x` level. For each `x` value in the intersection, we can now sort `(y,z,w)` so that we can intersect with them further down the loop. This lazy sorting saves us time from sorting tuples in regions not returned from the index join on `x`. 
+
 ## Tensor algebra and generic join
 Since relational algebra is equivalent to tensor algebra, the tensor algebra compiler [TACO](http://tensor-compiler.org) implements an algorithm for sparse tensor algebra that precisely coincides with generic join. We may therefore piggyback on TACO to answer queries. 
 
@@ -62,4 +67,3 @@ If we're lucky, we'll see speedup / matching performance in the experiments! But
 
 Several points in this process requires extra care: 
 - The optimizer may occasionally choose a bushy plan, in which case we should consider how to [combine](combine-gj.md) multiple GJ plans. 
-- Dealing with [indices](indexing) in generic join. 
