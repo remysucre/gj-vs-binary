@@ -11,7 +11,7 @@ Before jumping into implementation, we should test out our idea with some experi
 4. See if GJ runs faster than the DuckDB baseline. 
 
 ## System architecture
-![[system 1.svg]]
+![[system.png]]
 
 Because we focus on joins, we need to isolate the time spent in filtering. We break each query into two parts, one contains only the joins and the other only the filters. See [normalize](normalize.md) for an example. 
 
