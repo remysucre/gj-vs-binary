@@ -3,10 +3,6 @@ The goal of this project is to compare [generic join](https://gitlab.com/remywan
 
 We will focus on queries in the [join order benchmark](https://github.com/gregrahn/join-order-benchmark), and compare against an in-memory DB like [DuckDB](https://duckdb.org) or [SQLite](https://www.sqlite.org/index.html). We can consider Postgres if we can figure out how to benchmark against it fairly. 
 
-**TODO**
-- [x] Column store
-- [x] Indices
-
 ## First experiments
 Before jumping into implementation, we should test out our idea with some experiments. For example, we can manually translate a few queries into GJ and compare the performance. Concretely: 
 1. Run some queries from the JOB benchmark and see how many only use linear join.  
