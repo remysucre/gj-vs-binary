@@ -4,8 +4,8 @@ The goal of this project is to compare [generic join](https://gitlab.com/remywan
 We will focus on queries in the [join order benchmark](https://github.com/gregrahn/join-order-benchmark), and compare against an in-memory DB like [DuckDB](https://duckdb.org) or [SQLite](https://www.sqlite.org/index.html). We can consider Postgres if we can figure out how to benchmark against it fairly. 
 
 **TODO**
-- [ ] Column store 
-- [ ] Indices 
+- [x] Column store
+- [x] Indices
 
 ## First experiments
 Before jumping into implementation, we should test out our idea with some experiments. For example, we can manually translate a few queries into GJ and compare the performance. Concretely: 
@@ -30,11 +30,18 @@ We will implement different algorithms for generic join based on which data stru
 
 **Hash trie.** Hash trie is easy to implement, and has good support for column-wise layout. Indexing will also be fast since a lookup is constant time. However it is not very cache friendly due to pervasive random access and pointer chasing. Iterating over a hash table can also be slow when the table is sparse, since it takes time proportional to the *capacity* of a hash table to iterate over it. 
 
-**Sorted trie.** Sorted trie will likely be more cache-friendly. It will still chase pointers, but that overhead may be neglegible. Adapting a column-wise layout may be challenging for sorted tries - DuckDB would convert to row-wise before sorting. Indexing may also carry some overhead since lookup (binary search / gallop) is $O(\log(N))$. 
+**Sorted trie.** Sorted trie will likely be more cache-friendly. It will still chase pointers, but that overhead may be neglegible. Adapting a column-wise layout may be challenging for sorted tries - DuckDB would [convert to row-wise before sorting](https://duckdb.org/2021/08/27/external-sorting.html). Indexing may also carry some overhead since lookup (binary search / gallop) is $O(\log(N))$. 
 
 **Flat sorted array.** Storing all tuples in a flat sorted array may further improve locality and eliminate pointer-chasing. Intersection may be slower, because we now have duplicate values for each column. 
 
 **Segmented array.** This is the same way TACO stores sparse tensors (in CSF). It's pretty much the same as the sorted trie, except that the tuples themselves are stored in a single array, and instead of pointers, each trie node stores offsets to that array. This combines some benefits of the previous two storage formats. 
+
+## Column store
+DuckDB's speed is largely due to the columnar design: a table is stored as a collection of columns instead of rows. We want to replicate the same columnar layout for GJ. This would require different approaches for hashing and sorting. 
+
+**Hashing.** If we use a hash trie, we can simply store a table as columns. When a query arrives, we figure out which columns are used, and load them into hash tries. 
+
+**Sorting.** If we use a sorted trie, we need to sort the table before constructing the trie. Sorting the columns is tricky and will likely offset any speedup from the columnar storage. In fact, DuckDB [converts to a row-wise layout](https://duckdb.org/2021/08/27/external-sorting.html) before sorting any table. We might as well store the table by row in the first place. When querying, we may still choose to only load attributes used by the query. 
 
 ## Indexing
 Generic join incurs a linear-ish (linear for hash tries and $O(n \log (n))$ for sorted tries) overhead to load the input relations into tries. This is fine in most cases, since both merge-sort join and hash join need to scan the entire input relations. However, an index join may touch only a tiny fraction of the indexed relation, so we cannot afford to sort the entire relation for generic join. 
