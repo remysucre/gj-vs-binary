@@ -29,19 +29,19 @@ fn main() {
                 get_joins(sel, &mut joins, &mut filters);
             }
 
-            // maps table aliases (ie. cn) to their full from statements (ie. company_name AS cn)
             let mut from_aliases: HashMap<String, TableWithJoins> = HashMap::new();
             map_from_aliases(&q.from, &mut from_aliases);
 
-            // maps table aliases (ie. cn) to their filter statements (ie. cn.country_code = '[us]')
             let mut filter_aliases: HashMap<String, Vec<String>> = HashMap::new();
             map_filter_aliases(&filters, &mut filter_aliases);
 
             // constructs the filter queries for each table matching by alias
             for (filter_alias, parsed_filters) in &filter_aliases {
-                for (from_alias, from) in &from_aliases {
+                for (from_alias, parsed_from) in &from_aliases {
                     if filter_alias == from_alias {
-                        println!("SELECT (*) FROM {} WHERE {};", from, parsed_filters.join(" AND "));
+                        println!("");
+                        println!("FILTER STATEMENT");
+                        println!("SELECT (*) FROM {} WHERE {};", parsed_from, parsed_filters.join(" AND "));
                     }
                 }
             }
@@ -59,9 +59,12 @@ fn main() {
         panic!("Only SELECT queries are supported");
     }
 
-    //println!("{};", stmt);
+    println!("");
+    println!("JOIN STATEMENT");
+    println!("{};", stmt);
 }
 
+// constructs a join on the basis of the parameters
 fn mk_join(lr: (Vec<Ident>, Vec<Ident>)) -> Expr {
     let (l, r) = lr;
     Expr::BinaryOp {
@@ -71,6 +74,7 @@ fn mk_join(lr: (Vec<Ident>, Vec<Ident>)) -> Expr {
     }
 }
 
+// maps table aliases (ie. cn) to their full from statements (ie. company_name AS cn)
 fn map_from_aliases(froms: &Vec<TableWithJoins>, aliases: &mut HashMap<String, TableWithJoins>) {
     for from in froms {
         if let TableFactor::Table {name: _, alias, args: _, with_hints: _} = &from.relation {
@@ -82,6 +86,7 @@ fn map_from_aliases(froms: &Vec<TableWithJoins>, aliases: &mut HashMap<String, T
     }
 }
 
+// maps table aliases (ie. cn) to their filter statements (ie. cn.country_code = '[us]')
 fn map_filter_aliases(filters: &Vec<Expr>, aliases: &mut HashMap<String, Vec<String>>) {
     for fil in filters {
         let alias_string = get_filter_alias(fil);
@@ -93,6 +98,7 @@ fn map_filter_aliases(filters: &Vec<Expr>, aliases: &mut HashMap<String, Vec<Str
     }
 }
 
+// gets the filter alias from the expression
 fn get_filter_alias(filter: &Expr) -> String {
     if let Expr::Nested(nest) = filter {
         return get_filter_alias(nest);
@@ -124,6 +130,7 @@ fn get_filter_alias(filter: &Expr) -> String {
     return String::new();
 }
 
+// gets all of the joins and filters from the expression
 fn get_joins(e: &Expr, joins: &mut Vec<(Vec<Ident>, Vec<Ident>)>, filters: &mut Vec<Expr>) {
     if let Expr::BinaryOp {
         left: l,
