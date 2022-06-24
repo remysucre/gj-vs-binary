@@ -10,6 +10,7 @@ use std::collections::HashMap;
 fn main() {
     let args: Vec<String> = env::args().collect();
     let f = &args[1];
+    let mode = &args[2];
 
     let sql = fs::read_to_string(f).expect("Unable to read file");
 
@@ -29,39 +30,38 @@ fn main() {
                 get_joins(sel, &mut joins, &mut filters);
             }
 
-            let mut from_aliases: HashMap<String, TableWithJoins> = HashMap::new();
-            map_from_aliases(&q.from, &mut from_aliases);
+            if mode == "filters" {
+                let mut from_aliases: HashMap<String, TableWithJoins> = HashMap::new();
+                map_from_aliases(&q.from, &mut from_aliases);
 
-            let mut filter_aliases: HashMap<String, Vec<String>> = HashMap::new();
-            map_filter_aliases(&filters, &mut filter_aliases);
+                let mut filter_aliases: HashMap<String, Vec<String>> = HashMap::new();
+                map_filter_aliases(&filters, &mut filter_aliases);
 
-            // constructs the filter queries for each table matching by alias
-            for (filter_alias, parsed_filters) in &filter_aliases {
-                for (from_alias, parsed_from) in &from_aliases {
-                    if filter_alias == from_alias {
-                        println!("");
-                        println!("FILTER STATEMENT");
-                        println!("SELECT (*) FROM {} WHERE {};", parsed_from, parsed_filters.join(" AND "));
+                // constructs the filter queries for each table matching by alias
+                for (filter_alias, parsed_filters) in &filter_aliases {
+                    for (from_alias, parsed_from) in &from_aliases {
+                        if filter_alias == from_alias {
+                            println!("SELECT (*) FROM {} WHERE {};", parsed_from, parsed_filters.join(" AND "));
+                        }
                     }
                 }
             }
             
-            let j = joins.pop().expect("Query has no joins");
-            q.selection = Some(joins.drain(..).fold(mk_join(j), |l, r| Expr::BinaryOp {
-                left: Box::new(l),
-                op: BinaryOperator::And,
-                right: Box::new(mk_join(r)),
-            }));
+            if mode == "joins" {
+                let j = joins.pop().expect("Query has no joins");
+                q.selection = Some(joins.drain(..).fold(mk_join(j), |l, r| Expr::BinaryOp {
+                    left: Box::new(l),
+                    op: BinaryOperator::And,
+                    right: Box::new(mk_join(r)),
+                }));
+                println!("{};", stmt);
+            }
         } else {
             panic!("Only SELECT-PROJECT-JOIN queries are supported");
         }
     } else {
         panic!("Only SELECT queries are supported");
     }
-
-    println!("");
-    println!("JOIN STATEMENT");
-    println!("{};", stmt);
 }
 
 // constructs a join on the basis of the parameters
