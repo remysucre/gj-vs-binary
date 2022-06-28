@@ -26,7 +26,7 @@ Consider the query `Q(*) :- R(x, y), S(x, z), T(y, z), U(y, z), V(y).` with the 
 
 The plan first joins R with S on x, then joins the result with T on y and z, so on and so forth. We convert this to a variable ordering for GJ simply by traversing the plan: 
 1. The first variable is x, taken from the first join of R, S on x. 
-2. The second variable can be either y or z; suppose we pick y, which will lead GJ to intersect R, T **, U and V**. 
+2. The second variable can be either y or z; suppose we pick y, which will lead GJ to intersect R, T, **U and V**. 
 3. The third variable is z, intersecting S, T and U. 
 The GJ algorithm looks like the following: 
 ```
