@@ -44,7 +44,7 @@ fn main() {
                         if filter_alias == from_alias {
                             if let TableFactor::Table {name: n, alias: _, args: _, with_hints: _} = &parsed_from.relation {
                                 let name_string = n.to_string();
-                                println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',');", parsed_from, parsed_filters.join(" AND "), name, name_string);
+                                println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',', ESCAPE '\\');", parsed_from, parsed_filters.join(" AND "), name, name_string);
                             }
                         }
                     }
