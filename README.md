@@ -21,7 +21,9 @@ We first run the joins on the tables in DuckDB and measure run time. DuckDB will
 We start with a simple algorithm to translate binary join plans to generic join plans. We focus on linear plans first. 
 
 Consider the query `Q(*) :- R(x, y), S(x, z), T(y, z), U(y, z), V(y).` with the following query plan: 
+
 ![linear-plan.svg](linear-plan.svg)
+
 The plan first joins R with S on x, then joins the result with T on y and z, so on and so forth. We convert this to a variable ordering for GJ simply by traversing the plan: 
 1. The first variable is x, taken from the first join of R, S on x. 
 2. The second variable can be either y or z; suppose we pick y, which will lead GJ to intersect R, T **, U and V**. 
