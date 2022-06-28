@@ -5,7 +5,7 @@ We will focus on queries in the [join order benchmark](https://github.com/gregra
 
 **Table of contents**
 1. [First experiments](#first-experiments)
-
+2. [System Architecture](#system-architecture)
 <a name="first-experiments"></a>
 ## First experiments
 Before jumping into implementation, we should test out our idea with some experiments. For example, we can manually translate a few queries into GJ and compare the performance. Concretely: 
