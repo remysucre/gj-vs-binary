@@ -6,6 +6,14 @@ We will focus on queries in the [join order benchmark](https://github.com/gregra
 **Table of contents**
 1. [First experiments](#first-experiments)
 2. [System Architecture](#system-architecture)
+3. [Preprocessor](#preprocessor)
+4. [Plan translator](#plan-translator)
+5. [Join algorithms](#join-algorithms)
+6. [Column-store](#column-store)
+7. [Indexing](#indexing)
+8. [Tensor algebra](#tensor-algebra)
+9. [Bushy plans](#bushy-plans)
+
 <a name="first-experiments"></a>
 ## First experiments
 Before jumping into implementation, we should test out our idea with some experiments. For example, we can manually translate a few queries into GJ and compare the performance. Concretely: 
