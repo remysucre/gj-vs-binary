@@ -3,6 +3,10 @@ The goal of this project is to compare [generic join](https://gitlab.com/remywan
 
 We will focus on queries in the [join order benchmark](https://github.com/gregrahn/join-order-benchmark), and compare against an in-memory DB like [DuckDB](https://duckdb.org) or [SQLite](https://www.sqlite.org/index.html). We can consider Postgres if we can figure out how to benchmark against it fairly. 
 
+**Table of contents**
+1. [First experiments](#first-experiments)
+
+<a name="first-experiments"></a>
 ## First experiments
 Before jumping into implementation, we should test out our idea with some experiments. For example, we can manually translate a few queries into GJ and compare the performance. Concretely: 
 1. Run some queries from the JOB benchmark and see how many only use linear join.  
@@ -10,6 +14,7 @@ Before jumping into implementation, we should test out our idea with some experi
 3. Pre-filter the input tables. 
 4. See if GJ runs faster than the DuckDB baseline. 
 
+<a name="system-architecture"></a>
 ## System architecture
 ![system.svg](figs/system.svg)
 
@@ -17,6 +22,7 @@ Because we focus on joins, we need to isolate the time spent in filtering. We br
 
 We first run the joins on the tables in DuckDB and measure run time. DuckDB will produce a join plan for the query which we translate into a plan for GJ. It's important that the binary plan is linear; we may need to instruct DuckDB to only consider linear plans. Using the translated plan, we run GJ and get the run time. 
 
+<a name="preprocessor"></a>
 ## Preprocessor
 Since we want to focus on joins, we need to remove the filters from each query and instead store the filtered intermediates as materialized views. For example, the following query 
 
@@ -98,6 +104,7 @@ SELECT (*)
    AND n.name LIKE '%Tim%'
 ```
 
+<a name="plan-translator"></a>
 ## Plan Translator
 We start with a simple algorithm to translate binary join plans to generic join plans. We focus on linear plans first. 
 
@@ -139,6 +146,7 @@ In summary, the full plan for free join is a sequence of nodes, where each node 
 
 **Bushy plans**. To support bushy plans, the GJ plan will also be bushy. In addition, we need to materialize some intermediate join results. 
 
+<a name="join-algorithms"></a>
 ## Join algorithms
 We will implement different algorithms for generic join based on which data structure we use to store the relations: 
 1. Hash trie
@@ -154,6 +162,7 @@ We will implement different algorithms for generic join based on which data stru
 
 **Segmented array.** This is the same way TACO stores sparse tensors (in CSF). It's pretty much the same as the sorted trie, except that the tuples themselves are stored in a single array, and instead of pointers, each trie node stores offsets to that array. This combines some benefits of the previous two storage formats. 
 
+<a name="column-store"></a>
 ## Column store
 DuckDB's speed is largely due to the columnar design: a table is stored as a collection of columns instead of rows. We want to replicate the same columnar layout for GJ. This would require different approaches for hashing and sorting. 
 
@@ -161,12 +170,14 @@ DuckDB's speed is largely due to the columnar design: a table is stored as a col
 
 **Sorting.** If we use a sorted trie, we need to sort the table before constructing the trie. Sorting the columns is tricky and will likely offset any speedup from the columnar storage. In fact, DuckDB [converts to a row-wise layout](https://duckdb.org/2021/08/27/external-sorting.html) before sorting any table. We might as well store the table by row in the first place. When querying, we may still choose to only load attributes used by the query. 
 
+<a name="indexing"></a>
 ## Indexing
 Generic join incurs a linear-ish (linear for hash tries and $O(n \log (n))$ for sorted tries) overhead to load the input relations into tries. This is fine in most cases, since both merge-sort join and hash join need to scan the entire input relations. However, an index join may touch only a tiny fraction of the indexed relation, so we cannot afford to sort the entire relation for generic join. 
 
 The solution is to also create indices for generic join. An index is simply a partially sorted trie. For example, an index for `R(x,y,z,w)` on `x` is a 2-level trie, where the first level stores `x` in sorted order, and each `x` points to an unsorted set of tuples `(y,z,w)`. During generic join execution, we may directly intersect with the pre-sorted `x` level. For each `x` value in the intersection, we can now sort `(y,z,w)` so that we can intersect with them further down the loop. This lazy sorting saves us time from sorting tuples in regions not returned from the index join on `x`. 
 
-## Tensor algebra and generic join
+<a name="tensor-algebra"></a>
+## Tensor algebra
 Since relational algebra is equivalent to tensor algebra, the tensor algebra compiler [TACO](http://tensor-compiler.org) implements an algorithm for sparse tensor algebra that precisely coincides with generic join. We may therefore piggyback on TACO to answer queries. 
 
 The main components to implement are: 
@@ -193,6 +204,7 @@ If we're lucky, we'll see speedup / matching performance in the experiments! But
 Several points in this process requires extra care: 
 - The optimizer may occasionally choose a bushy plan, in which case we should consider how to [combine](combine-gj.md) multiple GJ plans. 
 
+<a name="bushy-plans"></a>
 ## Bushy plans
 Consider the following *spikey* graph, where the middle spikes are longer than the rest: 
 
@@ -210,5 +222,4 @@ We can make the input more demonic in another dimension: chain together multiple
 
 Possible intuition: long joins is like navigating a maze. If you know the key points in the maze you have to pass through, you'll save a lot of time wandering around. A bushy plan can simultaneously expand around these key points, whereas a single GJ will needlessly create cartesian products. 
 
-## Combining GJ for bushy plans
-The simplest way to combine two generic join plans is to simply use merge-sort join. This is efficient since GJ guarantees to produce tuples in sorted order, and the output of merge-sort join is still sorted and can be used by futher generic joins. The drawback is that merge-sort join is blocking, and we need to materialize the relations before and after the join. Switching to hash-based GJ and use symmetric hashing can avoid blocking, but TACO does not seem to support hash tries. 
+**Combining GJ for bushy plans**. The simplest way to combine two generic join plans is to simply use merge-sort join. This is efficient since GJ guarantees to produce tuples in sorted order, and the output of merge-sort join is still sorted and can be used by futher generic joins. The drawback is that merge-sort join is blocking, and we need to materialize the relations before and after the join. Switching to hash-based GJ and use symmetric hashing can avoid blocking, but TACO does not seem to support hash tries. 
