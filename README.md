@@ -11,18 +11,99 @@ Before jumping into implementation, we should test out our idea with some experi
 4. See if GJ runs faster than the DuckDB baseline. 
 
 ## System architecture
-![system.svg](system.svg)
+![system.svg](figs/system.svg)
 
 Because we focus on joins, we need to isolate the time spent in filtering. We break each query into two parts, one contains only the joins and the other only the filters. See [normalize](normalize.md) for an example. We use the filters to create intermediate tables (cached), and run the joins on these intermeditates. 
 
 We first run the joins on the tables in DuckDB and measure run time. DuckDB will produce a join plan for the query which we translate into a plan for GJ. It's important that the binary plan is linear; we may need to instruct DuckDB to only consider linear plans. Using the translated plan, we run GJ and get the run time. 
+
+## Preprocessor
+Since we want to focus on joins, we need to remove the filters from each query and instead store the filtered intermediates as materialized views. For example, the following query 
+
+```SQL
+SELECT MIN(mi.info) AS movie_budget,
+       MIN(mi_idx.info) AS movie_votes,
+       MIN(t.title) AS movie_title
+  FROM cast_info AS ci,
+       info_type AS it1,
+       info_type AS it2,
+       movie_info AS mi,
+       movie_info_idx AS mi_idx,
+       name AS n,
+       title AS t
+ WHERE ci.note IN ('(producer)','(executive producer)')
+   AND it1.info = 'budget'
+   AND it2.info = 'votes'
+   AND n.gender = 'm'
+   AND n.name LIKE '%Tim%'
+   AND t.id = mi.movie_id
+   AND t.id = mi_idx.movie_id
+   AND t.id = ci.movie_id
+   AND ci.movie_id = mi.movie_id
+   AND ci.movie_id = mi_idx.movie_id
+   AND mi.movie_id = mi_idx.movie_id
+   AND n.id = ci.person_id
+   AND it1.id = mi.info_type_id
+   AND it2.id = mi_idx.info_type_id;
+```
+
+Becomes 
+
+```SQL
+SELECT MIN(mi.info) AS movie_budget,
+       MIN(mi_idx.info) AS movie_votes,
+       MIN(t.title) AS movie_title
+  FROM ci,
+       it1,
+       it2,
+       movie_info AS mi,
+       movie_info_idx AS mi_idx,
+       n,
+       title AS t
+ WHERE t.id = mi.movie_id
+   AND t.id = mi_idx.movie_id
+   AND t.id = ci.movie_id
+   AND ci.movie_id = mi.movie_id
+   AND ci.movie_id = mi_idx.movie_id
+   AND mi.movie_id = mi_idx.movie_id
+   AND n.id = ci.person_id
+   AND it1.id = mi.info_type_id
+   AND it2.id = mi_idx.info_type_id;
+```
+
+And we need to define intermediate tables: 
+
+```SQL
+SELECT (*)
+  FROM cast_info AS ci
+ WHERE ci.note IN ('(producer)','(executive producer)')
+```
+
+```SQL
+SELECT (*)
+  FROM info_type AS it1
+ WHERE it1.info = 'budget'
+```
+
+```SQL
+SELECT (*)
+  FROM info_type AS it2
+ WHERE it2.info = 'votes'
+```
+
+```SQL
+SELECT (*)
+  FROM name AS n
+ WHERE n.gender = 'm'
+   AND n.name LIKE '%Tim%'
+```
 
 ## Plan Translator
 We start with a simple algorithm to translate binary join plans to generic join plans. We focus on linear plans first. 
 
 Consider the query `Q(*) :- R(x, y), S(x, z), T(y, z), U(y, z), V(y).` with the following query plan: 
 
-![linear-plan.svg](linear-plan.svg)
+![linear-plan.svg](figs/linear-plan.svg)
 
 The plan first joins R with S on x, then joins the result with T on y and z, so on and so forth. We convert this to a variable ordering for GJ simply by traversing the plan: 
 1. The first variable is x, taken from the first join of R, S on x. 
@@ -92,7 +173,7 @@ The main components to implement are:
 
 1. Translate a binary join plan to a generic join plan (variable order). 
 2. Translate the query and plan to tensor algebra. This requires: 
-	1. Translating [SQL to CQ](sql2cq.md) 
+	1. Translating [SQL to CQ](taco/sql2cq.md) 
 	2. Rewriting the CQ accoding to the variable order
 	3. Translating the CQ to tensor algebra 
 3. Translate tables to tensors 
@@ -111,3 +192,23 @@ If we're lucky, we'll see speedup / matching performance in the experiments! But
 
 Several points in this process requires extra care: 
 - The optimizer may occasionally choose a bushy plan, in which case we should consider how to [combine](combine-gj.md) multiple GJ plans. 
+
+## Bushy plans
+Consider the following *spikey* graph, where the middle spikes are longer than the rest: 
+
+![spikey.png](figs/spikey.png) 
+
+Suppose the 2 middle spikes are 3-long each, and all other spikes are 2-long, and we want to compute the join: 
+$$Q(a_1, a_2, a_3, x, b_3, b_2, b_1) :- R_1(a_1, a_2), R_2(a_2, a_3), R_3(a_3, x), S_3(x, b_3), S_2(b_3, b_2), S_1(b_2, b_1).$$
+This join will only return 1 result, i.e. the long spike in the middle. A bushy plan is very efficient: after sorting / hashing each relation, we can start the join from both ends and each join finishes in 1 step. 
+
+Now make $N$ copies of the graph. The same bushy plan is still efficient. The total cost is $4kN\log(kN)+2N\log(N)+5N$: the first 2 terms are for sorting, and the last term for joining. 
+
+No generic join plan can match the run time of the bushy plan above. GJ will require the same cost for sorting, but it takes much longer to join. The idea is, in order to prevent joining on the shorter spikes, GJ must also start from each ends. But one of the ends must be placed after the other in the variable order, and this results in a cartesian product costing $N^2$. Otherwise, starting from either side requires joining the short spikes on the other side, which takes time $kN$. We can make the input a lot more nastier, for example replace the short spikes with some stars and explode the wasted energy. 
+
+We can make the input more demonic in another dimension: chain together multiple spikes to form a caterpillar. To efficiently join on the caterpillar, we would need a truly bushy plan that starts on the hairless parts. 
+
+Possible intuition: long joins is like navigating a maze. If you know the key points in the maze you have to pass through, you'll save a lot of time wandering around. A bushy plan can simultaneously expand around these key points, whereas a single GJ will needlessly create cartesian products. 
+
+## Combining GJ for bushy plans
+The simplest way to combine two generic join plans is to simply use merge-sort join. This is efficient since GJ guarantees to produce tuples in sorted order, and the output of merge-sort join is still sorted and can be used by futher generic joins. The drawback is that merge-sort join is blocking, and we need to materialize the relations before and after the join. Switching to hash-based GJ and use symmetric hashing can avoid blocking, but TACO does not seem to support hash tries. 

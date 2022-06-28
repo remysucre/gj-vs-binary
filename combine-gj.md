@@ -1,2 +1,0 @@
-The simplest way to combine two generic join plans is to simply use merge-sort join. This is efficient since GJ guarantees to produce tuples in sorted order, and the output of merge-sort join is still sorted and can be used by futher generic joins. The drawback is that merge-sort join is blocking, and we need to materialize the relations before and after the join. Switching to hash-based GJ and use symmetric hashing can avoid blocking, but TACO does not seem to support hash tries. 
-
