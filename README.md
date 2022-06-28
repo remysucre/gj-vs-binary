@@ -17,6 +17,45 @@ Because we focus on joins, we need to isolate the time spent in filtering. We br
 
 We first run the joins on the tables in DuckDB and measure run time. DuckDB will produce a join plan for the query which we translate into a plan for GJ. It's important that the binary plan is linear; we may need to instruct DuckDB to only consider linear plans. Using the translated plan, we run GJ and get the run time. 
 
+## Plan Translator
+We start with a simple algorithm to translate binary join plans to generic join plans. We focus on linear plans first. 
+
+Consider the query `Q(*) :- R(x, y), S(x, z), T(y, z), U(y, z), V(y).` with the following query plan: 
+![linear-plan.svg](linear-plan.svg)
+The plan first joins R with S on x, then joins the result with T on y and z, so on and so forth. We convert this to a variable ordering for GJ simply by traversing the plan: 
+1. The first variable is x, taken from the first join of R, S on x. 
+2. The second variable can be either y or z; suppose we pick y, which will lead GJ to intersect R, T **, U and V**. 
+3. The third variable is z, intersecting S, T and U. 
+The GJ algorithm looks like the following: 
+```
+for a in inter(R.x, S.x)
+	for b in inter(R[a].y, T.y, U.y, V.y)
+		for c in inter(S[a].z, T[b].z, U[b].z)
+			output(a, b, c)
+```
+Note that even though we had 4 joins in the linear binary plan, GJ only needs 3 intersections, because each intersection can process multiple relations. 
+
+**Merging variables**. We may improve the simple variable ordering by merging the variables x and y. That is, the GJ algorithm looks like this: 
+```
+for a in inter(R.x, S.x)
+	for (b,c) in inter(R[a].y, S[a].z, T.yz, U.yz, V.y)
+		output(a, b, c)
+```
+The intersection in the second loop can be done by iterating over `(y,z)` in T while looking up `y` and `z` from the other relations. Compared to the classic GJ which has 3 loops, this version may have better locality. 
+
+**Delayed intersection**. There is another optimization we can do on the original GJ plan. Suppose V is very large and the lookup on V.y always succeeds. Then we can save some time by delaying the lookup on V until the inner loop: 
+```
+for a in inter(R.x, S.x)
+	for b in inter(R[a].y, T.y, U.y)
+		for c in inter(S[a].z, T[b].z, U[b].z)
+			if b in V.y
+				output(a, b, c)
+```
+
+In summary, the full plan for free join is a sequence of nodes, where each node contains some variables and some relations. During GJ, the loop nest follows the sequence. Each node correspond to a loop level, where we intersect relations in the node on variables in that node. 
+
+**Bushy plans**. To support bushy plans, the GJ plan will also be bushy. In addition, we need to materialize some intermediate join results. 
+
 ## Join algorithms
 We will implement different algorithms for generic join based on which data structure we use to store the relations: 
 1. Hash trie
