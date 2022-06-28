@@ -11,6 +11,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let f = &args[1];
     let mode = &args[2];
+    let name = &args[3];
 
     let sql = fs::read_to_string(f).expect("Unable to read file");
 
@@ -41,7 +42,10 @@ fn main() {
                 for (filter_alias, parsed_filters) in &filter_aliases {
                     for (from_alias, parsed_from) in &from_aliases {
                         if filter_alias == from_alias {
-                            println!("SELECT (*) FROM {} WHERE {};", parsed_from, parsed_filters.join(" AND "));
+                            if let TableFactor::Table {name: n, alias: _, args: _, with_hints: _} = &parsed_from.relation {
+                                let name_string = n.to_string();
+                                println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',');", parsed_from, parsed_filters.join(" AND "), name, name_string);
+                            }
                         }
                     }
                 }
