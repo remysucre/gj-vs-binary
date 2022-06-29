@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use qry::*;
 
 use gj::schema::*;
@@ -51,7 +53,7 @@ fn main() {
     for t in mc {
         mc_data.append(& mut t.into_values());
     }
-    db.add_relation_with_data("mc", 3, mc_data);
+    db.add_relation_with_data("mc", 5, mc_data);
 
     let mut mi_data = vec![];
     for t in mi {
@@ -63,13 +65,13 @@ fn main() {
     for t in miidx {
         miidx_data.append(& mut t.into_values());
     }
-    db.add_relation_with_data("miidx", 3, miidx_data);
+    db.add_relation_with_data("miidx", 5, miidx_data);
 
     let mut t_data = vec![];
     for t in t {
         t_data.append(& mut t.into_values());
     }
-    db.add_relation_with_data("t", 3, t_data);
+    db.add_relation_with_data("t", 12, t_data);
 
     // Variable ordering
     // t.id = miidx.movie_id = mi.movie_id = mc.movie_id
@@ -79,7 +81,7 @@ fn main() {
     // mc.company_type_id = ct.id 
     // mc.company_id = cn.id
 
-    let mut q = Query::new(vec![
+    let q = Query::new(vec![
         Atom::new("t", vec![Term("t.id"), Term("t.title"), Term("t.imdb_index"), Term("t.kind_id"), Term("t.production_year"), Term("t.imdb_id"), Term("t.phonetic_code"), Term("t.episode_of_id"), Term("t.season_nr"), Term("t.episode_nr"), Term("t.series_years"), Term("t.md5sum")]),
         Atom::new("miidx", vec![Term("miidx.id"), Term("t.id"), Term("it.id"), Term("miidx.info"), Term("miidx.note")]),
         Atom::new("mi", vec![Term("mi.id"), Term("t.id"), Term("it2.id"), Term("mi.info"), Term("mi.note")]),
@@ -92,6 +94,59 @@ fn main() {
     ]);
     let mut ctx = EvalContext::default();
 
-    let mut result = vec![];
-    q.join(&vec![], &db, &mut ctx, |t| {result = t.to_vec(); Ok(())}).unwrap();
+
+
+    let varmap = vec![
+        "t.id", 
+        "t.kind_id", 
+        "it2.id", 
+        "it.id", 
+        "ct.id", 
+        "cn.id", //
+        "t.title", 
+        "t.imdb_index", 
+        "t.production_year", 
+        "t.imdb_id", 
+        "t.phonetic_code", 
+        "t.episode_of_id", 
+        "t.season_nr", 
+        "t.episode_nr", 
+        "t.series_years", 
+        "t.md5sum", //
+        "miidx.id", 
+        "miidx.info", 
+        "miidx.note", //
+        "mi.id", 
+        "mi.info", 
+        "mi.note", //
+        "mc.id", 
+        "mc.note", //
+        "kt.kind", //
+        "it2.info", //
+        "it.info", //
+        "ct.kind", //
+        "cn.name", 
+        "cn.country_code", 
+        "cn.imdb_id", 
+        "cn.name_pcode_nf", 
+        "cn.name_pcode_sf", 
+        "cn.md5sum", // 34
+    ];
+
+    let mut result = vec![Value::String("Database".to_string()), Value::String("0".to_string()), Value::String("The World".to_string())];
+    let now = Instant::now();
+    q.join(&varmap, &db, &mut ctx, |t| {
+        if result[0] > t[20] {
+            result[0] = t[20].clone();
+        }
+        if result[1] > t[17] {
+            result[1] = t[17].clone();
+        }
+        if result[2] > t[6] {
+            result[2] = t[6].clone();
+        }
+        Ok(())
+    }).unwrap();
+    println!("{:?}", result);
+    println!("{}", now.elapsed().as_secs());
 }

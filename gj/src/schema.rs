@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::cmp::PartialOrd;
 
 use serde::Deserialize;
 
@@ -11,6 +12,28 @@ pub enum Value {
     Int(u64),
     IntOpt(Option<u64>),
     String(String),
+}
+
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self, other) {
+            (Value::Int(a), Value::Int(b)) => a.partial_cmp(b),
+            (Value::IntOpt(a), Value::IntOpt(b)) => a.partial_cmp(b),
+            (Value::String(a), Value::String(b)) => a.partial_cmp(b),
+            _ => None,
+        }
+    }
+}
+
+impl Ord for Value {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (Value::Int(a), Value::Int(b)) => a.cmp(&b),
+            (Value::IntOpt(a), Value::IntOpt(b)) => a.cmp(&b),
+            (Value::String(a), Value::String(b)) => a.cmp(&b),
+            _ => panic!("Unsupported comparison"),
+        }
+    }
 }
 
 pub trait IntoValues {
