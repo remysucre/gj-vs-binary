@@ -133,7 +133,7 @@ fn main() {
         "cn.md5sum", // 34
     ];
 
-    let mut result = vec![Value::String("Database".to_string()), Value::String("0".to_string()), Value::String("The World".to_string())];
+    let mut result = vec![Value::String("Database".to_string()), Value::String("Rules".to_string()), Value::String("The World".to_string())];
     let now = Instant::now();
     q.join(&varmap, &db, &mut ctx, |t| {
         if result[0] > t[20] {
