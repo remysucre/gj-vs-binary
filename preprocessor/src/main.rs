@@ -42,16 +42,18 @@ fn main() {
                 for (filter_alias, parsed_filters) in &filter_aliases {
                     for (from_alias, parsed_from) in &from_aliases {
                         if filter_alias == from_alias {
-                            if let TableFactor::Table {name: n, alias: _, args: _, with_hints: _} = &parsed_from.relation {
-                                let name_string = n.to_string();
-                                println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',', ESCAPE '\\');", parsed_from, parsed_filters.join(" AND "), name, name_string);
+                            if let TableFactor::Table {name: _, alias, args: _, with_hints: _} = &parsed_from.relation {
+                                if let Some(a) = &alias {
+                                    let alias_string = n.to_string();
+                                    println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',', ESCAPE '\\');", parsed_from, parsed_filters.join(" AND "), name, alias_string);
+                                }
                             }
                         }
                     }
                 }
             }
             
-            if mode == "joins" {
+            if mode == "joins" { // rework per doc comment
                 let j = joins.pop().expect("Query has no joins");
                 q.selection = Some(joins.drain(..).fold(mk_join(j), |l, r| Expr::BinaryOp {
                     left: Box::new(l),
@@ -144,7 +146,7 @@ fn get_joins(e: &Expr, joins: &mut Vec<(Vec<Ident>, Vec<Ident>)>, filters: &mut 
     {
         match (&**l, o, &**r) {
             (Expr::CompoundIdentifier(l), BinaryOperator::Eq, Expr::CompoundIdentifier(r)) => {
-                joins.push((l.clone(), r.clone()))
+                joins.push((l.clone(), r.clone())) // maybe get only the aliases from the compounds?
             }
             (e_l, BinaryOperator::And, e_r) => {
                 get_joins(e_l, joins, filters);
