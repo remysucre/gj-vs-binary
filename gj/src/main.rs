@@ -49,36 +49,25 @@ fn main() {
 
     let mut mc_data = vec![];
     for t in mc {
-        let mut t_vals = t.into_values();
-        t_vals.swap(0, 1);
-        t_vals.swap(1, 3);
-        mc_data.append(& mut t_vals);
+        mc_data.append(& mut t.into_values());
     }
     db.add_relation_with_data("mc", 3, mc_data);
 
     let mut mi_data = vec![];
     for t in mi {
-        let mut t_vals = t.into_values();
-        t_vals.swap(0, 1);
-        t_vals.swap(1, 2);
-        mi_data.append(& mut t_vals);
+        mi_data.append(& mut t.into_values());
     }
     db.add_relation_with_data("mi", 5, mi_data);
 
     let mut miidx_data = vec![];
     for t in miidx {
-        let mut t_vals = t.into_values();
-        t_vals.swap(0, 1);
-        t_vals.swap(1, 2);
-        miidx_data.append(& mut t_vals);
+        miidx_data.append(& mut t.into_values());
     }
     db.add_relation_with_data("miidx", 3, miidx_data);
 
     let mut t_data = vec![];
     for t in t {
-        let mut t_vals = t.into_values();
-        t_vals.swap(1, 3);
-        t_data.append(& mut &mut t_vals);
+        t_data.append(& mut t.into_values());
     }
     db.add_relation_with_data("t", 3, t_data);
 
@@ -89,4 +78,20 @@ fn main() {
     // it.id = miidx.info_type_id
     // mc.company_type_id = ct.id 
     // mc.company_id = cn.id
+
+    let mut q = Query::new(vec![
+        Atom::new("t", vec![Term("t.id"), Term("t.title"), Term("t.imdb_index"), Term("t.kind_id"), Term("t.production_year"), Term("t.imdb_id"), Term("t.phonetic_code"), Term("t.episode_of_id"), Term("t.season_nr"), Term("t.episode_nr"), Term("t.series_years"), Term("t.md5sum")]),
+        Atom::new("miidx", vec![Term("miidx.id"), Term("t.id"), Term("it.id"), Term("miidx.info"), Term("miidx.note")]),
+        Atom::new("mi", vec![Term("mi.id"), Term("t.id"), Term("it2.id"), Term("mi.info"), Term("mi.note")]),
+        Atom::new("mc", vec![Term("mc.id"), Term("t.id"), Term("cn.id"), Term("ct.id"), Term("mc.note")]),
+        Atom::new("kt", vec![Term("t.kind_id"), Term("kt.kind")]),
+        Atom::new("it2", vec![Term("it2.id"), Term("it2.info")]),
+        Atom::new("it", vec![Term("it.id"), Term("it.info")]),
+        Atom::new("ct", vec![Term("ct.id"), Term("ct.kind")]),
+        Atom::new("cn", vec![Term("cn.id"), Term("cn.name"), Term("cn.country_code"), Term("cn.imdb_id"), Term("cn.name_pcode_nf"), Term("cn.name_pcode_sf"), Term("cn.md5sum")]),
+    ]);
+    let mut ctx = EvalContext::default();
+
+    let mut result = vec![];
+    q.join(&vec![], &db, &mut ctx, |t| {result = t.to_vec(); Ok(())}).unwrap();
 }
