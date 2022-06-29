@@ -135,7 +135,7 @@ fn main() {
 
     let mut result = vec![Value::String("Database".to_string()), Value::String("Rules".to_string()), Value::String("The World".to_string())];
     let now = Instant::now();
-    q.join(&varmap, &db, &mut ctx, |t| {
+    let f = |t: &[Value]| {
         if result[0] > t[20] {
             result[0] = t[20].clone();
         }
@@ -146,7 +146,26 @@ fn main() {
             result[2] = t[6].clone();
         }
         Ok(())
-    }).unwrap();
+    };
+    q.join(&varmap, &db, &mut ctx, f).unwrap();
+    println!("{}", now.elapsed().as_secs_f32());
+    result = vec![Value::String("Database".to_string()), Value::String("Rules".to_string()), Value::String("The World".to_string())];
+    // ctx = EvalContext::default();
+    let now = Instant::now();
+    let f = |t: &[Value]| {
+        if result[0] > t[20] {
+            result[0] = t[20].clone();
+        }
+        if result[1] > t[17] {
+            result[1] = t[17].clone();
+        }
+        if result[2] > t[6] {
+            result[2] = t[6].clone();
+        }
+        Ok(())
+    };
+    q.join(&varmap, &db, &mut ctx, f).unwrap();
+    println!("{}", now.elapsed().as_secs_f32());
+
     println!("{:?}", result);
-    println!("{}", now.elapsed().as_secs());
 }
