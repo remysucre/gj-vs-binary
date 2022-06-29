@@ -27,8 +27,6 @@ fn main() {
             let mut filters: Vec<Expr> = vec![];
             let mut joins: Vec<Expr> = vec![];
 
-            //println!("{}", q.to_string());
-
             if let Some(sel) = &q.selection {
                 get_joins(sel, &mut joins, &mut filters);
             }
@@ -56,16 +54,17 @@ fn main() {
             }
             
             if mode == "joins" {
+                print!("SELECT ");
                 if q.distinct {
-                    println!("SELECT DISTINCT {}", (&q.projection)[0]);
-                } else {
-                    print!("SELECT {}", (&q.projection)[0]);
+                    print!("DISTINCT ");
                 }
+                print!("{}", (&q.projection)[0]);
                 for select in &q.projection[1..] {
-                    println!(", {} ", select.to_string());
+                    print!(", {}", select.to_string());
                 }
 
-                print!("FROM ");
+                println!("");
+                print!(" FROM ");
                 for (from_alias, parsed_from) in &from_aliases {
                     let mut was_filtered = false;
                     for (filter_alias, _) in &filter_aliases {
@@ -85,7 +84,6 @@ fn main() {
                 }
 
                 println!("");
-
                 println!("WHERE {}", (&joins)[0]);
                 for join in &joins[1..] {
                     println!("AND {}", join.to_string());
