@@ -49,32 +49,44 @@ fn main() {
 
     let mut mc_data = vec![];
     for t in mc {
-        mc_data.append(& mut t.into_values());
+        let mut t_vals = t.into_values();
+        t_vals.swap(0, 1);
+        t_vals.swap(1, 3);
+        mc_data.append(& mut t_vals);
     }
     db.add_relation_with_data("mc", 3, mc_data);
 
     let mut mi_data = vec![];
     for t in mi {
-        mi_data.append(& mut t.into_values());
+        let mut t_vals = t.into_values();
+        t_vals.swap(0, 1);
+        t_vals.swap(1, 2);
+        mi_data.append(& mut t_vals);
     }
     db.add_relation_with_data("mi", 5, mi_data);
 
     let mut miidx_data = vec![];
     for t in miidx {
-        miidx_data.append(& mut t.into_values());
+        let mut t_vals = t.into_values();
+        t_vals.swap(0, 1);
+        t_vals.swap(1, 2);
+        miidx_data.append(& mut t_vals);
     }
     db.add_relation_with_data("miidx", 3, miidx_data);
 
     let mut t_data = vec![];
     for t in t {
-        t_data.append(& mut t.into_values());
+        let mut t_vals = t.into_values();
+        t_vals.swap(1, 3);
+        t_data.append(& mut &mut t_vals);
     }
     db.add_relation_with_data("t", 3, t_data);
 
     // Variable ordering
-    // t.id = mid.movie_id = mi.movie_id = mc.movie_id
+    // t.id = miidx.movie_id = mi.movie_id = mc.movie_id
     // t.kind_id = kt.id
-    // mi.info_type_id = it.id = mid.info_type_id
+    // it2.id = mi.info_type_id
+    // it.id = miidx.info_type_id
     // mc.company_type_id = ct.id 
     // mc.company_id = cn.id
 }
