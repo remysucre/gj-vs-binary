@@ -11,7 +11,6 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let f = &args[1];
     let mode = &args[2];
-    let name = &args[3];
 
     let sql = fs::read_to_string(f).expect("Unable to read file");
 
@@ -44,8 +43,8 @@ fn main() {
                         if filter_alias == from_alias {
                             if let TableFactor::Table {name: _, alias, args: _, with_hints: _} = &parsed_from.relation {
                                 if let Some(a) = &alias {
-                                    let alias_string = n.to_string();
-                                    println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',', ESCAPE '\\');", parsed_from, parsed_filters.join(" AND "), name, alias_string);
+                                    let alias_string = a.to_string();
+                                    println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',', ESCAPE '\\');", parsed_from, parsed_filters.join(" AND "), &f[..(f.len() - 4)], alias_string);
                                 }
                             }
                         }
@@ -106,34 +105,50 @@ fn map_filter_aliases(filters: &Vec<Expr>, aliases: &mut HashMap<String, Vec<Str
 
 // gets the filter alias from the expression
 fn get_filter_alias(filter: &Expr) -> String {
-    if let Expr::Nested(nest) = filter {
-        return get_filter_alias(nest);
-    }
-    if let Expr::BinaryOp {
-        left: l,
-        op: o,
-        right: r,
-    } = filter
-    {
-        match (&**l, o, &**r) {
-            (Expr::CompoundIdentifier(l), _, _) => {
-                let alias_string = (&l[0]).to_string();
-                return alias_string;
-            }
-            (_, _, Expr::CompoundIdentifier(r)) => {
-                let alias_string = (&r[0]).to_string();
-                return alias_string;
-            }
-            (e_1, _, e_2) => {
-                let left_branch = get_filter_alias(e_1);
-                if left_branch.is_empty() {
-                    return get_filter_alias(e_2);
+    match filter {
+        Expr::CompoundIdentifier(identifier) => {
+            let alias_string = (&identifier[0]).to_string();
+            return alias_string;
+        },
+        Expr::Nested(nest) => {
+            return get_filter_alias(nest);
+        },
+        Expr::IsNull(is_null) => {
+            return get_filter_alias(is_null);
+        },
+        Expr::IsNotNull(is_not_null) => {
+            return get_filter_alias(is_not_null);
+        },
+        Expr::InList{expr, list: _, negated: _} => {
+            return get_filter_alias(expr);
+        },
+        Expr::Between{expr, negated: _, low: _, high: _} => {
+            return get_filter_alias(expr);
+        },
+        Expr::UnaryOp{op: _, expr} => {
+            return get_filter_alias(expr);
+        },
+        Expr::BinaryOp{left: l, op: o, right: r} => {
+            match (&**l, o, &**r) {
+                (Expr::CompoundIdentifier(l), _, _) => {
+                    let alias_string = (&l[0]).to_string();
+                    return alias_string;
                 }
-                return left_branch;
+                (_, _, Expr::CompoundIdentifier(r)) => {
+                    let alias_string = (&r[0]).to_string();
+                    return alias_string;
+                }
+                (e_1, _, e_2) => {
+                    let left_branch = get_filter_alias(e_1);
+                    if left_branch.is_empty() {
+                        return get_filter_alias(e_2);
+                    }
+                    return left_branch;
+                }
             }
-        }
+        },
+        _ => return String::new(),
     }
-    return String::new();
 }
 
 // gets all of the joins and filters from the expression
