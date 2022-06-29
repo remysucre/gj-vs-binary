@@ -6,7 +6,7 @@ cat "../../queries/join-order-benchmark/$F" >> temp/before.sql
 rm temp/filters.sql
 for File in `ls ../../queries/join-order-benchmark-redux/data/${F%.*}/`
 do
-    echo "DROP TABLE ${File%.*};" >> temp/filters.sql # unneeded?
+    echo "DROP TABLE ${File%.*};" >> temp/filters.sql
     echo "CREATE TABLE ${File%.*} AS SELECT * FROM read_csv_auto('../../queries/join-order-benchmark-redux/data/${F%.*}/$File', header=True, delim=',', escape='\');" >> temp/filters.sql
 done
 
