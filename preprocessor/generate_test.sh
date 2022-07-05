@@ -6,18 +6,11 @@ F=$1
 echo "CREATE TABLE original_query AS "
 cat "../../queries/join-order-benchmark/$F"
 
-# Load the filtered tables from the preprocessed csv
+# Load the filtered tables from the preprocessed parquet
 for File in `ls ../../queries/join-order-benchmark-redux/data/${F%.*}/`
 do
     echo "DROP TABLE IF EXISTS ${File%.*};"
-    if [[ "$File" == "mi_idx"* ]]; # mi_idx are often too large for duckdb's csv parsing
-    then
-        echo ".mode csv"
-        echo "CREATE TABLE ${File%.*} (id integer NOT NULL PRIMARY KEY, movie_id integer NOT NULL, info_type_id integer NOT NULL, info character varying NOT NULL, note character varying(1));"
-        echo ".import --csv --skip 1 '../../queries/join-order-benchmark-redux/data/${F%.*}/$File' ${File%.*}"
-    else
-        echo "CREATE TABLE ${File%.*} AS SELECT * FROM read_csv_auto('../../queries/join-order-benchmark-redux/data/${F%.*}/$File', header=True, delim=',', escape='\');"
-    fi
+    echo "CREATE TABLE ${File%.*} AS SELECT * FROM '../../queries/join-order-benchmark-redux/data/${F%.*}/$File';"
 done
 
 # Run the preprocessed join query using the filtered tables

@@ -45,7 +45,7 @@ fn main() {
                             if let TableFactor::Table{name: _, alias, args: _, with_hints: _} = &parsed_from.relation {
                                 if let Some(a) = &alias {
                                     let alias_string = a.to_string();
-                                    println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.csv' (HEADER, DELIMITER ',', ESCAPE '\\');", parsed_from, parsed_filters.join(" AND "), name, alias_string);
+                                    println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.parquet' (FORMAT 'parquet');", parsed_from, parsed_filters.join(" AND "), name, alias_string);
                                 }
                             }
                         }
