@@ -1,6 +1,3 @@
 [submodule "qry"]
 	path = qry
 	url = git@github.com:remysucre/qry.git
-[submodule "translator"]
-	path = translator
-	url = git@github.com:Jiacheng-WU/translator.git
