@@ -1,9 +1,4 @@
-extern crate core;
-
-use std::borrow::{Borrow, BorrowMut};
-// use serde_json::Value;
 use serde::{Serialize, Deserialize};
-// use indextree::Arena;
 use std::env;
 use std::fs;
 
@@ -25,7 +20,6 @@ struct Equalizer {
     left_attr: Attribute,
     right_attr: Attribute,
 }
-
 
 // Force to rename "extra-info" into "extra_info"
 #[derive(Serialize, Deserialize, Debug)]
@@ -80,7 +74,6 @@ fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
     }
 }
 
-
 fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
     where T: Fn(&mut TreeOp) -> () {
     for child_node in node.children.iter_mut() {
@@ -88,9 +81,6 @@ fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
     }
     func(node);
 }
-
-
-
 
 fn parse_tree_extra_info(root: &mut TreeOp) {
     let parse_func = |node: &mut TreeOp| -> () {
@@ -134,8 +124,7 @@ fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
         combine_func: &combine_func,
         reduce_func: &reduce_func,
         default_func: &default_func};
-    let results = traverse(root, &traverse_funcs);
-    return results;
+    return traverse(root, &traverse_funcs);
 }
 
 // 0. Each Join is hash join
@@ -160,21 +149,11 @@ fn main() {
     let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
 
     // Result
-    let result_collector: &[Box<TreeOp>]  = root.children.borrow();
+    let result_collector = &root.children;
     println!("Collector is {}", result_collector.len());
 
-    parse_tree_extra_info(root.borrow_mut());
-    check_each_join_is_hash_join(root.borrow());
-    // Create a new arena
-    // let arena = &mut Arena::new();
-
-    // Add some new nodes to the arena
-    // let a = arena.new_node(1);
-    // let b = arena.new_node(2);
-
-    // Append a to b
-    // assert!(a.checked_append(b, arena).is_ok());
-    // assert_eq!(b.ancestors(arena).into_iter().count(), 2);
+    parse_tree_extra_info(&mut root);
+    check_each_join_is_hash_join(&root);
 }
 
 // Waive
