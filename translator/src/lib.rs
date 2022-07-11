@@ -1,5 +1,7 @@
 use serde::{Serialize, Deserialize};
 
+mod uf;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JoinType {
     Inner,
@@ -84,15 +86,34 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
     let parse_func = |node: &mut TreeOp| -> () {
         match node.name.as_str() {
             "HASH_JOIN" => {
-                let tmp_extra_info : String = node.extra_info.replace("[INFOSEPARATOR]", "");
-                let tmp_strs: Vec<&str> = tmp_extra_info.split("\n").collect();
-                let info_strs: Vec<&str> = tmp_strs.into_iter().filter(|&s| s.len() != 0).collect();
-                let join_type_str: &str = info_strs.first().expect("Failed to Get Type");
-                let join_type : JoinType = match join_type_str {
-                    "INNER" => JoinType::Inner,
-                    _ => panic!("Fail to parse Join Type {}", tmp_extra_info)
+                let extra_info: Vec<_> = node
+                    .extra_info
+                    .split("\n")
+                    .filter(|s| !s.is_empty())
+                    .collect();
+
+                let join_type = match &extra_info[0] {
+                    &"INNER" => JoinType::Inner,
+                    _ => panic!("Fail to parse Join Type {}", extra_info[0])
                 };
-                node.attr = Some(NodeAttr::Join(JoinAttr { join_type: join_type, equalizers: vec![] }));
+
+                let mut equalizers = Vec::new();
+
+                for pred in &extra_info[1..] {
+                    let equalizer = pred.split("=")
+                        .map(|s| s.trim())
+                        .collect::<Vec<_>>();
+                    equalizers.push(Equalizer {
+                        left_attr: Attribute {
+                            attr_name: equalizer[0].to_string()
+                        },
+                        right_attr: Attribute {
+                            attr_name: equalizer[1].to_string()
+                        }
+                    });
+                }
+
+                node.attr = Some(NodeAttr::Join(JoinAttr { join_type, equalizers }));
             },
             "SEQ_SCAN" => {
                 let tmp_extra_info : String = node.extra_info.replace("[INFOSEPARATOR]", "");
@@ -106,3 +127,12 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
     };
     preorder_traverse_mut(root, &parse_func);
 }
+
+// pub fn to_gj_plan(root: TreeOp) {
+//     let collect_attrs = |node| {
+//         if let NodeAttr::Join(attr) = &node.attr {
+
+//         }
+//     };
+//     postorder_traverse_mut(&mut root, &collect_attrs);
+// }
