@@ -48,6 +48,8 @@ fn main() {
 
     parse_tree_extra_info(&mut root);
     check_each_join_is_hash_join(&root);
+    let gj_plan = to_gj_plan(&mut root);
+    println!("{:?}", gj_plan);
 }
 
 // Waive

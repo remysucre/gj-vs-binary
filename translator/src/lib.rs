@@ -131,7 +131,7 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 }
 
 
-pub fn to_gj_plan(mut root: TreeOp) -> Vec<Vec<String>> {
+pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut attrs = IndexSet::new();
     let mut uf = UnionFind::default();
 
@@ -152,7 +152,7 @@ pub fn to_gj_plan(mut root: TreeOp) -> Vec<Vec<String>> {
         }
     };
 
-    postorder_traverse_mut(&mut root, &mut collect_attrs);
+    postorder_traverse_mut( root, &mut collect_attrs);
 
     let mut classes = IndexSet::new();
     let mut plan = vec![];
