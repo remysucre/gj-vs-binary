@@ -1,6 +1,8 @@
 use serde::{Serialize, Deserialize};
+use indexmap::IndexSet;
 
 mod uf;
+use uf::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JoinType {
@@ -74,8 +76,8 @@ pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
     }
 }
 
-pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
-    where T: Fn(&mut TreeOp) -> () {
+pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T) -> ()
+    where T: FnMut(&mut TreeOp) -> () {
     for child_node in node.children.iter_mut() {
         postorder_traverse_mut(child_node, func);
     }
@@ -128,11 +130,41 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
     preorder_traverse_mut(root, &parse_func);
 }
 
-// pub fn to_gj_plan(root: TreeOp) {
-//     let collect_attrs = |node| {
-//         if let NodeAttr::Join(attr) = &node.attr {
 
-//         }
-//     };
-//     postorder_traverse_mut(&mut root, &collect_attrs);
-// }
+pub fn to_gj_plan(mut root: TreeOp) -> Vec<Vec<String>> {
+    let mut attrs = IndexSet::new();
+    let mut uf = UnionFind::default();
+
+    let mut collect_attrs = |node: &mut TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+                
+                let (l_idx, l_new) = attrs.insert_full(equalizer.left_attr.attr_name.clone());
+                let l_id = if l_new { uf.make_set() } else { l_idx };
+                let l_leader = uf.find_mut(l_id);
+
+                let (r_idx, r_new) = attrs.insert_full(equalizer.right_attr.attr_name.clone());
+                let r_id = if r_new { uf.make_set() } else { r_idx };
+                let r_leader = uf.find_mut(r_id);
+
+                uf.union(l_leader, r_leader);
+            }
+        }
+    };
+
+    postorder_traverse_mut(&mut root, &mut collect_attrs);
+
+    let mut classes = IndexSet::new();
+    let mut plan = vec![];
+
+    for i in 0..uf.size() {
+        let leader = uf.find(i);
+        let (idx, changed) = classes.insert_full(leader);
+        if changed {
+            plan.push(vec![]);
+        }
+        plan[idx].push(attrs[i].clone());
+    }
+
+    return plan;
+}
