@@ -7,17 +7,18 @@ fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> bool {
         match node.name.as_str() {
             str if str.ends_with("JOIN") && !str.starts_with("HASH") => false,
-            _ => true
+            _ => true,
         }
     };
-    let reduce_func = | a: bool, b: bool|-> bool {a && b};
-    let combine_func = | a: bool, b: bool|-> bool {a && b};
+    let reduce_func = |a: bool, b: bool| -> bool { a && b };
+    let combine_func = |a: bool, b: bool| -> bool { a && b };
     let default_func = || true;
-    let traverse_funcs = TraverseFuncs{
+    let traverse_funcs = TraverseFuncs {
         map_func: &map_func,
         combine_func: &combine_func,
         reduce_func: &reduce_func,
-        default_func: &default_func};
+        default_func: &default_func,
+    };
     return traverse(root, &traverse_funcs);
 }
 
@@ -31,13 +32,13 @@ fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
 //      Fork of Duckdb -> it is better to be submodules
 
 fn main() {
-
-    let args: Vec<String>  = env::args().collect();
+    let args: Vec<String> = env::args().collect();
 
     let filename = &args[1];
 
     // File to String
-    let contents = fs::read_to_string(filename).expect(format!("Cannot read file {}", filename).as_str());
+    let contents =
+        fs::read_to_string(filename).expect(format!("Cannot read file {}", filename).as_str());
 
     // Parse the string of data into serde_json::Value.
     let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");

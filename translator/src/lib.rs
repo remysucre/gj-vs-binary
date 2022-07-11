@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use indexmap::IndexSet;
+use serde::{Deserialize, Serialize};
 
 mod uf;
 use uf::*;
@@ -26,14 +26,14 @@ pub struct Equalizer {
 // Force to rename "extra-info" into "extra_info"
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JoinAttr {
-    join_type : JoinType,
-    equalizers : Vec<Equalizer>,
+    join_type: JoinType,
+    equalizers: Vec<Equalizer>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ScanAttr {
-    table_name : String,
-    attributes : Vec<Attribute>,
+    table_name: String,
+    attributes: Vec<Attribute>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -55,21 +55,26 @@ pub struct TraverseFuncs<'a, MR, RR, CR> {
     pub map_func: &'a dyn Fn(&TreeOp) -> MR,
     pub combine_func: &'a dyn Fn(MR, RR) -> CR,
     pub reduce_func: &'a dyn Fn(RR, CR) -> RR,
-    pub default_func: &'a dyn Fn() -> RR
+    pub default_func: &'a dyn Fn() -> RR,
 }
 
-pub fn traverse<R, S, T>(node: &TreeOp, traverse_funcs: &TraverseFuncs<R, S, T>) -> T
-{
+pub fn traverse<R, S, T>(node: &TreeOp, traverse_funcs: &TraverseFuncs<R, S, T>) -> T {
     let map_result: R = (traverse_funcs.map_func)(node);
-    let reduce_result: S = node.children.iter()
+    let reduce_result: S = node
+        .children
+        .iter()
         .map(|child_node| traverse(child_node, traverse_funcs))
-        .fold((traverse_funcs.default_func)(), |a:S, b:T | -> S {(traverse_funcs.reduce_func)(a, b)});
+        .fold((traverse_funcs.default_func)(), |a: S, b: T| -> S {
+            (traverse_funcs.reduce_func)(a, b)
+        });
     let combine_result: T = (traverse_funcs.combine_func)(map_result, reduce_result);
     return combine_result;
 }
 
 pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
-    where T: Fn(&mut TreeOp) -> () {
+where
+    T: Fn(&mut TreeOp) -> (),
+{
     func(node);
     for child_node in node.children.iter_mut() {
         preorder_traverse_mut(child_node, func);
@@ -77,7 +82,9 @@ pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
 }
 
 pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T) -> ()
-    where T: FnMut(&mut TreeOp) -> () {
+where
+    T: FnMut(&mut TreeOp) -> (),
+{
     for child_node in node.children.iter_mut() {
         postorder_traverse_mut(child_node, func);
     }
@@ -96,40 +103,44 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 
                 let join_type = match &extra_info[0] {
                     &"INNER" => JoinType::Inner,
-                    _ => panic!("Fail to parse Join Type {}", extra_info[0])
+                    _ => panic!("Fail to parse Join Type {}", extra_info[0]),
                 };
 
                 let mut equalizers = Vec::new();
 
                 for pred in &extra_info[1..] {
-                    let equalizer = pred.split("=")
-                        .map(|s| s.trim())
-                        .collect::<Vec<_>>();
+                    let equalizer = pred.split("=").map(|s| s.trim()).collect::<Vec<_>>();
                     equalizers.push(Equalizer {
                         left_attr: Attribute {
-                            attr_name: equalizer[0].to_string()
+                            attr_name: equalizer[0].to_string(),
                         },
                         right_attr: Attribute {
-                            attr_name: equalizer[1].to_string()
-                        }
+                            attr_name: equalizer[1].to_string(),
+                        },
                     });
                 }
 
-                node.attr = Some(NodeAttr::Join(JoinAttr { join_type, equalizers }));
-            },
+                node.attr = Some(NodeAttr::Join(JoinAttr {
+                    join_type,
+                    equalizers,
+                }));
+            }
             "SEQ_SCAN" => {
-                let tmp_extra_info : String = node.extra_info.replace("[INFOSEPARATOR]", "");
+                let tmp_extra_info: String = node.extra_info.replace("[INFOSEPARATOR]", "");
                 let tmp_strs: Vec<&str> = tmp_extra_info.split("\\n").collect();
                 let info_strs: Vec<&str> = tmp_strs.into_iter().filter(|&s| s.len() != 0).collect();
-                let table_name : String = info_strs.first().expect("Failed to Get Table").to_string();
-                node.attr = Some(NodeAttr::Scan(ScanAttr { table_name: table_name, attributes: vec![] }));
-            },
+                let table_name: String =
+                    info_strs.first().expect("Failed to Get Table").to_string();
+                node.attr = Some(NodeAttr::Scan(ScanAttr {
+                    table_name: table_name,
+                    attributes: vec![],
+                }));
+            }
             _ => (),
         }
     };
     preorder_traverse_mut(root, &parse_func);
 }
-
 
 pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut attrs = IndexSet::new();
@@ -138,7 +149,6 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut collect_attrs = |node: &mut TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {
-                
                 let (l_idx, l_new) = attrs.insert_full(equalizer.left_attr.attr_name.clone());
                 let l_id = if l_new { uf.make_set() } else { l_idx };
                 let l_leader = uf.find_mut(l_id);
@@ -152,7 +162,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
         }
     };
 
-    postorder_traverse_mut( root, &mut collect_attrs);
+    postorder_traverse_mut(root, &mut collect_attrs);
 
     let mut classes = IndexSet::new();
     let mut plan = vec![];
