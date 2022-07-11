@@ -1,3 +1,6 @@
 [submodule "qry"]
 	path = qry
 	url = git@github.com:remysucre/qry.git
+[submodule "duckdb"]
+	path = duckdb
+	url = git@github.com:remysucre/duckdb.git
