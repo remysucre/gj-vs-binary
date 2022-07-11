@@ -67,13 +67,12 @@ pub fn traverse<R, S, T>(node: &TreeOp, traverse_funcs: &TraverseFuncs<R, S, T>)
         .fold((traverse_funcs.default_func)(), |a: S, b: T| -> S {
             (traverse_funcs.reduce_func)(a, b)
         });
-    let combine_result: T = (traverse_funcs.combine_func)(map_result, reduce_result);
-    return combine_result;
+    (traverse_funcs.combine_func)(map_result, reduce_result)
 }
 
-pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T) -> ()
+pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T)
 where
-    T: Fn(&mut TreeOp) -> (),
+    T: Fn(&mut TreeOp),
 {
     func(node);
     for child_node in node.children.iter_mut() {
@@ -81,9 +80,9 @@ where
     }
 }
 
-pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T) -> ()
+pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
 where
-    T: FnMut(&mut TreeOp) -> (),
+    T: FnMut(&mut TreeOp),
 {
     for child_node in node.children.iter_mut() {
         postorder_traverse_mut(child_node, func);
@@ -92,52 +91,49 @@ where
 }
 
 pub fn parse_tree_extra_info(root: &mut TreeOp) {
-    let parse_func = |node: &mut TreeOp| -> () {
-        match node.name.as_str() {
-            "HASH_JOIN" => {
-                let extra_info: Vec<_> = node
-                    .extra_info
-                    .split("\n")
-                    .filter(|s| !s.is_empty())
-                    .collect();
+    let parse_func = |node: &mut TreeOp| match node.name.as_str() {
+        "HASH_JOIN" => {
+            let extra_info: Vec<_> = node
+                .extra_info
+                .split('\n')
+                .filter(|s| !s.is_empty())
+                .collect();
 
-                let join_type = match &extra_info[0] {
-                    &"INNER" => JoinType::Inner,
-                    _ => panic!("Fail to parse Join Type {}", extra_info[0]),
-                };
+            let join_type = match &extra_info[0] {
+                &"INNER" => JoinType::Inner,
+                _ => panic!("Fail to parse Join Type {}", extra_info[0]),
+            };
 
-                let mut equalizers = Vec::new();
+            let mut equalizers = Vec::new();
 
-                for pred in &extra_info[1..] {
-                    let equalizer = pred.split("=").map(|s| s.trim()).collect::<Vec<_>>();
-                    equalizers.push(Equalizer {
-                        left_attr: Attribute {
-                            attr_name: equalizer[0].to_string(),
-                        },
-                        right_attr: Attribute {
-                            attr_name: equalizer[1].to_string(),
-                        },
-                    });
-                }
-
-                node.attr = Some(NodeAttr::Join(JoinAttr {
-                    join_type,
-                    equalizers,
-                }));
+            for pred in &extra_info[1..] {
+                let equalizer = pred.split('=').map(|s| s.trim()).collect::<Vec<_>>();
+                equalizers.push(Equalizer {
+                    left_attr: Attribute {
+                        attr_name: equalizer[0].to_string(),
+                    },
+                    right_attr: Attribute {
+                        attr_name: equalizer[1].to_string(),
+                    },
+                });
             }
-            "SEQ_SCAN" => {
-                let tmp_extra_info: String = node.extra_info.replace("[INFOSEPARATOR]", "");
-                let tmp_strs: Vec<&str> = tmp_extra_info.split("\\n").collect();
-                let info_strs: Vec<&str> = tmp_strs.into_iter().filter(|&s| s.len() != 0).collect();
-                let table_name: String =
-                    info_strs.first().expect("Failed to Get Table").to_string();
-                node.attr = Some(NodeAttr::Scan(ScanAttr {
-                    table_name: table_name,
-                    attributes: vec![],
-                }));
-            }
-            _ => (),
+
+            node.attr = Some(NodeAttr::Join(JoinAttr {
+                join_type,
+                equalizers,
+            }));
         }
+        "SEQ_SCAN" => {
+            let extra_info = node.extra_info.replace("[INFOSEPARATOR]", "");
+            let info_strs: Vec<_> = extra_info.split('\n').filter(|s| !s.is_empty()).collect();
+
+            let table_name: String = info_strs.first().expect("Failed to Get Table").to_string();
+            node.attr = Some(NodeAttr::Scan(ScanAttr {
+                table_name,
+                attributes: vec![],
+            }));
+        }
+        _ => (),
     };
     preorder_traverse_mut(root, &parse_func);
 }
@@ -176,5 +172,5 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
         plan[idx].push(attrs[i].clone());
     }
 
-    return plan;
+    plan
 }

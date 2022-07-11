@@ -5,10 +5,7 @@ use translator::*;
 
 fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> bool {
-        match node.name.as_str() {
-            str if str.ends_with("JOIN") && !str.starts_with("HASH") => false,
-            _ => true,
-        }
+        !matches!(node.name.as_str(), str if str.ends_with("JOIN") && !str.starts_with("HASH"))
     };
     let reduce_func = |a: bool, b: bool| -> bool { a && b };
     let combine_func = |a: bool, b: bool| -> bool { a && b };
@@ -19,7 +16,7 @@ fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
         reduce_func: &reduce_func,
         default_func: &default_func,
     };
-    return traverse(root, &traverse_funcs);
+    traverse(root, &traverse_funcs)
 }
 
 // 0. Each Join is hash join
@@ -38,7 +35,7 @@ fn main() {
 
     // File to String
     let contents =
-        fs::read_to_string(filename).expect(format!("Cannot read file {}", filename).as_str());
+        fs::read_to_string(filename).unwrap_or_else(|_| panic!("Cannot read file {}", filename));
 
     // Parse the string of data into serde_json::Value.
     let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
