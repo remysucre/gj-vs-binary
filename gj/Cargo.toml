@@ -9,5 +9,6 @@ edition = "2021"
 csv = "1.1.6"
 serde = { version = "1.0", features = ["derive"] }
 qry = { path = "../qry" }
+symbol_table = { version = "0.1", features = ["global"] }
 
 gj_derive = { path = "../gj_derive" }
