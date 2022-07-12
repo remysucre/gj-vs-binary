@@ -32,7 +32,7 @@ done >> temp.sql
 
 # Runs all tests in temp.sql
 cp '../../data/imdb_plain.db' '../../data/imdb.db'
-../../duckdb/build/release/duckdb << EOF
+../duckdb/build/release/duckdb << EOF
 .open '../../data/imdb.db'
 .read temp.sql
 EOF

@@ -10,3 +10,7 @@ do
 	./target/release/preprocessor $original_queries/$query filters "${query%.*}" > $preprocessed_queries/filters/$query
 	./target/release/preprocessor $original_queries/$query joins "${query%.*}" > $preprocessed_queries/joins/$query
 done
+
+# Run the preprocessed filters to produce the intermediate tables
+cd $preprocessed_queries
+bash run_filters.sh
