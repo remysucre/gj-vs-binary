@@ -1,23 +1,42 @@
-use crate::*;
 use std::fmt::Debug;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Eq, Hash, PartialEq)]
-enum Value {
-    Int(usize),
-    String(String),
+#[derive(Debug, Clone)]
+enum Trie<T> {
+    Node(HashMap<usize, Self>),
+    Data(Option<Vec<T>>),
 }
 
-#[derive(Debug, Clone, Default)]
-struct Trie(HashMap<Value, Self>);
+impl<T> Default for Trie<T> {
+    fn default() -> Self {
+        Trie::Node(HashMap::new())
+    }
+}
 
-impl Trie {
-    fn insert(&mut self, shuffle: &[usize], tuple: &[Value]) {
-        // debug_assert_eq!(shuffle.len(), tuple.len());
-        debug_assert!(shuffle.len() <= tuple.len());
+impl<T> Trie<T> {
+    fn insert(&mut self, ids: &[usize], data: Option<T> ) {
         let mut trie = self;
-        for i in shuffle {
-            trie = trie.0.entry(tuple[*i].clone()).or_default();
+        for (i, id) in ids.iter().enumerate() {
+            if let Trie::Node(node) = trie {
+                trie = node.entry(*id).or_insert_with(|| {
+                    if i == ids.len() - 1 {
+                        Trie::Data(data.as_ref().map(|_| vec![]))
+                    } else {
+                        Trie::default()
+                    }
+                });
+            } else {
+                panic!("Trie::insert: tuple longer than trie depth");
+            }
+        }
+        if let Trie::Data(Some(d)) = trie {
+            if let Some(v) = data {
+                d.push(v);
+            } else {
+                panic!("Missing data");
+            }
+        } else {
+            assert!(data.is_none());
         }
     }
 }
@@ -29,10 +48,11 @@ mod tests {
     #[test]
     fn trie() {
         let mut t = Trie::default();
-        t.insert(&vec![0, 1, 2, 3], &vec![Value::Int(1), Value::Int(2), Value::Int(3), Value::String("hello".to_string())]);
-        t.insert(&vec![0, 1, 2, 3], &vec![Value::Int(1), Value::Int(2), Value::Int(3), Value::String("world".to_string())]);
-        t.insert(&vec![0, 1, 2, 3], &vec![Value::Int(1), Value::Int(3), Value::Int(3), Value::String("from".to_string())]);
-        t.insert(&vec![0, 1, 2, 3], &vec![Value::Int(1), Value::Int(3), Value::Int(4), Value::String("seattle".to_string())]);
+        t.insert(&vec![1, 2, 3], Some(vec!["hello"]));
+        t.insert(&vec![1, 2, 3], Some(vec!["world"]));
+        t.insert(&vec![1, 3, 3], Some(vec!["from"]));
+        t.insert(&vec![1, 3, 4], Some(vec!["seattle"]));
+        t.insert(&vec![1, 3, 5], Some(vec!["and", "washinton"]));
         println!("{:?}", t);
     }
 }
