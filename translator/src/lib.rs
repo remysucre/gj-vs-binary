@@ -70,15 +70,16 @@ pub fn traverse<R, S, T>(node: &TreeOp, traverse_funcs: &TraverseFuncs<R, S, T>)
     (traverse_funcs.combine_func)(map_result, reduce_result)
 }
 
-pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &T)
+pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
 where
-    T: Fn(&mut TreeOp),
+    T: FnMut(&mut TreeOp),
 {
     func(node);
     for child_node in node.children.iter_mut() {
         preorder_traverse_mut(child_node, func);
     }
 }
+
 
 pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
 where
@@ -91,7 +92,7 @@ where
 }
 
 pub fn parse_tree_extra_info(root: &mut TreeOp) {
-    let parse_func = |node: &mut TreeOp| match node.name.as_str() {
+    let mut parse_func = |node: &mut TreeOp| match node.name.as_str() {
         "HASH_JOIN" => {
             let extra_info: Vec<_> = node
                 .extra_info
@@ -135,16 +136,21 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
         }
         _ => (),
     };
-    preorder_traverse_mut(root, &parse_func);
+    preorder_traverse_mut(root, &mut parse_func);
 }
 
-pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
+
+// 3. => GJ (Variable Ordering)
+//      Sequence of Sets {each attribute is decoreted with table name}
+//      Fork of Duckdb -> it is better to be submodules
+pub fn to_gj_plan_with_uf(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut attrs = IndexSet::new();
     let mut uf = UnionFind::default();
 
     let mut collect_attrs = |node: &mut TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {
+                // Cool, insert_full and make_set all generate a same ID if encounter new name;
                 let (l_idx, l_new) = attrs.insert_full(equalizer.left_attr.attr_name.clone());
                 let l_id = if l_new { uf.make_set() } else { l_idx };
                 let l_leader = uf.find_mut(l_id);
@@ -171,6 +177,41 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
         }
         plan[idx].push(attrs[i].clone());
     }
+
+    plan
+}
+
+
+pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
+    let mut plan: Vec<Vec<String>> = vec![];
+
+    let mut get_plan = |node: &mut TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+
+                let lattr_name = equalizer.left_attr.attr_name.clone();
+                let rattr_name = equalizer.right_attr.attr_name.clone();
+
+                // Find in plan the index of vector which contains attr_name;
+                let lpos_opt = plan.iter().position(|x| x.contains(&lattr_name));
+                let rpos_opt = plan.iter().position(|x| x.contains(&rattr_name));
+
+                // We have four cases and enumerate
+                match (lpos_opt, rpos_opt) {
+                    (Some(lpos), Some(rpos)) => assert_eq!(lpos,rpos),
+                    (Some(lpos), None) => plan[lpos].push(rattr_name),
+                    (None, Some(rpos)) => plan[rpos].push(lattr_name),
+                    (None, None) => {
+                        plan.push(vec![]);
+                        plan.last_mut().unwrap().push(lattr_name);
+                        plan.last_mut().unwrap().push(rattr_name);
+                    }
+                }
+            }
+        }
+    };
+
+    postorder_traverse_mut(root, &mut get_plan);
 
     plan
 }
