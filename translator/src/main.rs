@@ -106,16 +106,16 @@ fn main() {
 
     // Parse the string of data into serde_json::Value.
     let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
-
-    // Result
-    let result_collector = &root.children;
-    println!("Collector is {}", result_collector.len());
+    
+    // let result_collector = &root.children;
+    // println!("Collector is {}", result_collector.len());
 
     parse_tree_extra_info(&mut root);
     let allhash = check_each_join_is_hash_join(&root);
     let width = get_width_for_join_only_tree(&root);
     let topaggr = check_aggregate_is_on_top_only(&root);
     println!("{:?} {:?} {:?}", allhash, width, topaggr);
+
     // [["t.id", "miidx.movie_id", "mi.movie_id", "mc.movie_id"], ["t.kind_id", "kt.id"], ["mi.info_type_id", "it2.id"], ["miidx.info_type_id", "it.id"], ["mc.company_type_id", "ct.id"], ["mc.company_id", "cn.id"]]
     let gj_plan = to_gj_plan_no_uf(&mut root);
     println!("{:?}", gj_plan);
