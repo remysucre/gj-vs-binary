@@ -64,49 +64,56 @@ impl<T> Trie<T> {
     }
 }
 
-// fn join<T, F>(
-//     relations: &[&Trie<T>], 
-//     plan: &[Vec<usize>], 
-//     select: &[Vec<usize>],
-//     f: &mut F, 
-//     tuple: &[T]
-// ) where
-//     T: Clone + Debug,
-//     F: FnMut(&[&[T]]),
-// {
-//     if plan.is_empty() {
-//         let mut payload = Vec::new();
+fn join<T, F>(
+    relations: &[&Trie<T>], 
+    plan: &[Vec<usize>], 
+    f: &mut F, 
+) where
+    T: Clone + Debug,
+    F: FnMut(&[&[T]]),
+{
+    if plan.is_empty() {
+        let mut payload = Vec::new();
 
-//         for relation in relations {
-//             if let Trie::Data(Some(data)) = relation {
-//                 payload.push(&data[..]);
-//             } else {
-//                 panic!("Plan is exhausted but encountered a trie node");
-//             }
-//         }
-//         f(&payload);
-//     }
+        for relation in relations {
+            for data in relation.get_data() {
+                payload.push(&data[..]);
+            }
+        }
+        f(&payload);
+    }
     
-//     let js = &plan[0];
+    let js = &plan[0];
 
-//     let j_min = js
-//         .iter()
-//         .copied()
-//         .min_by_key(|&j| relations[j].len())
-//         .unwrap();
+    let j_min = js
+        .iter()
+        .copied()
+        .min_by_key(|&j| relations[j].len())
+        .unwrap();
     
-//     let mut intersection: Vec<_> = if let Trie::Node(ref node) = relations[j_min] {
-//         node.keys().cloned().collect()
-//     } else {
-//         panic!("Trie node expected");
-//     };
+    let mut intersection: Vec<_> = relations[j_min].get_map().keys().copied().collect();
 
-//     for &j in js {
-//         if j != j_min {
-//             let rj = &relations[j];
-//         }
-//     }
-// }
+    for &j in js {
+        if j != j_min {
+            let rj = relations[j].get_map();
+            intersection.retain(|i| rj.contains_key(i));
+        }
+    }
+
+    let empty = Trie::default();
+
+    for id in intersection {
+        let mut rels = Vec::new();
+        for (i, r) in relations.iter().enumerate() {
+            if js.contains(&i) {
+                rels.push(r.get_map().get(&id).unwrap_or(&empty));
+            } else {
+                rels.push(r);
+            }
+        }
+        join(&rels, &plan[1..], f);
+    }
+}
 
 #[cfg(test)]
 mod tests {
