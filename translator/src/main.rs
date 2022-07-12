@@ -106,7 +106,7 @@ fn main() {
 
     // Parse the string of data into serde_json::Value.
     let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
-    
+
     // let result_collector = &root.children;
     // println!("Collector is {}", result_collector.len());
 
