@@ -6,7 +6,8 @@ use translator::*;
 // 0. Each Join is hash join
 fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> bool {
-        !matches!(node.name.as_str(), str if str.ends_with("JOIN") && !str.starts_with("HASH"))
+        // We only care about the join without hash impl that it should be false;
+        !matches!(node.name.as_str(), str if str.contains("JOIN") && !str.contains("HASH"))
     };
     let reduce_func = |a: bool, b: bool| -> bool { a && b };
     let combine_func = |a: bool, b: bool| -> bool { a && b };
@@ -117,7 +118,7 @@ fn main() {
     println!("{:?} {:?} {:?}", allhash, width, topaggr);
 
     // [["t.id", "miidx.movie_id", "mi.movie_id", "mc.movie_id"], ["t.kind_id", "kt.id"], ["mi.info_type_id", "it2.id"], ["miidx.info_type_id", "it.id"], ["mc.company_type_id", "ct.id"], ["mc.company_id", "cn.id"]]
-    let gj_plan = to_gj_plan_no_uf(&mut root);
+    let gj_plan = to_gj_plan(&mut root);
     println!("{:?}", gj_plan);
 }
 

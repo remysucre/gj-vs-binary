@@ -143,7 +143,7 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 // 3. => GJ (Variable Ordering)
 //      Sequence of Sets {each attribute is decoreted with table name}
 //      Fork of Duckdb -> it is better to be submodules
-pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
+pub fn to_gj_plan_with_uf(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut attrs = IndexSet::new();
     let mut uf = UnionFind::default();
 
@@ -182,7 +182,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
 }
 
 
-pub fn to_gj_plan_no_uf(root: &mut TreeOp) -> Vec<Vec<String>> {
+pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut plan: Vec<Vec<String>> = vec![];
 
     let mut get_plan = |node: &mut TreeOp| {
