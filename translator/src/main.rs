@@ -4,6 +4,8 @@ use std::cmp;
 use translator::*;
 use std::collections::HashSet;
 use itertools::Itertools;
+use walkdir::WalkDir;
+
 // 0. Each Join is hash join
 fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> bool {
@@ -124,28 +126,32 @@ fn main() {
     // print name and check
     // check three or four cases and output to the screen
 
-    let filename = &args[1];
+    let dirname = &args[1];
+    for file in WalkDir::new(dirname).into_iter().filter_map(|file| file.ok()) {
+        if file.metadata().unwrap().is_file() {
+            // File to String
+            let contents =
+                fs::read_to_string( file.path()).unwrap_or_else(|_| panic!("Cannot read file {}", file.path().display()));
 
-    // File to String
-    let contents =
-        fs::read_to_string(filename).unwrap_or_else(|_| panic!("Cannot read file {}", filename));
+            // Parse the string of data into serde_json::Value.
+            let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
 
-    // Parse the string of data into serde_json::Value.
-    let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
+            parse_tree_extra_info(&mut root);
+            let allhash = check_each_join_is_hash_join(&root);
+            let width = check_width_for_join_only_tree(&root);
+            let topaggr = check_aggregate_is_on_top_only(&root);
+            // [["t.id", "miidx.movie_id", "mi.movie_id", "mc.movie_id"], ["t.kind_id", "kt.id"], ["mi.info_type_id", "it2.id"], ["miidx.info_type_id", "it.id"], ["mc.company_type_id", "ct.id"], ["mc.company_id", "cn.id"]]
+            let gj_plan = to_gj_plan(&mut root);
+            let unitbl = check_var_has_unique_table_combs(&gj_plan);
 
-    // let result_collector = &root.children;
-    // println!("Collector is {}", result_collector.len());
+            println!("{:?} {:?} {:?} {:?} {:?}", file.path().file_name().unwrap(), allhash, width, topaggr, unitbl);
 
-    parse_tree_extra_info(&mut root);
-    let allhash = check_each_join_is_hash_join(&root);
-    let width = check_width_for_join_only_tree(&root);
-    let topaggr = check_aggregate_is_on_top_only(&root);
-    // [["t.id", "miidx.movie_id", "mi.movie_id", "mc.movie_id"], ["t.kind_id", "kt.id"], ["mi.info_type_id", "it2.id"], ["miidx.info_type_id", "it.id"], ["mc.company_type_id", "ct.id"], ["mc.company_id", "cn.id"]]
-    let gj_plan = to_gj_plan(&mut root);
-    let unitbl = check_var_has_unique_table_combs(&gj_plan);
+            // println!("{:?}", gj_plan);
 
-    println!("{:?} {:?} {:?} {:?}", allhash, width, topaggr, unitbl);
-    println!("{:?}", gj_plan);
+        }
+    }
+
+
 }
 
 // Waive
