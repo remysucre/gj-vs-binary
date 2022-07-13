@@ -3,6 +3,7 @@ use std::fs;
 use std::cmp;
 use translator::*;
 use std::collections::HashSet;
+use std::ffi::OsStr;
 use itertools::Itertools;
 use walkdir::WalkDir;
 
@@ -128,7 +129,7 @@ fn main() {
 
     let dirname = &args[1];
     for file in WalkDir::new(dirname).into_iter().filter_map(|file| file.ok()) {
-        if file.metadata().unwrap().is_file() {
+        if file.metadata().unwrap().is_file() && file.path().extension().and_then(OsStr::to_str) == Some("json") {
             // File to String
             let contents =
                 fs::read_to_string( file.path()).unwrap_or_else(|_| panic!("Cannot read file {}", file.path().display()));
