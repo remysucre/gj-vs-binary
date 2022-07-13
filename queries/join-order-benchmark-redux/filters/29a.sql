@@ -1,0 +1,12 @@
+COPY (SELECT * FROM info_type AS it WHERE it.info = 'release dates') TO '../data/29a/it.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM comp_cast_type AS cct1 WHERE cct1.kind = 'cast') TO '../data/29a/cct1.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM name AS n WHERE n.gender = 'f' AND n.name LIKE '%An%') TO '../data/29a/n.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM company_name AS cn WHERE cn.country_code = '[us]') TO '../data/29a/cn.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM movie_info AS mi WHERE mi.info IS NOT NULL AND (mi.info LIKE 'Japan:%200%' OR mi.info LIKE 'USA:%200%')) TO '../data/29a/mi.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM cast_info AS ci WHERE ci.note IN ('(voice)', '(voice) (uncredited)', '(voice: English version)')) TO '../data/29a/ci.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM comp_cast_type AS cct2 WHERE cct2.kind = 'complete+verified') TO '../data/29a/cct2.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM info_type AS it3 WHERE it3.info = 'trivia') TO '../data/29a/it3.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM keyword AS k WHERE k.keyword = 'computer-animation') TO '../data/29a/k.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM char_name AS chn WHERE chn.name = 'Queen') TO '../data/29a/chn.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM role_type AS rt WHERE rt.role = 'actress') TO '../data/29a/rt.parquet' (FORMAT 'parquet');
+COPY (SELECT * FROM title AS t WHERE t.title = 'Shrek 2' AND t.production_year BETWEEN 2000 AND 2010) TO '../data/29a/t.parquet' (FORMAT 'parquet');
