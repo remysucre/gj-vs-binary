@@ -1,5 +1,5 @@
 # Use: bash test.sh <path-to-original-queries> <path-to-preprocessed-queries>
-# Example: bash test.sh ../queries/join-order-benchmark ../queries/join-order-benchmark-redux
+# Example: bash test.sh ../queries/join-order-benchmark ../queries/join-order-benchmark-preprocessed
 
 original_queries=$1
 preprocessed_queries=$2
