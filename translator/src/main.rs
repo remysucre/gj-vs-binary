@@ -26,7 +26,7 @@ fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
 }
 
 // 1. Bushy Join is bushy or not the width of join trees BFS{}
-fn check_width_for_join_only_tree(root: &TreeOp) -> bool {
+fn check_only_contain_linear_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> usize {
         match &node.attr {
             Some(NodeAttr::Join(_)) => node.children.len(),
@@ -127,6 +127,8 @@ fn main() {
     // print name and check
     // check three or four cases and output to the screen
 
+    println!("{:?} {} {} {} {}", "filename", "allhash", "linear", "topaggr", "uniqtbl");
+
     let dirname = &args[1];
     for file in WalkDir::new(dirname).into_iter().filter_map(|file| file.ok()) {
         if file.metadata().unwrap().is_file() && file.path().extension().and_then(OsStr::to_str) == Some("json") {
@@ -139,13 +141,13 @@ fn main() {
 
             parse_tree_extra_info(&mut root);
             let allhash = check_each_join_is_hash_join(&root);
-            let width = check_width_for_join_only_tree(&root);
+            let linear = check_only_contain_linear_join(&root);
             let topaggr = check_aggregate_is_on_top_only(&root);
             // [["t.id", "miidx.movie_id", "mi.movie_id", "mc.movie_id"], ["t.kind_id", "kt.id"], ["mi.info_type_id", "it2.id"], ["miidx.info_type_id", "it.id"], ["mc.company_type_id", "ct.id"], ["mc.company_id", "cn.id"]]
             let gj_plan = to_gj_plan(&mut root);
-            let unitbl = check_var_has_unique_table_combs(&gj_plan);
+            let uniqtbl = check_var_has_unique_table_combs(&gj_plan);
 
-            println!("{:?} {:?} {:?} {:?} {:?}", file.path().file_name().unwrap(), allhash, width, topaggr, unitbl);
+            println!("{:?} {:?} {:?} {:?} {:?}", file.path().file_name().unwrap(), allhash, linear, topaggr, uniqtbl);
 
             // println!("{:?}", gj_plan);
 
