@@ -80,7 +80,7 @@ fn join<T, F>(
                 payload.push(&data[..]);
             }
         }
-        f(&payload);
+        return f(&payload);
     }
     
     let js = &plan[0];
@@ -121,12 +121,27 @@ mod tests {
 
     #[test]
     fn trie() {
-        let mut t = Trie::default();
-        t.insert(&vec![1, 2, 3], vec!["hello"]);
-        t.insert(&vec![1, 2, 3], vec!["world"]);
-        t.insert(&vec![1, 3, 3], vec!["from"]);
-        t.insert(&vec![1, 3, 4], vec!["seattle"]);
-        t.insert(&vec![1, 3, 5], vec!["and", "washinton"]);
-        println!("{:?}", t);
+        let mut r: Trie<()> = Trie::default();
+        let mut s: Trie<()> = Trie::default();
+        let mut t: Trie<()> = Trie::default();
+
+        let n = 10;
+
+        for i in 0..n+1 {
+            r.insert(&[0, i], vec![]);
+            r.insert(&[i, n], vec![]);
+            s.insert(&[0, i], vec![]);
+            s.insert(&[i, n], vec![]);
+            t.insert(&[0, i], vec![]);
+            t.insert(&[i, n], vec![]);
+        }
+
+        let mut result = 0;
+        let mut count = |_: &[&[()]]| { result += 1; };
+
+        join(&[&r, &s, &t], &[vec![0, 1], vec![1, 2], vec![0, 2]], &mut count);
+
+        println!("{:?}", result);
+
     }
 }
