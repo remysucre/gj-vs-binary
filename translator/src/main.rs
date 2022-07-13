@@ -96,8 +96,19 @@ fn check_aggregate_is_on_top_only(root: &TreeOp) -> bool {
     res.results
 }
 
+// 4. Look if any two or more variables share the same table name?
+//    We can do the check on GJ Plan
+
+// 5. Sort-Merge Join | Sort Trie | Segmented Array
+//
+
 fn main() {
     let args: Vec<String> = env::args().collect();
+
+    // The input would be directory
+    // and traverse all json
+    // print name and check
+    // check three or four cases and output to the screen
 
     let filename = &args[1];
 
