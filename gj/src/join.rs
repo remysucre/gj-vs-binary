@@ -1,9 +1,11 @@
 use std::fmt::Debug;
 use std::collections::HashMap;
 
+type Id = i32;
+
 #[derive(Debug, Clone)]
-enum Trie<T> {
-    Node(HashMap<usize, Self>),
+pub enum Trie<T> {
+    Node(HashMap<Id, Self>),
     Data(Vec<Vec<T>>),
 }
 
@@ -14,11 +16,11 @@ impl<T> Default for Trie<T> {
 }
 
 impl<T> Trie<T> {
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.get_map().len()
     }
 
-    fn get_map(&self) -> &HashMap<usize, Self> {
+    pub fn get_map(&self) -> &HashMap<Id, Self> {
         if let Trie::Node(ref map) = *self {
             map
         } else {
@@ -26,7 +28,7 @@ impl<T> Trie<T> {
         }
     }
 
-    fn get_map_mut(&mut self) -> &mut HashMap<usize, Self> {
+    pub fn get_map_mut(&mut self) -> &mut HashMap<Id, Self> {
         if let Trie::Node(ref mut map) = *self {
             map
         } else {
@@ -34,7 +36,7 @@ impl<T> Trie<T> {
         }
     }
 
-    fn get_data(&self) -> &[Vec<T>] {
+    pub fn get_data(&self) -> &[Vec<T>] {
         if let Trie::Data(ref data) = *self {
             data
         } else {
@@ -42,7 +44,7 @@ impl<T> Trie<T> {
         }
     }
 
-    fn get_data_mut(&mut self) -> &mut Vec<Vec<T>> {
+    pub fn get_data_mut(&mut self) -> &mut Vec<Vec<T>> {
         if let Trie::Data(ref mut data) = *self {
             data
         } else {
@@ -50,7 +52,7 @@ impl<T> Trie<T> {
         }
     }
 
-    fn insert(&mut self, ids: &[usize], data: Vec<T> ) {
+    pub fn insert(&mut self, ids: &[Id], data: Vec<T> ) {
         let mut trie = self;
         for id in &ids[ ..ids.len()-1] {
             trie = trie.get_map_mut().entry(*id).or_default();
@@ -64,7 +66,7 @@ impl<T> Trie<T> {
     }
 }
 
-fn join<T, F>(
+pub fn join<T, F>(
     relations: &[&Trie<T>], 
     plan: &[Vec<usize>], 
     f: &mut F, 

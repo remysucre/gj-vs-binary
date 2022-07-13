@@ -9,5 +9,7 @@ edition = "2021"
 csv = "1.1.6"
 serde = { version = "1.0", features = ["derive"] }
 qry = { path = "../qry" }
+parquet = "18.0"
+indexmap = "1.9"
 
 gj_derive = { path = "../gj_derive" }
