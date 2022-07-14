@@ -42,13 +42,11 @@ fn main() {
     let empty = Trie::default();
 
     join(
-        &relations[..], 
-        &compiled_plan, 
-        &mut |t| {
-            aggregate_min(&mut result, t)
-        },
+        &relations[..],
+        &compiled_plan,
+        &mut |t| aggregate_min(&mut result, t),
         &mut tuple,
-        &empty
+        &empty,
     );
 
     println!("{:?}", result);
