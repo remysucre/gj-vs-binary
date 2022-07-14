@@ -31,9 +31,9 @@ do
 done >> temp.sql
 
 # Runs all tests in temp.sql
-cp '../../data/imdb_plain.db' '../../data/imdb.db'
+cp '../data/imdb/imdb_plain.db' '../data/imdb/imdb.db'
 ../duckdb/build/release/duckdb << EOF
-.open '../../data/imdb.db'
+.open '../data/imdb/imdb.db'
 .read temp.sql
 EOF
 

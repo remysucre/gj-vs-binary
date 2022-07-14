@@ -1,0 +1,5 @@
+*
+*/
+!.gitignore
+!imdb
+!imdb/import.*
