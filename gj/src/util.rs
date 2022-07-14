@@ -8,25 +8,11 @@ use parquet::{
     record::Field,
     schema::types::Type,
 };
-use serde::de::DeserializeOwned;
 
 use std::fs::File;
 use std::sync::Arc;
 
 use crate::join::Trie;
-
-pub fn load_csv<T: DeserializeOwned>(file_name: &str) -> Result<Vec<T>, Box<dyn Error>> {
-    let mut rdr = csv::ReaderBuilder::new()
-        .has_headers(false)
-        .escape(Some(b'\\'))
-        .from_path(path::Path::new(&file_name))?;
-    let mut table = Vec::new();
-    for result in rdr.deserialize() {
-        let tuple: T = result?;
-        table.push(tuple);
-    }
-    Ok(table)
-}
 
 pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>> {
     let mut compiled_plan = Vec::new();
