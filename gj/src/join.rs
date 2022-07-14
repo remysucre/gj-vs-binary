@@ -69,7 +69,6 @@ impl<T> Trie<T> {
         if !data.is_empty() {
             d.get_data_mut().push(data);
         }
-        // d.get_data_mut().push(data);
     }
 }
 
@@ -131,49 +130,5 @@ where
             }
         }
         join(&rels, &plan[1..], f, tuple, empty);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn trie() {
-        for n in 1..10 {
-            let mut relations = vec![];
-
-            for _ in 0..3 {
-                let mut r: Trie<()> = Trie::default();
-
-                r.insert(&[0, 0], vec![()]);
-                for i in 1..n {
-                    r.insert(&[0, i], vec![()]);
-                    r.insert(&[i, 0], vec![()]);
-                }
-
-                relations.push(r);
-            }
-
-            let tries: Vec<&Trie<_>> = relations.iter().collect();
-
-            let mut result = 0;
-
-            let mut tuple = vec![];
-
-            let empty = Trie::default();
-
-            join(
-                &tries,
-                &[vec![0, 1], vec![1, 2], vec![0, 2]],
-                &mut |_: &[&[()]]| {
-                    result += 1;
-                },
-                &mut tuple,
-                &empty
-            );
-
-            assert_eq!(result, 3 * n - 2);
-        }
     }
 }
