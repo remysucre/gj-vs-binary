@@ -73,7 +73,7 @@ pub fn load_db(plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
             .with_fields(&mut ts)
             .build()
             .unwrap();
-        let file_name = format!("../data/{}.parquet", table);
+        let file_name = format!("../temp/{}.parquet", table);
         tries.push(load_parquet(&file_name, table_schema).unwrap());
     }
 

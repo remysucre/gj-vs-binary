@@ -8,6 +8,3 @@ edition = "2021"
 [dependencies]
 parquet = "18.0"
 indexmap = "1.9"
-itertools = "0.10"
-
-gj_derive = { path = "../gj_derive" }

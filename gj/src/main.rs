@@ -37,9 +37,19 @@ fn main() {
 
     let start = Instant::now();
 
-    join(&relations[..], &compiled_plan, &mut |t| {
-        aggregate_min(&mut result, t)
-    });
+    let mut tuple = vec![];
+
+    let empty = Trie::default();
+
+    join(
+        &relations[..], 
+        &compiled_plan, 
+        &mut |t| {
+            aggregate_min(&mut result, t)
+        },
+        &mut tuple,
+        &empty
+    );
 
     println!("{:?}", result);
     println!("{:?}", start.elapsed());

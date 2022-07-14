@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use itertools::Itertools;
-
 type Id = i32;
 
 #[derive(Debug, Clone)]
@@ -75,22 +73,35 @@ impl<T> Trie<T> {
     }
 }
 
-pub fn join<T, F>(relations: &[&Trie<T>], plan: &[Vec<usize>], f: &mut F)
+pub fn join<'a, T, F>(
+    relations: &[&'a Trie<T>], 
+    plan: &[Vec<usize>], 
+    f: &mut F,
+    tuple: &mut Vec<&'a [T]>,
+    empty: &'a Trie<T>,
+)
 where
     T: Clone + Debug,
     F: FnMut(&[&[T]]),
 {
     if plan.is_empty() {
-        relations
-            .iter()
-            .map(|r| r.get_data())
-            .filter(|r| !r.is_empty())
-            .multi_cartesian_product()
-            .for_each(|row| {
-                let payload: Vec<_> = row.iter().map(|r| &r[..]).collect();
-                f(&payload[..]);
-            });
-        return;
+        if relations.is_empty() {
+            return f(tuple);
+        } else {
+            let rels = &relations[1..];
+            if relations[0].get_data().is_empty() {
+                join(rels, plan, f, tuple, empty);
+            } else {
+                for v in relations[0].get_data() {
+                    if !v.is_empty() {
+                        tuple.push(v);
+                    }
+                    join(rels, plan, f, tuple, empty);
+                    tuple.pop();
+                }
+            }
+            return;
+        }
     }
 
     let js = &plan[0];
@@ -110,8 +121,6 @@ where
         }
     }
 
-    let empty = Trie::default();
-
     for id in intersection {
         let mut rels = Vec::new();
         for (i, r) in relations.iter().enumerate() {
@@ -121,7 +130,7 @@ where
                 rels.push(r);
             }
         }
-        join(&rels, &plan[1..], f);
+        join(&rels, &plan[1..], f, tuple, empty);
     }
 }
 
@@ -150,12 +159,18 @@ mod tests {
 
             let mut result = 0;
 
+            let mut tuple = vec![];
+
+            let empty = Trie::default();
+
             join(
                 &tries,
                 &[vec![0, 1], vec![1, 2], vec![0, 2]],
                 &mut |_: &[&[()]]| {
                     result += 1;
                 },
+                &mut tuple,
+                &empty
             );
 
             assert_eq!(result, 3 * n - 2);
