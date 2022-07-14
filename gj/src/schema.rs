@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use std::cmp::PartialOrd;
+use std::fmt::Display;
 
 use serde::Deserialize;
 
@@ -28,9 +28,9 @@ impl PartialOrd for Value {
 impl Ord for Value {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match (self, other) {
-            (Value::Int(a), Value::Int(b)) => a.cmp(&b),
-            (Value::IntOpt(a), Value::IntOpt(b)) => a.cmp(&b),
-            (Value::String(a), Value::String(b)) => a.cmp(&b),
+            (Value::Int(a), Value::Int(b)) => a.cmp(b),
+            (Value::IntOpt(a), Value::IntOpt(b)) => a.cmp(b),
+            (Value::String(a), Value::String(b)) => a.cmp(b),
             _ => panic!("Unsupported comparison"),
         }
     }

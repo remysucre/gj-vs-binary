@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use itertools::Itertools;
 
@@ -20,6 +20,10 @@ impl<T> Default for Trie<T> {
 impl<T> Trie<T> {
     pub fn len(&self) -> usize {
         self.get_map().len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn get_map(&self) -> &HashMap<Id, Self> {
@@ -54,9 +58,9 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn insert(&mut self, ids: &[Id], data: Vec<T> ) {
+    pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
         let mut trie = self;
-        for id in &ids[ ..ids.len()-1] {
+        for id in &ids[..ids.len() - 1] {
             trie = trie.get_map_mut().entry(*id).or_default();
         }
 
@@ -71,11 +75,8 @@ impl<T> Trie<T> {
     }
 }
 
-pub fn join<T, F>(
-    relations: &[&Trie<T>], 
-    plan: &[Vec<usize>], 
-    f: &mut F, 
-) where
+pub fn join<T, F>(relations: &[&Trie<T>], plan: &[Vec<usize>], f: &mut F)
+where
     T: Clone + Debug,
     F: FnMut(&[&[T]]),
 {
@@ -91,7 +92,7 @@ pub fn join<T, F>(
             });
         return;
     }
-    
+
     let js = &plan[0];
 
     let j_min = js
@@ -99,7 +100,7 @@ pub fn join<T, F>(
         .copied()
         .min_by_key(|&j| relations[j].len())
         .unwrap();
-    
+
     let mut intersection: Vec<_> = relations[j_min].get_map().keys().copied().collect();
 
     for &j in js {
@@ -130,14 +131,12 @@ mod tests {
 
     #[test]
     fn trie() {
-
         for n in 1..10 {
-
             let mut relations = vec![];
 
             for _ in 0..3 {
                 let mut r: Trie<()> = Trie::default();
-                
+
                 r.insert(&[0, 0], vec![()]);
                 for i in 1..n {
                     r.insert(&[0, i], vec![()]);
@@ -146,19 +145,20 @@ mod tests {
 
                 relations.push(r);
             }
-    
+
             let tries: Vec<&Trie<_>> = relations.iter().collect();
 
             let mut result = 0;
 
             join(
                 &tries,
-                &[vec![0, 1], vec![1, 2], vec![0, 2]], 
-                &mut |_: &[&[()]]| { result += 1; }
+                &[vec![0, 1], vec![1, 2], vec![0, 2]],
+                &mut |_: &[&[()]]| {
+                    result += 1;
+                },
             );
-    
-            assert_eq!(result, 3*n-2);
-        }
 
+            assert_eq!(result, 3 * n - 2);
+        }
     }
 }

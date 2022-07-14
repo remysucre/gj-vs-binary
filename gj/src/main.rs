@@ -1,11 +1,16 @@
 use std::time::Instant;
 
-use gj::util::*;
 use gj::join::*;
+use gj::util::*;
 
 fn main() {
     let plan = vec![
-        vec!["t.id".to_string(), "miidx.movie_id".to_string(), "mi.movie_id".to_string(), "mc.movie_id".to_string()],
+        vec![
+            "t.id".to_string(),
+            "miidx.movie_id".to_string(),
+            "mi.movie_id".to_string(),
+            "mc.movie_id".to_string(),
+        ],
         vec!["t.kind_id".to_string(), "kt.id".to_string()],
         vec!["it2.id".to_string(), "mi.info_type_id".to_string()],
         vec!["it.id".to_string(), "miidx.info_type_id".to_string()],
@@ -32,13 +37,10 @@ fn main() {
 
     let start = Instant::now();
 
-    join(
-        &relations[..], 
-        &compiled_plan, 
-        &mut |t| { aggregate_min(&mut result, &t) }
-    );
+    join(&relations[..], &compiled_plan, &mut |t| {
+        aggregate_min(&mut result, t)
+    });
 
     println!("{:?}", result);
     println!("{:?}", start.elapsed());
-
 }

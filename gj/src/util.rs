@@ -1,14 +1,14 @@
-use std::{error::Error, collections::HashMap};
 use std::path;
+use std::{collections::HashMap, error::Error};
 
-use serde::de::DeserializeOwned;
-use parquet::{
-    file::reader::{FileReader, SerializedFileReader}, 
-    basic::{ConvertedType, Repetition, Type as PhysicalType},
-    schema::types::Type,
-    record::Field,
-};
 use indexmap::IndexMap;
+use parquet::{
+    basic::{ConvertedType, Repetition, Type as PhysicalType},
+    file::reader::{FileReader, SerializedFileReader},
+    record::Field,
+    schema::types::Type,
+};
+use serde::de::DeserializeOwned;
 
 use std::fs::File;
 use std::sync::Arc;
@@ -28,7 +28,7 @@ pub fn load_csv<T: DeserializeOwned>(file_name: &str) -> Result<Vec<T>, Box<dyn 
     Ok(table)
 }
 
-pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>>{
+pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>> {
     let mut compiled_plan = Vec::new();
     let mut table_ids = HashMap::new();
     for node in plan {
@@ -44,12 +44,12 @@ pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>>{
     compiled_plan
 }
 
-pub fn aggregate_min(result: &mut Vec<String>,  payload: &[&[String]]) {
-    let pl: Vec<_> = payload.iter().map(|ss| ss.concat().to_string()).collect();
+pub fn aggregate_min(result: &mut [String], payload: &[&[String]]) {
+    let pl: Vec<_> = payload.iter().map(|ss| ss.concat()).collect();
 
     if pl.len() == result.len() {
         for (i, s) in pl.iter().enumerate() {
-            if result[i].len() == 0 || s <& result[i] {
+            if result[i].is_empty() || s < &result[i] {
                 result[i] = s.to_string();
             }
         }
@@ -63,7 +63,10 @@ pub fn load_db(plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
             let names: Vec<_> = a.split('.').collect();
             let table = names[0];
             let column = names[1];
-            schema.entry(table.to_string()).or_insert(vec![]).push(type_of(table, column));
+            schema
+                .entry(table.to_string())
+                .or_insert(vec![])
+                .push(type_of(table, column));
         }
     }
 
@@ -71,15 +74,19 @@ pub fn load_db(plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
         let names: Vec<_> = a.split('.').collect();
         let table = names[0];
         let column = names[1];
-        schema.entry(table.to_string()).or_insert(vec![]).push(type_of(table, column));
+        schema
+            .entry(table.to_string())
+            .or_insert(vec![])
+            .push(type_of(table, column));
     }
 
     let mut tries = vec![];
     for (table, types) in schema {
         let mut ts: Vec<_> = types.iter().map(|t| Arc::new(t.clone())).collect();
-        let table_schema = Type::group_type_builder(&"duckdb_schema")
+        let table_schema = Type::group_type_builder("duckdb_schema")
             .with_fields(&mut ts)
-            .build().unwrap();
+            .build()
+            .unwrap();
         let file_name = format!("../data/{}.parquet", table);
         tries.push(load_parquet(&file_name, table_schema).unwrap());
     }
@@ -103,10 +110,10 @@ pub fn load_parquet(file_path: &str, schema: Type) -> Result<Trie<String>, Box<d
             match field {
                 Field::Int(i) => {
                     ids.push(*i);
-                },
+                }
                 Field::Str(v) => {
                     data.push(v.clone());
-                },
+                }
                 _ => {
                     panic!("Unsupported field type");
                 }
@@ -122,10 +129,8 @@ pub fn load_parquet(file_path: &str, schema: Type) -> Result<Trie<String>, Box<d
 fn type_of(table: &str, col: &str) -> Type {
     let mut column_name = format!("{}.{}", table, col);
     column_name = match table {
-        "mc" | "mi" | "miidx" | "t" => {
-            column_name
-        },
-        _ => col.to_string()
+        "mc" | "mi" | "miidx" | "t" => column_name,
+        _ => col.to_string(),
     };
     // let column_name = col;
     if col.ends_with("id") {
