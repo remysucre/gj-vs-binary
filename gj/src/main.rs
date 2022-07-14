@@ -1,7 +1,6 @@
 use std::time::Instant;
 
-use gj::join::*;
-use gj::util::*;
+use gj::{join::*, util::*, trie::*};
 
 fn main() {
     let plan = vec![

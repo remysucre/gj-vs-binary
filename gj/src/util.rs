@@ -12,7 +12,7 @@ use parquet::{
 use std::fs::File;
 use std::sync::Arc;
 
-use crate::join::Trie;
+use crate::trie::Trie;
 
 pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>> {
     let mut compiled_plan = Vec::new();
