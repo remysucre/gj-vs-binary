@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use gj::{join::*, util::*, trie::*};
+use gj::{join::*, trie::*, util::*};
 
 fn main() {
     let plan = vec![
@@ -40,9 +40,12 @@ fn main() {
 
     let empty = Trie::default();
 
+    let payload = vec![2, 1, 0];
+
     join(
         &relations[..],
         &compiled_plan,
+        &payload,
         &mut |t| aggregate_min(&mut result, t),
         &mut tuple,
         &empty,

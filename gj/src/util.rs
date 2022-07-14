@@ -14,6 +14,8 @@ use std::sync::Arc;
 
 use crate::trie::Trie;
 
+// compile a plan (a list of multiway joins) into a list of trie indices,
+// where the trie with index i is stored at position i by load_db.
 pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>> {
     let mut compiled_plan = Vec::new();
     let mut table_ids = HashMap::new();

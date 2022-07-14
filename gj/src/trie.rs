@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::fmt::Debug;
+use std::fmt;
+use std::fmt::{Debug, Display};
 
 type Id = i32;
 
@@ -9,6 +10,28 @@ pub enum Trie<T> {
     Data(Vec<Vec<T>>),
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct NotAData;
+
+impl Display for NotAData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Not a data")
+    }
+}
+
+impl std::error::Error for NotAData {}
+
+#[derive(Debug, Clone, Copy)]
+pub struct NotANode;
+
+impl Display for NotANode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Not a node")
+    }
+}
+
+impl std::error::Error for NotANode {}
+
 impl<T> Default for Trie<T> {
     fn default() -> Self {
         Trie::Node(HashMap::new())
@@ -16,58 +39,52 @@ impl<T> Default for Trie<T> {
 }
 
 impl<T> Trie<T> {
-    pub fn len(&self) -> usize {
-        self.get_map().len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    pub fn get_map(&self) -> &HashMap<Id, Self> {
+    pub fn get_map(&self) -> Result<&HashMap<Id, Self>, NotANode> {
         if let Trie::Node(ref map) = *self {
-            map
+            Ok(map)
         } else {
-            panic!("get_map() called on a Trie::Data");
+            Err(NotANode)
         }
     }
 
-    pub fn get_map_mut(&mut self) -> &mut HashMap<Id, Self> {
+    pub fn get_map_mut(&mut self) -> Result<&mut HashMap<Id, Self>, NotANode> {
         if let Trie::Node(ref mut map) = *self {
-            map
+            Ok(map)
         } else {
-            panic!("get_map_mut() called on a Trie::Data");
+            Err(NotANode)
         }
     }
 
-    pub fn get_data(&self) -> &[Vec<T>] {
+    pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
         if let Trie::Data(ref data) = *self {
-            data
+            Ok(data)
         } else {
-            panic!("get_data() called on a Trie::Node");
+            Err(NotAData)
         }
     }
 
-    pub fn get_data_mut(&mut self) -> &mut Vec<Vec<T>> {
+    pub fn get_data_mut(&mut self) -> Result<&mut Vec<Vec<T>>, NotAData> {
         if let Trie::Data(ref mut data) = *self {
-            data
+            Ok(data)
         } else {
-            panic!("get_data_mut() called on a Trie::Node");
+            Err(NotAData)
         }
     }
 
     pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
         let mut trie = self;
         for id in &ids[..ids.len() - 1] {
-            trie = trie.get_map_mut().entry(*id).or_default();
+            trie = trie.get_map_mut().unwrap().entry(*id).or_default();
         }
 
         let d = trie
             .get_map_mut()
+            .unwrap()
             .entry(*ids.last().unwrap())
             .or_insert_with(|| Trie::Data(vec![]));
+        // I think this skips NULL...
         if !data.is_empty() {
-            d.get_data_mut().push(data);
+            d.get_data_mut().unwrap().push(data);
         }
     }
 }

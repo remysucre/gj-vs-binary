@@ -2,9 +2,27 @@ use crate::trie::*;
 
 use std::fmt::Debug;
 
+fn select<'a, T, F>(relations: &[&'a Trie<T>], f: &mut F, tuple: &mut Vec<&'a [T]>)
+where
+    T: Clone + Debug,
+    F: FnMut(&[&[T]]),
+{
+    if relations.is_empty() {
+        f(tuple)
+    } else {
+        let rels = &relations[1..];
+        for v in relations[0].get_data().unwrap() {
+            tuple.push(v);
+            select(rels, f, tuple);
+            tuple.pop();
+        }
+    }
+}
+
 pub fn join<'a, T, F>(
     relations: &[&'a Trie<T>],
     plan: &[Vec<usize>],
+    payload: &[usize],
     f: &mut F,
     tuple: &mut Vec<&'a [T]>,
     empty: &'a Trie<T>,
@@ -12,36 +30,26 @@ pub fn join<'a, T, F>(
     T: Clone + Debug,
     F: FnMut(&[&[T]]),
 {
-    if plan.is_empty() {
-        if relations.is_empty() {
-            f(tuple)
-        } else {
-            let rels = &relations[1..];
-            if relations[0].get_data().is_empty() {
-                join(rels, plan, f, tuple, empty);
-            } else {
-                for v in relations[0].get_data() {
-                    tuple.push(v);
-                    join(rels, plan, f, tuple, empty);
-                    tuple.pop();
-                }
-            }
-        }
-    } else {
+    if !plan.is_empty() {
         let js = &plan[0];
 
         let j_min = js
             .iter()
             .copied()
-            .min_by_key(|&j| relations[j].len())
+            .min_by_key(|&j| relations[j].get_map().unwrap().len())
             .unwrap();
 
-        let mut intersection: Vec<_> = relations[j_min].get_map().keys().copied().collect();
+        let mut intersection: Vec<_> = relations[j_min]
+            .get_map()
+            .unwrap()
+            .keys()
+            .copied()
+            .collect();
 
         for &j in js {
             if j != j_min {
                 let rj = relations[j].get_map();
-                intersection.retain(|i| rj.contains_key(i));
+                intersection.retain(|i| rj.unwrap().contains_key(i));
             }
         }
 
@@ -49,12 +57,15 @@ pub fn join<'a, T, F>(
             let mut rels = Vec::new();
             for (i, r) in relations.iter().enumerate() {
                 if js.contains(&i) {
-                    rels.push(r.get_map().get(&id).unwrap_or(empty));
+                    rels.push(r.get_map().unwrap().get(&id).unwrap_or(empty));
                 } else {
                     rels.push(r);
                 }
             }
-            join(&rels, &plan[1..], f, tuple, empty);
+            join(&rels, &plan[1..], payload, f, tuple, empty);
         }
+    } else {
+        let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
+        select(&rels, f, tuple);
     }
 }
