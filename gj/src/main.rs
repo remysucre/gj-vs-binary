@@ -1,19 +1,9 @@
 use std::time::Instant;
 
-use qry::*;
-
-use gj::schema::*;
 use gj::util::*;
 use gj::join::*;
 
 fn main() {
-     // Variable ordering
-    // t.id = miidx.movie_id = mi.movie_id = mc.movie_id
-    // t.kind_id = kt.id
-    // it2.id = mi.info_type_id
-    // it.id = miidx.info_type_id
-    // mc.company_type_id = ct.id 
-    // mc.company_id = cn.id
     let plan = vec![
         vec!["t.id".to_string(), "miidx.movie_id".to_string(), "mi.movie_id".to_string(), "mc.movie_id".to_string()],
         vec!["t.kind_id".to_string(), "kt.id".to_string()],
@@ -42,17 +32,13 @@ fn main() {
 
     let start = Instant::now();
 
-    // let mut count = 0;
-
     join(
         &relations[..], 
         &compiled_plan, 
         &mut |t| { aggregate_min(&mut result, &t) }
-        // &mut |t| { count += 1}
     );
 
     println!("{:?}", result);
-    // println!("{}", count);
     println!("{:?}", start.elapsed());
 
 }

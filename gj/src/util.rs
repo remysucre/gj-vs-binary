@@ -120,18 +120,6 @@ pub fn load_parquet(file_path: &str, schema: Type) -> Result<Trie<String>, Box<d
 }
 
 fn type_of(table: &str, col: &str) -> Type {
-    // let table_name = match table {
-    //     "cn" => "cn",
-    //     "ct" => "ct",
-    //     "it" => "it",
-    //     "it2" => "it2",
-    //     "kt" => "kt",
-    //     "mc" => "movie_companies",
-    //     "mi" => "movie_info",
-    //     "miidx" => "movie_info_idx",
-    //     "t" => "title",
-    //     _ => panic!("Unsupported table"),
-    // };
     let mut column_name = format!("{}.{}", table, col);
     column_name = match table {
         "mc" | "mi" | "miidx" | "t" => {

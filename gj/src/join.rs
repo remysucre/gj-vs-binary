@@ -1,6 +1,5 @@
 use std::fmt::Debug;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use itertools::Itertools;
 
@@ -131,27 +130,35 @@ mod tests {
 
     #[test]
     fn trie() {
-        let mut r: Trie<()> = Trie::default();
-        let mut s: Trie<()> = Trie::default();
-        let mut t: Trie<()> = Trie::default();
 
-        let n = 10;
+        for n in 1..10 {
 
-        for i in 0..n+1 {
-            r.insert(&[0, i], vec![]);
-            r.insert(&[i, n], vec![]);
-            s.insert(&[0, i], vec![]);
-            s.insert(&[i, n], vec![]);
-            t.insert(&[0, i], vec![]);
-            t.insert(&[i, n], vec![]);
+            let mut relations = vec![];
+
+            for _ in 0..3 {
+                let mut r: Trie<()> = Trie::default();
+                
+                r.insert(&[0, 0], vec![()]);
+                for i in 1..n {
+                    r.insert(&[0, i], vec![()]);
+                    r.insert(&[i, 0], vec![()]);
+                }
+
+                relations.push(r);
+            }
+    
+            let tries: Vec<&Trie<_>> = relations.iter().collect();
+
+            let mut result = 0;
+
+            join(
+                &tries,
+                &[vec![0, 1], vec![1, 2], vec![0, 2]], 
+                &mut |_: &[&[()]]| { result += 1; }
+            );
+    
+            assert_eq!(result, 3*n-2);
         }
-
-        let mut result = 0;
-        let mut count = |_: &[&[()]]| { result += 1; };
-
-        join(&[&r, &s, &t], &[vec![0, 1], vec![1, 2], vec![0, 2]], &mut count);
-
-        println!("{:?}", result);
 
     }
 }
