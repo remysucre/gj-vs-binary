@@ -1,5 +1,8 @@
 use std::fmt::Debug;
 use std::collections::HashMap;
+use std::sync::Arc;
+
+use itertools::Itertools;
 
 type Id = i32;
 
@@ -62,7 +65,10 @@ impl<T> Trie<T> {
             .get_map_mut()
             .entry(*ids.last().unwrap())
             .or_insert_with(|| Trie::Data(vec![]));
-        d.get_data_mut().push(data);
+        if !data.is_empty() {
+            d.get_data_mut().push(data);
+        }
+        // d.get_data_mut().push(data);
     }
 }
 
@@ -75,14 +81,16 @@ pub fn join<T, F>(
     F: FnMut(&[&[T]]),
 {
     if plan.is_empty() {
-        let mut payload = Vec::new();
-
-        for relation in relations {
-            for data in relation.get_data() {
-                payload.push(&data[..]);
-            }
-        }
-        return f(&payload);
+        relations
+            .iter()
+            .map(|r| r.get_data())
+            .filter(|r| !r.is_empty())
+            .multi_cartesian_product()
+            .for_each(|row| {
+                let payload: Vec<_> = row.iter().map(|r| &r[..]).collect();
+                f(&payload[..]);
+            });
+        return;
     }
     
     let js = &plan[0];
