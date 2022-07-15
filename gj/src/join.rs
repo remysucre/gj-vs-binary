@@ -19,12 +19,11 @@ where
     }
 }
 
-pub fn join<'a, T, F>(
-    relations: &[&'a Trie<T>],
+pub fn join<T, F>(
+    relations: &[&Trie<T>],
     plan: &[Vec<usize>],
     payload: &[usize],
     f: &mut F,
-    empty: &'a Trie<T>,
 ) where
     T: Clone + Debug,
     F: FnMut(&[&[T]]),
@@ -56,12 +55,12 @@ pub fn join<'a, T, F>(
             let mut rels = Vec::new();
             for (i, r) in relations.iter().enumerate() {
                 if js.contains(&i) {
-                    rels.push(r.get_map().unwrap().get(&id).unwrap_or(empty));
+                    rels.push(r.get_map().unwrap().get(&id).unwrap());
                 } else {
                     rels.push(r);
                 }
             }
-            join(&rels, &plan[1..], payload, f, empty);
+            join(&rels, &plan[1..], payload, f);
         }
     } else {
         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();

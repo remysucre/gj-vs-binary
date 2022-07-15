@@ -36,8 +36,6 @@ fn main() {
 
     let start = Instant::now();
 
-    let empty = Trie::default();
-
     let payload = vec![2, 1, 0];
 
     join(
@@ -45,7 +43,6 @@ fn main() {
         &compiled_plan,
         &payload,
         &mut |t| aggregate_min(&mut result, t),
-        &empty,
     );
 
     println!("{:?}", result);
