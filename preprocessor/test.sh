@@ -1,8 +1,11 @@
-# Use: bash test.sh <path-to-original-queries> <path-to-preprocessed-queries>
-# Example: bash test.sh ../queries/join-order-benchmark ../queries/join-order-benchmark-preprocessed
+# Use: bash test.sh <queries> <database>
+# Example: bash test.sh join-order-benchmark imdb
 
-original_queries=$1
-preprocessed_queries=$2
+original_queries="../queries/original/$1"
+preprocessed_queries="../queries/preprocessed/$1"
+
+plain_database="../data/$2/$2_plain.db"
+main_database="../data/$2/$2.db"
 
 # Appends each query's test to temp.sql
 for query in `ls $original_queries -I fkindexes.sql -I schema.sql -I README.md`
@@ -28,12 +31,12 @@ do
 	echo "DROP TABLE IF EXISTS original_query;"
 	echo "DROP TABLE IF EXISTS preprocessed_query;"
 
-done >> temp.sql
+done > temp.sql
 
 # Runs all tests in temp.sql
-cp '../data/imdb/imdb_plain.db' '../data/imdb/imdb.db'
+cp $plain_database $main_database
 ../duckdb/build/release/duckdb << EOF
-.open '../data/imdb/imdb.db'
+.open '$main_database'
 .read temp.sql
 EOF
 
