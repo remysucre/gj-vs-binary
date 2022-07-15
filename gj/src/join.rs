@@ -10,10 +10,9 @@ where
     if relations.is_empty() {
         f(tuple)
     } else {
-        let rels = &relations[1..];
         for v in relations[0].get_data().unwrap() {
             tuple.push(v);
-            select(rels, f, tuple);
+            select(&relations[1..], f, tuple);
             tuple.pop();
         }
     }
