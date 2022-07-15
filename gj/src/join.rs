@@ -19,12 +19,8 @@ where
     }
 }
 
-pub fn join<T, F>(
-    relations: &[&Trie<T>],
-    plan: &[Vec<usize>],
-    payload: &[usize],
-    f: &mut F,
-) where
+pub fn join<T, F>(relations: &[&Trie<T>], plan: &[Vec<usize>], payload: &[usize], f: &mut F)
+where
     T: Clone + Debug,
     F: FnMut(&[&[T]]),
 {
@@ -41,14 +37,14 @@ pub fn join<T, F>(
             if let Some(tries) = js
                 .iter()
                 .filter(|&j| j != &j_min)
-                .map(|&j| { 
+                .map(|&j| {
                     relations[j]
                         .get_map()
                         .unwrap()
                         .get(id)
                         .map(|trie| (j, trie))
                 })
-                .collect::<Option<Vec<_>>>() 
+                .collect::<Option<Vec<_>>>()
             {
                 let mut rels = relations.to_vec();
                 rels[j_min] = trie_min;

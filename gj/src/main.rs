@@ -38,12 +38,9 @@ fn main() {
 
     let payload = vec![2, 1, 0];
 
-    join(
-        &relations[..],
-        &compiled_plan,
-        &payload,
-        &mut |t| aggregate_min(&mut result, t),
-    );
+    join(&relations[..], &compiled_plan, &payload, &mut |t| {
+        aggregate_min(&mut result, t)
+    });
 
     println!("{:?}", result);
     println!("{:?}", start.elapsed());
