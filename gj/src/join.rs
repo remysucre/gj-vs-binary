@@ -37,30 +37,26 @@ pub fn join<T, F>(
             .min_by_key(|&j| relations[j].get_map().unwrap().len())
             .unwrap();
 
-        let mut intersection: Vec<_> = relations[j_min]
-            .get_map()
-            .unwrap()
-            .keys()
-            .copied()
-            .collect();
-
-        for &j in js {
-            if j != j_min {
-                let rj = relations[j].get_map();
-                intersection.retain(|i| rj.unwrap().contains_key(i));
-            }
-        }
-
-        for id in intersection {
-            let mut rels = Vec::new();
-            for (i, r) in relations.iter().enumerate() {
-                if js.contains(&i) {
-                    rels.push(r.get_map().unwrap().get(&id).unwrap());
-                } else {
-                    rels.push(r);
+        for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
+            if let Some(tries) = js
+                .iter()
+                .filter(|&j| j != &j_min)
+                .map(|&j| { 
+                    relations[j]
+                        .get_map()
+                        .unwrap()
+                        .get(id)
+                        .map(|trie| (j, trie))
+                })
+                .collect::<Option<Vec<_>>>() 
+            {
+                let mut rels = relations.to_vec();
+                rels[j_min] = trie_min;
+                for (j, trie) in tries {
+                    rels[j] = trie;
                 }
+                join(&rels, &plan[1..], payload, f);
             }
-            join(&rels, &plan[1..], payload, f);
         }
     } else {
         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
