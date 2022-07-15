@@ -1,7 +1,18 @@
+.PHONY: duckdb preprocessor
+
 # duckdb build
-# TODO
+# this is separated into two parts to accomodate the info tweak difference in remy's duckdb fork
+
+duckdb_pull:
+	git submodule update --init
+
+duckdb_make:
+	cd duckdb && make
+
+duckdb: duckdb_make
 
 # imdb data
+
 imdb.tgz:
 	cd data/imdb && wget -nc http://homepages.cwi.nl/~boncz/job/imdb.tgz
 
@@ -22,11 +33,16 @@ clean_imdb:
 	cd data/imdb && rm -f schematext.sql
 
 # preprocessor script
+
 preprocessor:
 	cd preprocessor && cargo build --release
 
+clean_preprocessor:
+	cd preprocessor && rm -f -d -r target
+
 # job queries
-job_preprocessed: preprocessor #imdb
+
+job_preprocessed: preprocessor duckdb imdb
 	cd preprocessor && bash run.sh join-order-benchmark imdb
 
 test_job_preprocessed: job_preprocessed
