@@ -24,7 +24,6 @@ pub fn join<'a, T, F>(
     plan: &[Vec<usize>],
     payload: &[usize],
     f: &mut F,
-    tuple: &mut Vec<&'a [T]>,
     empty: &'a Trie<T>,
 ) where
     T: Clone + Debug,
@@ -62,10 +61,11 @@ pub fn join<'a, T, F>(
                     rels.push(r);
                 }
             }
-            join(&rels, &plan[1..], payload, f, tuple, empty);
+            join(&rels, &plan[1..], payload, f, empty);
         }
     } else {
         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
-        select(&rels, f, tuple);
+        let mut tuple = Vec::new();
+        select(&rels, f, &mut tuple);
     }
 }
