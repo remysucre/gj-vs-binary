@@ -11,6 +11,14 @@ duckdb_make:
 
 duckdb: duckdb_make
 
+# preprocessor script
+
+preprocessor:
+	cd preprocessor && cargo build --release
+
+clean_preprocessor:
+	cd preprocessor && rm -f -d -r target
+
 # imdb data
 
 imdb.tgz:
@@ -19,7 +27,7 @@ imdb.tgz:
 imdb_csv: imdb.tgz
 	cd data/imdb && tar -xf imdb.tgz --keep-old-files
 
-imdb_plain.db: imdb_csv
+imdb_plain.db: imdb_csv duckdb
 	cd data/imdb && bash import.sh
 
 clean_imdb_csv:
@@ -32,17 +40,9 @@ clean_imdb:
 	cd data/imdb && rm -f *.tgz
 	cd data/imdb && rm -f schematext.sql
 
-# preprocessor script
-
-preprocessor:
-	cd preprocessor && cargo build --release
-
-clean_preprocessor:
-	cd preprocessor && rm -f -d -r target
-
 # job queries
 
-job_preprocessed: preprocessor duckdb imdb
+job_preprocessed: preprocessor imdb
 	cd preprocessor && bash run.sh join-order-benchmark imdb
 
 test_job_preprocessed: job_preprocessed
@@ -52,3 +52,5 @@ clean_job_preprocessed:
 	cd queries/preprocessed/join-order-benchmark && rm -f -d -r filters
 	cd queries/preprocessed/join-order-benchmark && rm -f -d -r joins
 	cd queries/preprocessed/join-order-benchmark && rm -f -d -r data
+
+clean: clean_preprocessor clean_imdb clean_job_preprocessed
