@@ -1,10 +1,10 @@
-use std::env;
-use std::fs;
-use std::cmp;
-use translator::*;
-use std::collections::HashSet;
-use std::ffi::OsStr;
 use itertools::Itertools;
+use std::cmp;
+use std::collections::HashSet;
+use std::env;
+use std::ffi::OsStr;
+use std::fs;
+use translator::*;
 use walkdir::WalkDir;
 
 // 0. Each Join is hash join
@@ -30,11 +30,11 @@ fn check_only_contain_linear_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> usize {
         match &node.attr {
             Some(NodeAttr::Join(_)) => node.children.len(),
-            _ => 0
+            _ => 0,
         }
     };
-    let reduce_func = |a: usize, b: usize| -> usize {a + b};
-    let combine_func = |map:usize, reduce: usize| -> usize {cmp::max(map, reduce)};
+    let reduce_func = |a: usize, b: usize| -> usize { a + b };
+    let combine_func = |map: usize, reduce: usize| -> usize { cmp::max(map, reduce) };
     let default_func = || 0;
     let traverse_funcs = TraverseFuncs {
         map_func: &map_func,
@@ -47,47 +47,51 @@ fn check_only_contain_linear_join(root: &TreeOp) -> bool {
 // 2. Aggregates is only on the top
 
 fn check_aggregate_is_on_top_only(root: &TreeOp) -> bool {
-
     struct TraverseState {
-        is_aggr : bool,
-        is_join : bool,
-        results : bool
+        is_aggr: bool,
+        is_join: bool,
+        results: bool,
     }
-
 
     let map_func = |node: &TreeOp| -> TraverseState {
         match node.name.as_str() {
-            str if str.contains("AGGREGATE") =>
-                TraverseState { is_aggr: true, is_join: false, results: true },
-            str if str.contains("JOIN") =>
-                TraverseState { is_aggr: false, is_join: true, results: true },
-            _ =>
-                TraverseState { is_aggr: false, is_join: false, results: true },
+            str if str.contains("AGGREGATE") => TraverseState {
+                is_aggr: true,
+                is_join: false,
+                results: true,
+            },
+            str if str.contains("JOIN") => TraverseState {
+                is_aggr: false,
+                is_join: true,
+                results: true,
+            },
+            _ => TraverseState {
+                is_aggr: false,
+                is_join: false,
+                results: true,
+            },
         }
     };
 
-    let reduce_func =
-        |a: TraverseState, b: TraverseState|
-            TraverseState {
-                is_aggr: a.is_aggr || b.is_aggr, // ANY recursive Children has aggregate
-                is_join: false, // Not Necessary since only want to know current nodes
-                results: a.results && b.results // ALL CASES DO NOT CONTAIN AGGR INSIDE JOIN
-            };
+    let reduce_func = |a: TraverseState, b: TraverseState| TraverseState {
+        is_aggr: a.is_aggr || b.is_aggr, // ANY recursive Children has aggregate
+        is_join: false,                  // Not Necessary since only want to know current nodes
+        results: a.results && b.results, // ALL CASES DO NOT CONTAIN AGGR INSIDE JOIN
+    };
 
-    let combine_func =
-        |map: TraverseState, reduce: TraverseState| {
-            TraverseState {
-                is_aggr: map.is_aggr || reduce.is_aggr,
-                is_join: false,
-                // if current node is join and chileren has aggr, then results should be false
-                results: !(map.is_join && reduce.is_aggr)
-            }
-        };
+    let combine_func = |map: TraverseState, reduce: TraverseState| {
+        TraverseState {
+            is_aggr: map.is_aggr || reduce.is_aggr,
+            is_join: false,
+            // if current node is join and chileren has aggr, then results should be false
+            results: !(map.is_join && reduce.is_aggr),
+        }
+    };
 
     let default_func = || TraverseState {
         is_aggr: false,
         is_join: false,
-        results: true
+        results: true,
     };
 
     let traverse_funcs = TraverseFuncs {
@@ -103,16 +107,17 @@ fn check_aggregate_is_on_top_only(root: &TreeOp) -> bool {
 // 3. Look if any two or more variables share the same table name?
 //    We can do the check on GJ Plan
 //
-fn check_var_has_unique_table_combs(gj_plan: &Vec<Vec<String>>) -> bool {
-    let table_set_for_each_var: Vec<HashSet<String>> = gj_plan.iter().map(
-        |vs| {
+fn check_var_has_unique_table_combs(gj_plan: &[Vec<String>]) -> bool {
+    let table_set_for_each_var: Vec<HashSet<String>> = gj_plan
+        .iter()
+        .map(|vs| {
             // Build Unique Hash Set for Table Name of Each Variable
-            HashSet::from_iter(
-                vs.iter().map(|s| {s.split(".").next().unwrap().to_string() })
-            )
-        }
-    ).collect_vec();
-    table_set_for_each_var.iter().combinations(2)
+            HashSet::from_iter(vs.iter().map(|s| s.split('.').next().unwrap().to_string()))
+        })
+        .collect_vec();
+    table_set_for_each_var
+        .iter()
+        .combinations(2)
         .all(|vp| !(vp.first().unwrap().eq(vp.last().unwrap())))
     // Check whether all tables unique set are different
 }
@@ -127,17 +132,23 @@ fn main() {
     // print name and check
     // check three or four cases and output to the screen
 
-    println!("{:?} {} {} {} {}", "filename", "allhash", "linear", "topaggr", "uniqtbl");
+    println!("filename allhash linear topaggr uniqtbl");
 
     let dirname = &args[1];
-    for file in WalkDir::new(dirname).into_iter().filter_map(|file| file.ok()) {
-        if file.metadata().unwrap().is_file() && file.path().extension().and_then(OsStr::to_str) == Some("json") {
+    for file in WalkDir::new(dirname)
+        .into_iter()
+        .filter_map(|file| file.ok())
+    {
+        if file.metadata().unwrap().is_file()
+            && file.path().extension().and_then(OsStr::to_str) == Some("json")
+        {
             // File to String
-            let contents =
-                fs::read_to_string( file.path()).unwrap_or_else(|_| panic!("Cannot read file {}", file.path().display()));
+            let contents = fs::read_to_string(file.path())
+                .unwrap_or_else(|_| panic!("Cannot read file {}", file.path().display()));
 
             // Parse the string of data into serde_json::Value.
-            let mut root: TreeOp = serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
+            let mut root: TreeOp =
+                serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
 
             parse_tree_extra_info(&mut root);
             let allhash = check_each_join_is_hash_join(&root);
@@ -147,14 +158,18 @@ fn main() {
             let gj_plan = to_gj_plan(&mut root);
             let uniqtbl = check_var_has_unique_table_combs(&gj_plan);
 
-            println!("{:?} {:?} {:?} {:?} {:?}", file.path().file_name().unwrap(), allhash, linear, topaggr, uniqtbl);
+            println!(
+                "{:?} {:?} {:?} {:?} {:?}",
+                file.path().file_name().unwrap(),
+                allhash,
+                linear,
+                topaggr,
+                uniqtbl
+            );
 
             // println!("{:?}", gj_plan);
-
         }
     }
-
-
 }
 
 // Waive

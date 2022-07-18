@@ -1,8 +1,4 @@
-use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
-
-mod uf;
-use uf::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JoinType {
@@ -80,7 +76,6 @@ where
     }
 }
 
-
 pub fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
 where
     T: FnMut(&mut TreeOp),
@@ -139,56 +134,12 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
     preorder_traverse_mut(root, &mut parse_func);
 }
 
-
-// 3. => GJ (Variable Ordering)
-//      Sequence of Sets {each attribute is decoreted with table name}
-//      Fork of Duckdb -> it is better to be submodules
-pub fn to_gj_plan_with_uf(root: &mut TreeOp) -> Vec<Vec<String>> {
-    let mut attrs = IndexSet::new();
-    let mut uf = UnionFind::default();
-
-    let mut collect_attrs = |node: &mut TreeOp| {
-        if let Some(NodeAttr::Join(attr)) = &node.attr {
-            for equalizer in &attr.equalizers {
-                // Cool, insert_full and make_set all generate a same ID if encounter new name;
-                let (l_idx, l_new) = attrs.insert_full(equalizer.left_attr.attr_name.clone());
-                let l_id = if l_new { uf.make_set() } else { l_idx };
-                let l_leader = uf.find_mut(l_id);
-
-                let (r_idx, r_new) = attrs.insert_full(equalizer.right_attr.attr_name.clone());
-                let r_id = if r_new { uf.make_set() } else { r_idx };
-                let r_leader = uf.find_mut(r_id);
-
-                uf.union(l_leader, r_leader);
-            }
-        }
-    };
-
-    postorder_traverse_mut(root, &mut collect_attrs);
-
-    let mut classes = IndexSet::new();
-    let mut plan = vec![];
-
-    for i in 0..uf.size() {
-        let leader = uf.find(i);
-        let (idx, changed) = classes.insert_full(leader);
-        if changed {
-            plan.push(vec![]);
-        }
-        plan[idx].push(attrs[i].clone());
-    }
-
-    plan
-}
-
-
 pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
     let mut plan: Vec<Vec<String>> = vec![];
 
     let mut get_plan = |node: &mut TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {
-
                 let lattr_name = equalizer.left_attr.attr_name.clone();
                 let rattr_name = equalizer.right_attr.attr_name.clone();
 
@@ -198,7 +149,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
 
                 // We have four cases and enumerate
                 match (lpos_opt, rpos_opt) {
-                    (Some(lpos), Some(rpos)) => assert_eq!(lpos,rpos),
+                    (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
                     (Some(lpos), None) => plan[lpos].push(rattr_name),
                     (None, Some(rpos)) => plan[rpos].push(lattr_name),
                     (None, None) => {
