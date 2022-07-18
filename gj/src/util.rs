@@ -9,10 +9,16 @@ use parquet::{
     schema::types::Type,
 };
 
-use std::fs::File;
 use std::sync::Arc;
+use std::{fs, fs::File};
 
-use crate::trie::Trie;
+use crate::{sql::*, trie::Trie};
+
+pub fn sql_to_gj(file_name: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
+    let sql = fs::read_to_string(path::Path::new(file_name))?;
+    let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
+    Ok(to_gj_plan(&mut root))
+}
 
 // compile a plan (a list of multiway joins) into a list of trie indices,
 // where the trie with index i is stored at position i by load_db.
