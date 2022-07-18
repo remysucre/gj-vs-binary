@@ -33,9 +33,15 @@ pub struct ScanAttr {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct ProjectAttr {
+    columns: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub enum NodeAttr {
     Join(JoinAttr),
     Scan(ScanAttr),
+    Project(ProjectAttr),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -129,13 +135,23 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
                 attributes: vec![],
             }));
         }
+        "PROJECTION" => {
+            let columns: Vec<_> = node
+                .extra_info
+                .split('\n')
+                .filter(|s| !s.is_empty())
+                .map(|s| s.trim().to_string())
+                .collect();
+            node.attr = Some(NodeAttr::Project(ProjectAttr { columns }));
+        }
         _ => (),
     };
     preorder_traverse_mut(root, &mut parse_func);
 }
 
-pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
+pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<Vec<String>>, Vec<String>) {
     let mut plan: Vec<Vec<String>> = vec![];
+    let mut payload: Vec<String> = vec![];
 
     let mut get_plan = |node: &mut TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
@@ -159,10 +175,12 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
                     }
                 }
             }
+        } else if let Some(NodeAttr::Project(cols)) = &node.attr {
+            payload.extend_from_slice(&cols.columns);
         }
     };
 
     postorder_traverse_mut(root, &mut get_plan);
 
-    plan
+    (plan, payload)
 }

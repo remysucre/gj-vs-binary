@@ -14,16 +14,18 @@ use std::{fs, fs::File};
 
 use crate::{sql::*, trie::Trie};
 
-pub fn sql_to_gj(file_name: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
+pub fn sql_to_gj(file_name: &str) -> Result<(Vec<Vec<String>>, Vec<String>), Box<dyn Error>> {
     let sql = fs::read_to_string(path::Path::new(file_name))?;
     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
+    parse_tree_extra_info(&mut root);
     Ok(to_gj_plan(&mut root))
 }
 
 // compile a plan (a list of multiway joins) into a list of trie indices,
 // where the trie with index i is stored at position i by load_db.
-pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>> {
+pub fn compile_plan(plan: &[Vec<String>], payload: &[String]) -> (Vec<Vec<usize>>, Vec<usize>) {
     let mut compiled_plan = Vec::new();
+    let mut compiled_payload = Vec::new();
     let mut table_ids = HashMap::new();
     for node in plan {
         let mut node_ids = Vec::new();
@@ -32,16 +34,23 @@ pub fn compile_plan(plan: &[Vec<String>]) -> Vec<Vec<usize>> {
             let l = table_ids.len();
             let id = table_ids.entry(table.to_string()).or_insert(l);
             node_ids.push(*id);
+            if let Some(pos) = payload.iter().position(|s| s.starts_with(table)) {
+                if !compiled_payload.contains(&pos) {
+                    compiled_payload.push(pos);
+                }
+            }
         }
         compiled_plan.push(node_ids);
     }
-    compiled_plan
+    (compiled_plan, compiled_payload)
 }
 
-pub fn aggregate_min(result: &mut [String], payload: &[&[String]]) {
+pub fn aggregate_min(result: &mut Vec<String>, payload: &[&[String]]) {
     let pl: Vec<_> = payload.iter().map(|ss| ss.concat()).collect();
 
-    if pl.len() == result.len() {
+    if result.is_empty() {
+        result.extend(pl);
+    } else if pl.len() == result.len() {
         for (i, s) in pl.iter().enumerate() {
             if result[i].is_empty() || s < &result[i] {
                 result[i] = s.to_string();
