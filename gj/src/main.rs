@@ -1,9 +1,8 @@
 use std::time::Instant;
 
-use gj::{*, join::*, util::*};
+use gj::{join::*, util::*, *};
 
 fn main() {
-
     let (scan, plan, payload) = sql_to_gj("profile.json").unwrap();
 
     let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
@@ -20,9 +19,12 @@ fn main() {
 
     let start = Instant::now();
 
-    join(&relations.iter().collect::<Vec<_>>(), &compiled_plan, &compiled_payload, &mut |t| {
-        aggregate_min(&mut result, t)
-    });
+    join(
+        &relations.iter().collect::<Vec<_>>(),
+        &compiled_plan,
+        &compiled_payload,
+        &mut |t| aggregate_min(&mut result, t),
+    );
 
     println!("join takes {:?}", start.elapsed());
     println!("{:?}", result);

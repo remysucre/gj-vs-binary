@@ -17,6 +17,10 @@ impl Col {
             Col::StrCol(v) => v.len(),
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 pub type Relation = HashMap<String, Col>;

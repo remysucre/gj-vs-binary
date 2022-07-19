@@ -110,8 +110,14 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 
             for pred in &extra_info[1..] {
                 let equalizer = pred.split('=').map(|s| s.trim()).collect::<Vec<_>>();
-                let left_attr = equalizer[0].split('.').map(|s| s.trim()).collect::<Vec<_>>();
-                let right_attr = equalizer[1].split('.').map(|s| s.trim()).collect::<Vec<_>>();
+                let left_attr = equalizer[0]
+                    .split('.')
+                    .map(|s| s.trim())
+                    .collect::<Vec<_>>();
+                let right_attr = equalizer[1]
+                    .split('.')
+                    .map(|s| s.trim())
+                    .collect::<Vec<_>>();
                 equalizers.push(Equalizer {
                     left_attr: Attribute {
                         table_name: left_attr[0].to_string(),
@@ -132,16 +138,20 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
         "SEQ_SCAN" => {
             let extra_info: Vec<_> = node.extra_info.split("[INFOSEPARATOR]").collect();
             let table_name = extra_info[0].trim();
-            let info_strs: Vec<_> = extra_info[1].split('\n').filter(|s| !s.is_empty()).collect();
+            let info_strs: Vec<_> = extra_info[1]
+                .split('\n')
+                .filter(|s| !s.is_empty())
+                .collect();
 
             node.attr = Some(NodeAttr::Scan(ScanAttr {
                 table_name: table_name.to_string(),
-                attributes: info_strs.iter().map(|s| {
-                    Attribute {
+                attributes: info_strs
+                    .iter()
+                    .map(|s| Attribute {
                         table_name: table_name.to_string(),
                         attr_name: s.to_string(),
-                    }
-                }).collect(),
+                    })
+                    .collect(),
             }));
         }
         "PROJECTION" => {
@@ -168,18 +178,18 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
     let mut scan: Vec<ScanAttr> = vec![];
     let mut plan: Vec<Vec<Attribute>> = vec![];
     let mut payload: Vec<Attribute> = vec![];
- 
+
     let mut get_plan = |node: &mut TreeOp| {
         match &node.attr {
             Some(NodeAttr::Join(attr)) => {
                 for equalizer in &attr.equalizers {
                     let lattr = &equalizer.left_attr;
                     let rattr = &equalizer.right_attr;
-        
+
                     // Find in plan the index of vector which contains attr_name;
-                    let lpos_opt = plan.iter().position(|x| x.contains(&lattr));
-                    let rpos_opt = plan.iter().position(|x| x.contains(&rattr));
-        
+                    let lpos_opt = plan.iter().position(|x| x.contains(lattr));
+                    let rpos_opt = plan.iter().position(|x| x.contains(rattr));
+
                     // We have four cases and enumerate
                     match (lpos_opt, rpos_opt) {
                         (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),

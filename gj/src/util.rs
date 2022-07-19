@@ -12,9 +12,12 @@ use parquet::{
 use std::sync::Arc;
 use std::{fs, fs::File};
 
-use crate::{*, sql::*, trie::Trie};
+use crate::{sql::*, trie::Trie, *};
 
-pub fn sql_to_gj(file_name: &str) -> Result<(Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec<Attribute>), Box<dyn Error>> {
+pub type Plan = Vec<Vec<Attribute>>;
+pub type Payload = Vec<Attribute>;
+
+pub fn sql_to_gj(file_name: &str) -> Result<(Vec<ScanAttr>, Plan, Payload), Box<dyn Error>> {
     let sql = fs::read_to_string(path::Path::new(file_name))?;
     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
     parse_tree_extra_info(&mut root);
@@ -23,7 +26,10 @@ pub fn sql_to_gj(file_name: &str) -> Result<(Vec<ScanAttr>, Vec<Vec<Attribute>>,
 
 // compile a plan (a list of multiway joins) into a list of trie indices,
 // where the trie with index i is stored at position i by load_db.
-pub fn compile_plan(plan: &[Vec<Attribute>], payload: &[Attribute]) -> (Vec<Vec<usize>>, Vec<usize>) {
+pub fn compile_plan(
+    plan: &[Vec<Attribute>],
+    payload: &[Attribute],
+) -> (Vec<Vec<usize>>, Vec<usize>) {
     let mut compiled_plan = Vec::new();
     let mut compiled_payload = Vec::new();
     let mut table_ids = HashMap::new();
@@ -59,11 +65,30 @@ pub fn aggregate_min(result: &mut Vec<String>, payload: &[&[String]]) {
 }
 
 fn is_shared(table_name: &str) -> bool {
-    matches!(table_name, 
-        "aka_name" | "aka_title" | "cast_info" | "char_name" | "comp_cast_type" 
-        | "company_name" | "company_type" | "complete_cast" | "info_type" | "keyword" 
-        | "kind_type" | "link_type" | "movie_companies" | "movie_info" | "movie_info_idx" 
-        | "movie_keyword" | "movie_link" | "name" | "person_info" | "role_type" | "title" )
+    matches!(
+        table_name,
+        "aka_name"
+            | "aka_title"
+            | "cast_info"
+            | "char_name"
+            | "comp_cast_type"
+            | "company_name"
+            | "company_type"
+            | "complete_cast"
+            | "info_type"
+            | "keyword"
+            | "kind_type"
+            | "link_type"
+            | "movie_companies"
+            | "movie_info"
+            | "movie_info_idx"
+            | "movie_keyword"
+            | "movie_link"
+            | "name"
+            | "person_info"
+            | "role_type"
+            | "title"
+    )
 }
 
 pub fn load_db_mut(db: &mut DB, scan: &[ScanAttr]) {
@@ -79,14 +104,18 @@ pub fn load_db_mut(db: &mut DB, scan: &[ScanAttr]) {
 
         for col in cols {
             if table.get(&col.attr_name).is_none() {
-                col_types.push(Arc::new(type_of(table_name, &col.attr_name)));
+                col_types.push(Arc::new(type_of(&col.attr_name)));
             }
         }
         let table_schema = Type::group_type_builder("duckdb_schema")
             .with_fields(&mut col_types)
             .build()
             .unwrap();
-        let dir = if is_shared(table_name) { "shared" } else { "private" };
+        let dir = if is_shared(table_name) {
+            "shared"
+        } else {
+            "private"
+        };
         let file_name = format!("../temp/{}/{}.parquet", dir, table_name);
         from_parquet(table, &file_name, table_schema);
     }
@@ -99,14 +128,16 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
 
     let rows = reader.get_row_iter(Some(schema)).unwrap();
 
-    // TODO this is awkward. Ideally we want to load column by column, 
-    // but the ColumnReader API is lacking. 
+    // TODO this is awkward. Ideally we want to load column by column,
+    // but the ColumnReader API is lacking.
     for row in rows {
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
                     // TODO fix schema somewhere...
-                    let col = table.entry(col_name.to_string()).or_insert(Col::IdCol(vec![]));
+                    let col = table
+                        .entry(col_name.to_string())
+                        .or_insert(Col::IdCol(vec![]));
                     if let Col::IdCol(ref mut v) = col {
                         v.push(*i);
                     } else {
@@ -114,7 +145,9 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                     }
                 }
                 Field::Str(s) => {
-                    let col = table.entry(col_name.to_string()).or_insert(Col::StrCol(vec![]));
+                    let col = table
+                        .entry(col_name.to_string())
+                        .or_insert(Col::StrCol(vec![]));
                     if let Col::StrCol(ref mut v) = col {
                         v.push(s.to_string());
                     } else {
@@ -129,7 +162,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
     }
 }
 
-fn find_shared(table_name: &String) -> String {
+fn find_shared(table_name: &str) -> &str {
     match table_name.trim_end_matches(char::is_numeric) {
         "an" => "aka_name",
         "at" => "aka_title",
@@ -153,7 +186,7 @@ fn find_shared(table_name: &String) -> String {
         "rt" => "role_type",
         "t" => "title",
         _ => panic!("unsupported table"),
-    }.to_string()
+    }
 }
 
 pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> Vec<Trie<String>> {
@@ -162,25 +195,29 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
 
     for node in plan {
         for a in node {
-            let mut table_name = &a.table_name;
-            let shared = find_shared(&table_name);
+            let mut table_name = a.table_name.as_str();
             if !db.contains_key(table_name) {
-                table_name = &shared;
+                table_name = find_shared(table_name);
             }
             let col_name = &a.attr_name;
             let col = db[table_name].get(col_name).unwrap();
-            columns.entry(table_name.to_string()).or_insert(vec![]).push(col);
+            columns
+                .entry(table_name.to_string())
+                .or_insert(vec![])
+                .push(col);
         }
     }
 
     for a in payload {
-        let mut table_name = &a.table_name;
-        let shared = find_shared(table_name);
+        let mut table_name = a.table_name.as_str();
         if !db.contains_key(table_name) {
-            table_name = &shared;
+            table_name = find_shared(table_name);
         }
         let col_name = &a.attr_name;
-        columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
+        columns
+            .entry(table_name.to_string())
+            .or_insert(vec![])
+            .push(&db[table_name][col_name]);
     }
 
     for (_table_name, cols) in columns {
@@ -202,7 +239,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
         }
         tries.push(trie);
     }
-    
+
     tries
 }
 
@@ -216,7 +253,7 @@ pub fn load_db(plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
             schema
                 .entry(table.to_string())
                 .or_insert(vec![])
-                .push(type_of(table, column));
+                .push(type_of(column));
         }
     }
 
@@ -227,7 +264,7 @@ pub fn load_db(plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
         schema
             .entry(table.to_string())
             .or_insert(vec![])
-            .push(type_of(table, column));
+            .push(type_of(column));
     }
 
     let mut tries = vec![];
@@ -276,7 +313,7 @@ pub fn load_parquet(file_path: &str, schema: Type) -> Result<Trie<String>, Box<d
     Ok(trie)
 }
 
-fn type_of(table: &str, col: &str) -> Type {
+fn type_of(col: &str) -> Type {
     // // TODO
     // let column_name = match table {
     //     "movie_info" => format!("mi.{}", col),
@@ -287,13 +324,13 @@ fn type_of(table: &str, col: &str) -> Type {
     // };
     // // let column_name = col;
     if col.ends_with("id") {
-        Type::primitive_type_builder(&col, PhysicalType::INT32)
+        Type::primitive_type_builder(col, PhysicalType::INT32)
             .with_repetition(Repetition::OPTIONAL) // TODO: support optional
             .with_converted_type(ConvertedType::INT_32)
             .build()
             .unwrap()
     } else {
-        Type::primitive_type_builder(&col, PhysicalType::BYTE_ARRAY)
+        Type::primitive_type_builder(col, PhysicalType::BYTE_ARRAY)
             .with_converted_type(ConvertedType::UTF8)
             .with_repetition(Repetition::OPTIONAL) // TODO: support nullable
             .build()
