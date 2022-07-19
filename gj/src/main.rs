@@ -1,22 +1,24 @@
 use std::time::Instant;
 
-use gj::{join::*, trie::*, util::*};
+use gj::{*, join::*, util::*};
 
 fn main() {
 
-    let (plan, payload) = sql_to_gj("profile.json").unwrap();
+    let (scan, plan, payload) = sql_to_gj("profile.json").unwrap();
 
     let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
-    let db = load_db(&plan, &payload);
+    let mut db = DB::new();
 
-    let relations: Vec<&Trie<String>> = db.iter().collect();
+    load_db_mut(&mut db, &scan);
+
+    let relations = build_tries(&db, &plan, &payload);
 
     let mut result = vec![];
 
     let start = Instant::now();
 
-    join(&relations[..], &compiled_plan, &compiled_payload, &mut |t| {
+    join(&relations.iter().collect::<Vec<_>>(), &compiled_plan, &compiled_payload, &mut |t| {
         aggregate_min(&mut result, t)
     });
 

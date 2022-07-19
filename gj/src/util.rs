@@ -14,53 +14,26 @@ use std::{fs, fs::File};
 
 use crate::{*, sql::*, trie::Trie};
 
-pub fn sql_to_gj(file_name: &str) -> Result<(Vec<(String, Vec<String>)>, Vec<Vec<usize>>, Vec<usize>), Box<dyn Error>> {
+pub fn sql_to_gj(file_name: &str) -> Result<(Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec<Attribute>), Box<dyn Error>> {
     let sql = fs::read_to_string(path::Path::new(file_name))?;
     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
     parse_tree_extra_info(&mut root);
-    let (scan, plan, payload) = to_gj_plan(&mut root);
-
-    let mut compiled_scan = vec![];
-    let mut compiled_plan = vec![];
-    let mut compiled_payload = vec![];
-    let mut table_ids = HashMap::new();
-
-    for s in scan {
-        compiled_scan.push((s.table_name, s.attributes.iter().map(|a| a.attr_name.clone()).collect()));
-    }
-
-    for node in plan {
-        let mut node_ids = vec![];
-        for a in node {
-            let l = table_ids.len();
-            let id = table_ids.entry(a.table_name.clone()).or_insert(l);
-            node_ids.push(*id);
-            if let Some(pos) = payload.iter().position(|b| a.table_name == b.table_name) {
-                if !compiled_payload.contains(&pos) {
-                    compiled_payload.push(pos);
-                }
-            }
-        }
-        compiled_plan.push(node_ids);
-    }
-
-    Ok((compiled_scan, compiled_plan, compiled_payload))
+    Ok(to_gj_plan(&mut root))
 }
 
 // compile a plan (a list of multiway joins) into a list of trie indices,
 // where the trie with index i is stored at position i by load_db.
-pub fn compile_plan(plan: &[Vec<String>], payload: &[String]) -> (Vec<Vec<usize>>, Vec<usize>) {
+pub fn compile_plan(plan: &[Vec<Attribute>], payload: &[Attribute]) -> (Vec<Vec<usize>>, Vec<usize>) {
     let mut compiled_plan = Vec::new();
     let mut compiled_payload = Vec::new();
     let mut table_ids = HashMap::new();
     for node in plan {
         let mut node_ids = Vec::new();
         for a in node {
-            let (table, _) = a.split_at(a.find('.').unwrap());
             let l = table_ids.len();
-            let id = table_ids.entry(table.to_string()).or_insert(l);
+            let id = table_ids.entry(a.table_name.clone()).or_insert(l);
             node_ids.push(*id);
-            if let Some(pos) = payload.iter().position(|s| s.starts_with(table)) {
+            if let Some(pos) = payload.iter().position(|b| a.table_name == b.table_name) {
                 if !compiled_payload.contains(&pos) {
                     compiled_payload.push(pos);
                 }
@@ -93,17 +66,19 @@ fn is_shared(table_name: &str) -> bool {
         | "movie_keyword" | "movie_link" | "name" | "person_info" | "role_type" | "title" )
 }
 
-pub fn load_db_mut(db: &mut DB, scan: &[(&str, Vec<&str>)]) {
-    for (table_name, cols) in scan {
+pub fn load_db_mut(db: &mut DB, scan: &[ScanAttr]) {
+    for attr in scan {
+        let table_name = &attr.table_name;
+        let cols = &attr.attributes;
         if !is_shared(table_name) {
-            db.remove(table_name.to_owned());
+            db.remove(table_name);
         }
         let table = db.entry(table_name.to_string()).or_default();
         let mut col_types = vec![];
 
         for col in cols {
-            if table.get(col.to_owned()).is_none() {
-                col_types.push(Arc::new(type_of(table_name, col)));
+            if table.get(&col.attr_name).is_none() {
+                col_types.push(Arc::new(type_of(table_name, &col.attr_name)));
             }
         }
         let table_schema = Type::group_type_builder("duckdb_schema")
@@ -152,7 +127,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
     }
 }
 
-fn find_shared(table_name: &str) -> &str {
+fn find_shared(table_name: &String) -> String {
     match table_name.trim_end_matches(char::is_numeric) {
         "an" => "aka_name",
         "at" => "aka_title",
@@ -176,29 +151,27 @@ fn find_shared(table_name: &str) -> &str {
         "rt" => "role_type",
         "t" => "title",
         _ => panic!("unsupported table"),
-    }
+    }.to_string()
 }
 
-pub fn build_tries(db: &DB, plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
+pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> Vec<Trie<String>> {
     let mut tries = Vec::new();
     let mut columns = IndexMap::new();
 
     for node in plan {
         for a in node {
-            let names = a.split('.').collect::<Vec<_>>();
-            let mut table_name = names[0];
-            if !db.contains_key(table_name) {
-                table_name = find_shared(table_name);
+            let mut table_name = a.table_name.clone();
+            if !db.contains_key(&table_name) {
+                table_name = find_shared(&table_name);
             }
-            let col_name = names[1];
-            columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
+            let col_name = &a.attr_name;
+            columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[&table_name][col_name]);
         }
     }
 
     for a in payload {
-        let names = a.split('.').collect::<Vec<_>>();
-        let table_name = names[0];
-        let col_name = names[1];
+        let table_name = &a.table_name;
+        let col_name = &a.attr_name;
         columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
     }
 
