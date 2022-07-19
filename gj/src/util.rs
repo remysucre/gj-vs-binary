@@ -12,7 +12,7 @@ use parquet::{
 use std::sync::Arc;
 use std::{fs, fs::File};
 
-use crate::{sql::*, trie::Trie};
+use crate::{*, sql::*, trie::Trie};
 
 pub fn sql_to_gj(file_name: &str) -> Result<(Vec<Vec<String>>, Vec<String>), Box<dyn Error>> {
     let sql = fs::read_to_string(path::Path::new(file_name))?;
@@ -57,6 +57,127 @@ pub fn aggregate_min(result: &mut Vec<String>, payload: &[&[String]]) {
             }
         }
     }
+}
+
+fn is_shared(table_name: &str) -> bool {
+    matches!(table_name, 
+        "aka_name" | "aka_title" | "cast_info" | "char_name" | "comp_cast_type" 
+        | "company_name" | "company_type" | "complete_cast" | "info_type" | "keyword" 
+        | "kind_type" | "link_type" | "movie_companies" | "movie_info" | "movie_info_idx" 
+        | "movie_keyword" | "movie_link" | "name" | "person_info" | "role_type" | "title" )
+}
+
+pub fn load_db_mut(db: &mut DB, scan: &[(&str, Vec<&str>)]) {
+    let mut schema = IndexMap::new();
+
+    for (table_name, cols) in scan {
+        if !is_shared(table_name) {
+            db.remove(table_name.to_owned());
+        }
+        let table = db.entry(table_name.to_string()).or_default();
+        let mut col_types = vec![];
+
+        for col in cols {
+            if !is_shared(&table_name) || table.get(col.to_owned()).is_none() {
+                col_types.push(type_of(table_name, col));
+            }
+        }
+        schema.insert(table_name, col_types);
+    }
+
+    for (table_name, types) in schema {
+        let table = db.get_mut(table_name.to_owned()).unwrap();
+        let mut ts: Vec<_> = types.iter().map(|t| Arc::new(t.clone())).collect();
+        let table_schema = Type::group_type_builder("duckdb_schema")
+            .with_fields(&mut ts)
+            .build()
+            .unwrap();
+        let dir = if is_shared(table_name) {
+            "shared"
+        } else {
+            "private"
+        };
+        let file_name = format!("../temp/{}/{}.parquet", dir, table_name);
+        from_parquet(table, &file_name, table_schema);
+    }
+}
+
+pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
+    let path = path::Path::new(file_path);
+    let file = File::open(path).unwrap();
+    let reader = SerializedFileReader::new(file).unwrap();
+
+    let rows = reader.get_row_iter(Some(schema)).unwrap();
+
+    for row in rows {
+        for (col_name, field) in row.get_column_iter() {
+            match field {
+                Field::Int(i) => {
+                    let col = table.entry(col_name.to_string()).or_insert(Col::IdCol(vec![]));
+                    if let Col::IdCol(ref mut v) = col {
+                        v.push(*i);
+                    } else {
+                        panic!("expected id col");
+                    }
+                }
+                Field::Str(s) => {
+                    let col = table.entry(col_name.to_string()).or_insert(Col::StrCol(vec![]));
+                    if let Col::StrCol(ref mut v) = col {
+                        v.push(s.to_string());
+                    } else {
+                        panic!("expected str col");
+                    }
+                }
+                _ => {
+                    panic!("Unsupported field type");
+                }
+            }
+        }
+    }
+}
+
+
+pub fn build_tries(db: &DB, plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
+    let mut tries = Vec::new();
+    let mut columns = IndexMap::new();
+
+    for node in plan {
+        for a in node {
+            let names = a.split('.').collect::<Vec<_>>();
+            let table_name = names[0];
+            let col_name = names[1];
+            columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
+        }
+    }
+
+    for a in payload {
+        let names = a.split('.').collect::<Vec<_>>();
+        let table_name = names[0];
+        let col_name = names[1];
+        columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
+    }
+
+    for (_table_name, cols) in columns {
+        let mut trie = Trie::default();
+        for i in 0..cols[0].len() {
+            let mut ids = Vec::new();
+            let mut data = Vec::new();
+            for col in &cols {
+                match col {
+                    Col::IdCol(ref v) => {
+                        ids.push(v[i]);
+                    }
+                    Col::StrCol(ref v) => {
+                        data.push(v[i].clone());
+                    }
+                }
+            }
+            trie.insert(&ids, data);
+        }
+        tries.push(trie);
+    }
+
+    tries
 }
 
 pub fn load_db(plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
