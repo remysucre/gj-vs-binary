@@ -12,7 +12,9 @@ fn main() {
 
     load_db_mut(&mut db, &scan);
 
+    let start = Instant::now();
     let relations = build_tries(&db, &plan, &payload);
+    println!("trie construction takes {:?}", start.elapsed());
 
     let mut result = vec![];
 
@@ -22,6 +24,6 @@ fn main() {
         aggregate_min(&mut result, t)
     });
 
+    println!("join takes {:?}", start.elapsed());
     println!("{:?}", result);
-    println!("{:?}", start.elapsed());
 }

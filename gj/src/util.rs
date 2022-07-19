@@ -70,6 +70,7 @@ pub fn load_db_mut(db: &mut DB, scan: &[ScanAttr]) {
     for attr in scan {
         let table_name = &attr.table_name;
         let cols = &attr.attributes;
+        println!("Loading {}", table_name);
         if !is_shared(table_name) {
             db.remove(table_name);
         }
@@ -104,6 +105,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
+                    // TODO fix schema somewhere...
                     let col = table.entry(col_name.to_string()).or_insert(Col::IdCol(vec![]));
                     if let Col::IdCol(ref mut v) = col {
                         v.push(*i);
@@ -160,17 +162,23 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
 
     for node in plan {
         for a in node {
-            let mut table_name = a.table_name.clone();
-            if !db.contains_key(&table_name) {
-                table_name = find_shared(&table_name);
+            let mut table_name = &a.table_name;
+            let shared = find_shared(&table_name);
+            if !db.contains_key(table_name) {
+                table_name = &shared;
             }
             let col_name = &a.attr_name;
-            columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[&table_name][col_name]);
+            let col = db[table_name].get(col_name).unwrap();
+            columns.entry(table_name.to_string()).or_insert(vec![]).push(col);
         }
     }
 
     for a in payload {
-        let table_name = &a.table_name;
+        let mut table_name = &a.table_name;
+        let shared = find_shared(table_name);
+        if !db.contains_key(table_name) {
+            table_name = &shared;
+        }
         let col_name = &a.attr_name;
         columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
     }
@@ -269,20 +277,23 @@ pub fn load_parquet(file_path: &str, schema: Type) -> Result<Trie<String>, Box<d
 }
 
 fn type_of(table: &str, col: &str) -> Type {
-    let mut column_name = format!("{}.{}", table, col);
-    column_name = match table {
-        "mc" | "mi" | "miidx" | "t" => column_name,
-        _ => col.to_string(),
-    };
-    // let column_name = col;
+    // // TODO
+    // let column_name = match table {
+    //     "movie_info" => format!("mi.{}", col),
+    //     "movie_info_idx" => format!("miidx.{}", col),
+    //     "movie_companies" => format!("mc.{}", col),
+    //     "title" => format!("t.{}", col),
+    //     _ => col.to_string(),
+    // };
+    // // let column_name = col;
     if col.ends_with("id") {
-        Type::primitive_type_builder(&column_name, PhysicalType::INT32)
+        Type::primitive_type_builder(&col, PhysicalType::INT32)
             .with_repetition(Repetition::OPTIONAL) // TODO: support optional
             .with_converted_type(ConvertedType::INT_32)
             .build()
             .unwrap()
     } else {
-        Type::primitive_type_builder(&column_name, PhysicalType::BYTE_ARRAY)
+        Type::primitive_type_builder(&col, PhysicalType::BYTE_ARRAY)
             .with_converted_type(ConvertedType::UTF8)
             .with_repetition(Repetition::OPTIONAL) // TODO: support nullable
             .build()

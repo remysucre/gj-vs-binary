@@ -130,17 +130,16 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
             }));
         }
         "SEQ_SCAN" => {
-            let extra_info = node.extra_info.replace("[INFOSEPARATOR]", "");
-            let info_strs: Vec<_> = extra_info.split('\n').filter(|s| !s.is_empty()).collect();
+            let extra_info: Vec<_> = node.extra_info.split("[INFOSEPARATOR]").collect();
+            let table_name = extra_info[0].trim();
+            let info_strs: Vec<_> = extra_info[1].split('\n').filter(|s| !s.is_empty()).collect();
 
-            let table_name: String = info_strs.first().expect("Failed to Get Table").to_string();
             node.attr = Some(NodeAttr::Scan(ScanAttr {
-                table_name,
-                attributes: info_strs[1..].iter().map(|s| {
-                    let attr_strs: Vec<_> = s.split('.').map(|s| s.trim()).collect();
+                table_name: table_name.to_string(),
+                attributes: info_strs.iter().map(|s| {
                     Attribute {
-                        table_name: attr_strs[0].to_string(),
-                        attr_name: attr_strs[1].to_string(),
+                        table_name: table_name.to_string(),
+                        attr_name: s.to_string(),
                     }
                 }).collect(),
             }));
