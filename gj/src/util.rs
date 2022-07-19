@@ -68,8 +68,6 @@ fn is_shared(table_name: &str) -> bool {
 }
 
 pub fn load_db_mut(db: &mut DB, scan: &[(&str, Vec<&str>)]) {
-    let mut schema = IndexMap::new();
-
     for (table_name, cols) in scan {
         if !is_shared(table_name) {
             db.remove(table_name.to_owned());
@@ -78,25 +76,15 @@ pub fn load_db_mut(db: &mut DB, scan: &[(&str, Vec<&str>)]) {
         let mut col_types = vec![];
 
         for col in cols {
-            if !is_shared(&table_name) || table.get(col.to_owned()).is_none() {
-                col_types.push(type_of(table_name, col));
+            if table.get(col.to_owned()).is_none() {
+                col_types.push(Arc::new(type_of(table_name, col)));
             }
         }
-        schema.insert(table_name, col_types);
-    }
-
-    for (table_name, types) in schema {
-        let table = db.get_mut(table_name.to_owned()).unwrap();
-        let mut ts: Vec<_> = types.iter().map(|t| Arc::new(t.clone())).collect();
         let table_schema = Type::group_type_builder("duckdb_schema")
-            .with_fields(&mut ts)
+            .with_fields(&mut col_types)
             .build()
             .unwrap();
-        let dir = if is_shared(table_name) {
-            "shared"
-        } else {
-            "private"
-        };
+        let dir = if is_shared(table_name) { "shared" } else { "private" };
         let file_name = format!("../temp/{}/{}.parquet", dir, table_name);
         from_parquet(table, &file_name, table_schema);
     }
@@ -109,6 +97,8 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
 
     let rows = reader.get_row_iter(Some(schema)).unwrap();
 
+    // TODO this is awkward. Ideally we want to load column by column, 
+    // but the ColumnReader API is lacking. 
     for row in rows {
         for (col_name, field) in row.get_column_iter() {
             match field {
