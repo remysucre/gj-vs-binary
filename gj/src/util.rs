@@ -126,13 +126,12 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
 
     let rows = reader.get_row_iter(Some(schema)).unwrap();
 
-    // TODO this is awkward. Ideally we want to load column by column,
+    // NOTE this is awkward. Ideally we want to load column by column,
     // but the ColumnReader API is lacking.
     for row in rows {
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
-                    // TODO fix schema somewhere...
                     let col = table
                         .entry(col_name.to_string())
                         .or_insert(Col::IdCol(vec![]));
@@ -312,25 +311,16 @@ pub fn load_parquet(file_path: &str, schema: Type) -> Result<Trie<String>, Box<d
 }
 
 fn type_of(col: &str) -> Type {
-    // // TODO
-    // let column_name = match table {
-    //     "movie_info" => format!("mi.{}", col),
-    //     "movie_info_idx" => format!("miidx.{}", col),
-    //     "movie_companies" => format!("mc.{}", col),
-    //     "title" => format!("t.{}", col),
-    //     _ => col.to_string(),
-    // };
-    // // let column_name = col;
     if col.ends_with("id") {
         Type::primitive_type_builder(col, PhysicalType::INT32)
-            .with_repetition(Repetition::OPTIONAL) // TODO: support optional
+            .with_repetition(Repetition::OPTIONAL)
             .with_converted_type(ConvertedType::INT_32)
             .build()
             .unwrap()
     } else {
         Type::primitive_type_builder(col, PhysicalType::BYTE_ARRAY)
             .with_converted_type(ConvertedType::UTF8)
-            .with_repetition(Repetition::OPTIONAL) // TODO: support nullable
+            .with_repetition(Repetition::OPTIONAL)
             .build()
             .unwrap()
     }
