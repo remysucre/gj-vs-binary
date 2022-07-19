@@ -126,6 +126,32 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
     }
 }
 
+fn find_shared(table_name: &str) -> &str {
+    match table_name.trim_end_matches(char::is_numeric) {
+        "an" => "aka_name",
+        "at" => "aka_title",
+        "ci" => "cast_info",
+        "chn" => "char_name",
+        "cct" => "comp_cast_type",
+        "cn" => "company_name",
+        "ct" => "company_type",
+        "cc" => "complete_cast",
+        "it" => "info_type",
+        "k" => "keyword",
+        "kt" => "kind_type",
+        "lt" => "link_type",
+        "mc" => "movie_companies",
+        "mi" => "movie_info",
+        "miidx" => "movie_info_idx",
+        "mk" => "movie_keyword",
+        "ml" => "movie_link",
+        "n" => "name",
+        "pi" => "person_info",
+        "rt" => "role_type",
+        "t" => "title",
+        _ => panic!("unsupported table"),
+    }
+}
 
 pub fn build_tries(db: &DB, plan: &[Vec<String>], payload: &[String]) -> Vec<Trie<String>> {
     let mut tries = Vec::new();
@@ -134,7 +160,10 @@ pub fn build_tries(db: &DB, plan: &[Vec<String>], payload: &[String]) -> Vec<Tri
     for node in plan {
         for a in node {
             let names = a.split('.').collect::<Vec<_>>();
-            let table_name = names[0];
+            let mut table_name = names[0];
+            if !db.contains_key(table_name) {
+                table_name = find_shared(table_name);
+            }
             let col_name = names[1];
             columns.entry(table_name.to_string()).or_insert(vec![]).push(&db[table_name][col_name]);
         }
@@ -166,7 +195,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<String>], payload: &[String]) -> Vec<Tri
         }
         tries.push(trie);
     }
-
+    
     tries
 }
 
