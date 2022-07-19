@@ -14,11 +14,37 @@ use std::{fs, fs::File};
 
 use crate::{*, sql::*, trie::Trie};
 
-pub fn sql_to_gj(file_name: &str) -> Result<(Vec<Vec<String>>, Vec<String>), Box<dyn Error>> {
+pub fn sql_to_gj(file_name: &str) -> Result<(Vec<(String, Vec<String>)>, Vec<Vec<usize>>, Vec<usize>), Box<dyn Error>> {
     let sql = fs::read_to_string(path::Path::new(file_name))?;
     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
     parse_tree_extra_info(&mut root);
-    Ok(to_gj_plan(&mut root))
+    let (scan, plan, payload) = to_gj_plan(&mut root);
+
+    let mut compiled_scan = vec![];
+    let mut compiled_plan = vec![];
+    let mut compiled_payload = vec![];
+    let mut table_ids = HashMap::new();
+
+    for s in scan {
+        compiled_scan.push((s.table_name, s.attributes.iter().map(|a| a.attr_name.clone()).collect()));
+    }
+
+    for node in plan {
+        let mut node_ids = vec![];
+        for a in node {
+            let l = table_ids.len();
+            let id = table_ids.entry(a.table_name.clone()).or_insert(l);
+            node_ids.push(*id);
+            if let Some(pos) = payload.iter().position(|b| a.table_name == b.table_name) {
+                if !compiled_payload.contains(&pos) {
+                    compiled_payload.push(pos);
+                }
+            }
+        }
+        compiled_plan.push(node_ids);
+    }
+
+    Ok((compiled_scan, compiled_plan, compiled_payload))
 }
 
 // compile a plan (a list of multiway joins) into a list of trie indices,

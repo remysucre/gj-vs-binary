@@ -8,9 +8,10 @@ pub enum JoinType {
     FullOuter,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Attribute {
-    attr_name: String,
+    pub table_name: String,
+    pub attr_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -19,22 +20,21 @@ pub struct Equalizer {
     right_attr: Attribute,
 }
 
-// Force to rename "extra-info" into "extra_info"
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JoinAttr {
     join_type: JoinType,
     equalizers: Vec<Equalizer>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ScanAttr {
-    table_name: String,
-    attributes: Vec<Attribute>,
+    pub table_name: String,
+    pub attributes: Vec<Attribute>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectAttr {
-    columns: Vec<String>,
+    columns: Vec<Attribute>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -110,12 +110,16 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 
             for pred in &extra_info[1..] {
                 let equalizer = pred.split('=').map(|s| s.trim()).collect::<Vec<_>>();
+                let left_attr = equalizer[0].split('.').map(|s| s.trim()).collect::<Vec<_>>();
+                let right_attr = equalizer[1].split('.').map(|s| s.trim()).collect::<Vec<_>>();
                 equalizers.push(Equalizer {
                     left_attr: Attribute {
-                        attr_name: equalizer[0].to_string(),
+                        table_name: left_attr[0].to_string(),
+                        attr_name: left_attr[1].to_string(),
                     },
                     right_attr: Attribute {
-                        attr_name: equalizer[1].to_string(),
+                        table_name: right_attr[0].to_string(),
+                        attr_name: right_attr[1].to_string(),
                     },
                 });
             }
@@ -132,7 +136,13 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
             let table_name: String = info_strs.first().expect("Failed to Get Table").to_string();
             node.attr = Some(NodeAttr::Scan(ScanAttr {
                 table_name,
-                attributes: vec![],
+                attributes: info_strs[1..].iter().map(|s| {
+                    let attr_strs: Vec<_> = s.split('.').map(|s| s.trim()).collect();
+                    Attribute {
+                        table_name: attr_strs[0].to_string(),
+                        attr_name: attr_strs[1].to_string(),
+                    }
+                }).collect(),
             }));
         }
         "PROJECTION" => {
@@ -140,7 +150,13 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
                 .extra_info
                 .split('\n')
                 .filter(|s| !s.is_empty())
-                .map(|s| s.trim().to_string())
+                .map(|s| {
+                    let names: Vec<_> = s.split('.').map(|s| s.trim()).collect();
+                    Attribute {
+                        table_name: names[0].to_string(),
+                        attr_name: names[1].to_string(),
+                    }
+                })
                 .collect();
             node.attr = Some(NodeAttr::Project(ProjectAttr { columns }));
         }
@@ -149,38 +165,42 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
     preorder_traverse_mut(root, &mut parse_func);
 }
 
-pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<Vec<String>>, Vec<String>) {
-    let mut plan: Vec<Vec<String>> = vec![];
-    let mut payload: Vec<String> = vec![];
-
+pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec<Attribute>) {
+    let mut scan: Vec<ScanAttr> = vec![];
+    let mut plan: Vec<Vec<Attribute>> = vec![];
+    let mut payload: Vec<Attribute> = vec![];
+ 
     let mut get_plan = |node: &mut TreeOp| {
-        if let Some(NodeAttr::Join(attr)) = &node.attr {
-            for equalizer in &attr.equalizers {
-                let lattr_name = equalizer.left_attr.attr_name.clone();
-                let rattr_name = equalizer.right_attr.attr_name.clone();
-
-                // Find in plan the index of vector which contains attr_name;
-                let lpos_opt = plan.iter().position(|x| x.contains(&lattr_name));
-                let rpos_opt = plan.iter().position(|x| x.contains(&rattr_name));
-
-                // We have four cases and enumerate
-                match (lpos_opt, rpos_opt) {
-                    (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
-                    (Some(lpos), None) => plan[lpos].push(rattr_name),
-                    (None, Some(rpos)) => plan[rpos].push(lattr_name),
-                    (None, None) => {
-                        plan.push(vec![]);
-                        plan.last_mut().unwrap().push(lattr_name);
-                        plan.last_mut().unwrap().push(rattr_name);
+        match &node.attr {
+            Some(NodeAttr::Join(attr)) => {
+                for equalizer in &attr.equalizers {
+                    let lattr = &equalizer.left_attr;
+                    let rattr = &equalizer.right_attr;
+        
+                    // Find in plan the index of vector which contains attr_name;
+                    let lpos_opt = plan.iter().position(|x| x.contains(&lattr));
+                    let rpos_opt = plan.iter().position(|x| x.contains(&rattr));
+        
+                    // We have four cases and enumerate
+                    match (lpos_opt, rpos_opt) {
+                        (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
+                        (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
+                        (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
+                        (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
                     }
                 }
             }
-        } else if let Some(NodeAttr::Project(cols)) = &node.attr {
-            payload.extend_from_slice(&cols.columns);
+            Some(NodeAttr::Project(cols)) => {
+                payload.extend_from_slice(&cols.columns);
+            }
+            Some(NodeAttr::Scan(attr)) => {
+                scan.push(attr.clone());
+            }
+            _ => (),
         }
     };
 
     postorder_traverse_mut(root, &mut get_plan);
 
-    (plan, payload)
+    (scan, plan, payload)
 }
