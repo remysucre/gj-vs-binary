@@ -50,15 +50,13 @@ pub fn compile_plan(
     (compiled_plan, compiled_payload)
 }
 
-pub fn aggregate_min(result: &mut Vec<String>, payload: &[&[String]]) {
-    let pl: Vec<_> = payload.iter().map(|ss| ss.concat()).collect();
-
+pub fn aggregate_min(result: &mut Vec<Vec<String>>, payload: &[&[String]]) {
     if result.is_empty() {
-        result.extend(pl);
-    } else if pl.len() == result.len() {
-        for (i, s) in pl.iter().enumerate() {
-            if result[i].is_empty() || s < &result[i] {
-                result[i] = s.to_string();
+        result.extend(payload.iter().map(|ss| ss.to_vec()));
+    } else if payload.len() == result.len() {
+        for (i, s) in payload.iter().enumerate() {
+            if *s < &result[i] {
+                result[i] = s.to_vec();
             }
         }
     }
