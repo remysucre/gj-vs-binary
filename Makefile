@@ -20,7 +20,7 @@ $(IMDB): duckdb
 	$(MAKE) -C data/imdb
 
 $(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(PREPROCESSOR)
-	cd preprocessor && bash run.sh join-order-benchmark imdb
+	cd preprocessor && bash run.sh join-order-benchmark imdb && touch ../$@
 
 test: preprocessed/test.sh $(DATA)
 	cd preprocessor && bash test.sh join-order-benchmark imdb
@@ -33,7 +33,7 @@ clean_all: clean
 	&& rm -f -d -r joins \
 	&& rm -f -d -r data
 
-clean: clean_imdb clean_job_preprocessed
+clean:
 	$(MAKE) -C duckdb clean
 	$(MAKE) -C data/imdb clean
 	cd preprocessor && cargo clean
