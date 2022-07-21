@@ -1,11 +1,11 @@
 .PHONY: all clean clean_all
 
-all: $(DATA)
-
 DUCKDB=duckdb/build/release/duckdb
 PREPROCESSOR=preprocessor/target/release/preprocessor
 IMDB=data/imdb/imdb_plain.db
-DATA=queries/preprocessed/data
+DATA=queries/preprocessed/join-order-benchmark/data
+
+all: $(DATA)
 
 $(DUCKDB): duckdb/src
 	$(MAKE) -C duckdb -j
@@ -19,11 +19,11 @@ $(PREPROCESSOR):
 $(IMDB): duckdb
 	$(MAKE) -C data/imdb
 
-$(DATA): preprocessor/run.sh $(IMDB) $(PREPROCESSOR)
-	cd preprocessor && bash $< join-order-benchmark imdb
+$(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(PREPROCESSOR)
+	cd preprocessor && bash run.sh join-order-benchmark imdb
 
 test: preprocessed/test.sh $(DATA)
-	cd preprocessor && bash $< join-order-benchmark imdb
+	cd preprocessor && bash test.sh join-order-benchmark imdb
 
 clean_all: clean
 	rm -rf duckdb && mkdir duckdb

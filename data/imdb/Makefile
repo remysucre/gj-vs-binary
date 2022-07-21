@@ -1,4 +1,4 @@
-imdb_plain.db: import.sh import.sql schematext.sql imdb.tgz
+imdb_plain.db: import.sh import.sql imdb.tgz
 	bash $<
 
 imdb.tgz:
