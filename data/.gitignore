@@ -3,3 +3,4 @@
 !.gitignore
 !imdb
 !imdb/import.*
+!imdb/Makefile
