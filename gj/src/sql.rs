@@ -47,7 +47,7 @@ pub enum NodeAttr {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TreeOp {
     pub name: String,
-    pub cardinality: i32,
+    pub cardinality: u32,
     pub extra_info: String,
     pub children: Vec<Box<TreeOp>>,
     pub attr: Option<NodeAttr>,
@@ -103,6 +103,7 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 
             let join_type = match &extra_info[0] {
                 &"INNER" => JoinType::Inner,
+                &"MARK" => return,
                 _ => panic!("Fail to parse Join Type {}", extra_info[0]),
             };
 
@@ -118,14 +119,29 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
                     .split('.')
                     .map(|s| s.trim())
                     .collect::<Vec<_>>();
+                // TODO remove this hack
                 equalizers.push(Equalizer {
-                    left_attr: Attribute {
-                        table_name: left_attr[0].to_string(),
-                        attr_name: left_attr[1].to_string(),
+                    left_attr: if left_attr.len() == 1 {
+                        Attribute {
+                            table_name: left_attr[0].to_string(),
+                            attr_name: left_attr[0].to_string(),
+                        }
+                    } else {
+                        Attribute {
+                            table_name: left_attr[0].to_string(),
+                            attr_name: left_attr[1].to_string(),
+                        }
                     },
-                    right_attr: Attribute {
-                        table_name: right_attr[0].to_string(),
-                        attr_name: right_attr[1].to_string(),
+                    right_attr: if right_attr.len() == 1 {
+                        Attribute {
+                            table_name: right_attr[0].to_string(),
+                            attr_name: right_attr[0].to_string(),
+                        }
+                    } else {
+                        Attribute {
+                            table_name: right_attr[0].to_string(),
+                            attr_name: right_attr[1].to_string(),
+                        }
                     },
                 });
             }
@@ -161,9 +177,17 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
                 .filter(|s| !s.is_empty())
                 .map(|s| {
                     let names: Vec<_> = s.split('.').map(|s| s.trim()).collect();
-                    Attribute {
-                        table_name: names[0].to_string(),
-                        attr_name: names[1].to_string(),
+                    // TODO remove this hack
+                    if names.len() == 1 {
+                        Attribute {
+                            table_name: "".to_string(),
+                            attr_name: names[0].to_string(),
+                        }
+                    } else {
+                        Attribute {
+                            table_name: names[0].to_string(),
+                            attr_name: names[1].to_string(),
+                        }
                     }
                 })
                 .collect();
@@ -192,7 +216,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
 
                     // We have four cases and enumerate
                     match (lpos_opt, rpos_opt) {
-                        (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
+                        (Some(lpos), Some(rpos)) => {}, // TODO add this back assert_eq!(lpos, rpos),
                         (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
                         (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
                         (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
@@ -200,7 +224,15 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
                 }
             }
             Some(NodeAttr::Project(cols)) => {
-                payload.extend_from_slice(&cols.columns);
+                for mut a in cols.columns.iter().cloned() {
+                    if !a.table_name.is_empty() {
+                        if a.attr_name == "\"name\"" {
+                            a.attr_name = "name".to_string();
+                        }
+                        payload.push(a);
+                    }
+                }
+                // payload.extend_from_slice(&cols.columns);
             }
             Some(NodeAttr::Scan(attr)) => {
                 scan.push(attr.clone());

@@ -51,6 +51,7 @@ pub fn compile_plan(
 }
 
 pub fn aggregate_min(result: &mut Vec<Vec<String>>, payload: &[&[String]]) {
+    // println!("aggregate_min");
     if result.is_empty() {
         result.extend(payload.iter().map(|ss| ss.to_vec()));
     } else if payload.len() == result.len() {
@@ -89,7 +90,12 @@ fn is_shared(table_name: &str) -> bool {
     )
 }
 
-pub fn load_db_mut(db: &mut DB, scan: &[ScanAttr]) {
+pub fn clean_db(db: &mut DB) {
+    db.retain(|t, _| is_shared(t));
+}
+
+pub fn load_db_mut(db: &mut DB, q: &str, scan: &[ScanAttr]) {
+    println!("Query: {}", q);
     for attr in scan {
         let table_name = &attr.table_name;
         let cols = &attr.attributes;
@@ -109,12 +115,12 @@ pub fn load_db_mut(db: &mut DB, scan: &[ScanAttr]) {
             .with_fields(&mut col_types)
             .build()
             .unwrap();
-        let dir = if is_shared(table_name) {
-            "shared"
+
+        let file_name = if is_shared(table_name) {
+            format!("../data/imdb/{}.parquet", table_name)
         } else {
-            "private"
+            format!("../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet", q, table_name)
         };
-        let file_name = format!("../temp/{}/{}.parquet", dir, table_name);
         from_parquet(table, &file_name, table_schema);
     }
 }
@@ -124,11 +130,17 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
     let file = File::open(path).unwrap();
     let reader = SerializedFileReader::new(file).unwrap();
 
+    // println!("{:?}", schema);
+
     let rows = reader.get_row_iter(Some(schema)).unwrap();
 
     // NOTE this is awkward. Ideally we want to load column by column,
     // but the ColumnReader API is lacking.
     for row in rows {
+        // check if row has nulls TODO handle this carefully
+        if row.get_column_iter().any(|(_, f)| matches!(f, Field::Null)) {
+            continue;
+        }
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
@@ -151,8 +163,11 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                         panic!("expected str col");
                     }
                 }
+                Field::Null => {
+                    // println!("null");
+                }
                 _ => {
-                    panic!("Unsupported field type");
+                    panic!("Unsupported field type {:?}", field);
                 }
             }
         }
@@ -161,6 +176,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
 
 fn find_shared(table_name: &str) -> &str {
     match table_name.trim_end_matches(char::is_numeric) {
+        "a" => "aka_name",
         "an" => "aka_name",
         "at" => "aka_title",
         "ci" => "cast_info",
@@ -176,13 +192,14 @@ fn find_shared(table_name: &str) -> &str {
         "mc" => "movie_companies",
         "mi" => "movie_info",
         "miidx" => "movie_info_idx",
+        "mi_idx" => "movie_info_idx",
         "mk" => "movie_keyword",
         "ml" => "movie_link",
         "n" => "name",
         "pi" => "person_info",
         "rt" => "role_type",
         "t" => "title",
-        _ => panic!("unsupported table"),
+        _ => panic!("unsupported table {}", table_name),
     }
 }
 
@@ -197,6 +214,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                 table_name = find_shared(table_name);
             }
             let col_name = &a.attr_name;
+            // println!("{} {}", table_name, col_name);
             let col = db[table_name].get(col_name).unwrap();
             columns
                 .entry(table_name.to_string())
@@ -211,10 +229,11 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
             table_name = find_shared(table_name);
         }
         let col_name = &a.attr_name;
+        // println!("table {} column {}", table_name, col_name);
         columns
             .entry(table_name.to_string())
             .or_insert(vec![])
-            .push(&db[table_name][col_name]);
+            .push(&db.get(table_name).unwrap()[col_name]);
     }
 
     for (_table_name, cols) in columns {
@@ -232,6 +251,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                     }
                 }
             }
+            // TODO: somehow we are inserting empty data
             trie.insert(&ids, data);
         }
         tries.push(trie);
@@ -242,6 +262,12 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
 
 fn type_of(col: &str) -> Type {
     if col.ends_with("id") {
+        Type::primitive_type_builder(col, PhysicalType::INT32)
+            .with_repetition(Repetition::OPTIONAL)
+            .with_converted_type(ConvertedType::INT_32)
+            .build()
+            .unwrap()
+    } else if col.ends_with("year") {
         Type::primitive_type_builder(col, PhysicalType::INT32)
             .with_repetition(Repetition::OPTIONAL)
             .with_converted_type(ConvertedType::INT_32)
