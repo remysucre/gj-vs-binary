@@ -1,17 +1,655 @@
-Query: 20c
-Loading cast_info
-Loading chn
+Query: 2a
+Loading movie_keyword
+Loading movie_companies
+Loading title
+Loading cn
+Loading k
+trie construction takes 1.681580916s
+join takes 164.263708ms
+[["'Doc'"]]
+Query: 2b
+Loading movie_keyword
+Loading movie_companies
+Loading title
+Loading k
+Loading cn
+trie construction takes 1.65486375s
+join takes 182.403375ms
+[["'Doc'"]]
+Query: 2c
+Loading movie_keyword
+Loading title
+Loading k
+Loading movie_companies
+Loading cn
+trie construction takes 1.623945583s
+join takes 152.110083ms
+[]
+Query: 2d
+Loading movie_keyword
+Loading movie_companies
+Loading cn
+Loading title
+Loading k
+trie construction takes 1.59375375s
+join takes 180.532ms
+[["& Teller"]]
+Query: 3a
+Loading movie_keyword
+Loading mi
+Loading t
+Loading k
+trie construction takes 740.3085ms
+join takes 12.373416ms
+[["2 Days in New York"]]
+Query: 3b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi
+trie construction takes 576.834875ms
+join takes 226.708µs
+[["300: Rise of an Empire"]]
+Query: 3c
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi
+trie construction takes 981.232083ms
+join takes 119.899375ms
+[["& Teller 2"]]
+Query: 4a
 Loading movie_keyword
 Loading t
+Loading mi_idx
+Loading it
+Loading k
+trie construction takes 859.706041ms
+join takes 64.25625ms
+[["5.1"], ["& Teller 2"]]
+Query: 4b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi_idx
+Loading it
+trie construction takes 577.569666ms
+join takes 1.52325ms
+[["9.1"], ["Batman: Arkham City"]]
+Query: 4c
+Loading movie_keyword
+Loading mi_idx
+Loading t
+Loading it
+Loading k
+trie construction takes 1.079926666s
+join takes 111.042375ms
+[["2.1"], ["& Teller 2"]]
+Query: 5c
+Loading t
+Loading mc
+Loading ct
+Loading mi
+Loading info_type
+trie construction takes 586.286ms
+join takes 56.630791ms
+[["11,830,420"]]
+Query: 6a
+Loading cast_info
+Loading n
+Loading t
+Loading movie_keyword
+Loading k
+trie construction takes 5.809868958s
+join takes 113.166µs
+[["Iron Man 3"], ["marvel-cinematic-universe"], ["Downey Jr., Robert"]]
+Query: 6b
+Loading cast_info
+Loading t
+Loading n
+Loading movie_keyword
+Loading k
+trie construction takes 5.22618775s
+join takes 74.375µs
+[["The Avengers 2"], ["based-on-comic"], ["Downey Jr., Robert"]]
+Query: 6c
+Loading cast_info
+Loading movie_keyword
+Loading t
+Loading k
+Loading n
+trie construction takes 5.185951333s
+join takes 58.916µs
+[["The Avengers 2"], ["marvel-cinematic-universe"], ["Downey Jr., Robert"]]
+Query: 6d
+Loading cast_info
+Loading movie_keyword
+Loading k
+Loading t
+Loading n
+trie construction takes 5.61262075s
+join takes 292.125µs
+[["2008 MTV Movie Awards"], ["based-on-comic"], ["Downey Jr., Robert"]]
+Query: 6e
+Loading cast_info
+Loading n
+Loading movie_keyword
+Loading k
+Loading t
+trie construction takes 5.625710208s
+join takes 240.125µs
+[["Iron Man 3"], ["marvel-cinematic-universe"], ["Downey Jr., Robert"]]
+Query: 6f
+Loading cast_info
+Loading t
+Loading name
+Loading movie_keyword
+Loading k
+trie construction takes 7.06934725s
+join takes 8.272027875s
+[["& Teller 2"], ["based-on-comic"], ["\"Steff\", Stefanie Oxmann Mcgaha"]]
+Query: 7a
+Loading cast_info
+Loading t
+Loading an
+Loading pi
+Loading movie_link
+Loading lt
+Loading n
+Loading it
+trie construction takes 16.790986291s
+join takes 3.543708ms
+[["Antonioni, Michelangelo"], ["Dressed to Kill"]]
+Query: 7b
+Loading cast_info
+Loading t
+Loading n
+Loading an
+Loading movie_link
+Loading lt
+Loading pi
+Loading it
+trie construction takes 16.702094541s
+join takes 1.121166ms
+[["De Palma, Brian"], ["Dressed to Kill"]]
+Query: 7c
+Loading cast_info
+Loading movie_link
+Loading n
+Loading pi
+Loading it
+Loading an
+Loading t
+Loading lt
+trie construction takes 16.977734625s
+join takes 44.920083ms
+[["50 Cent"], ["\"Boo\" Arnold was born Earl Arnold in Hattiesburg, Mississippi in 1966. His father gave him the nickname 'Boo' early in life and it stuck through grade school, high school, and college. He is still known as \"Boo\" to family and friends.  Raised in central Texas, Arnold played baseball at Texas Tech University where he graduated with a BA in Advertising and Marketing. While at Texas Tech he was also a member of the Texas Epsilon chapter of Phi Delta Theta fraternity. After college he worked with Young Life, an outreach to high school students, in San Antonio, Texas.  While with Young Life Arnold began taking extension courses through Fuller Theological Seminary and ultimately went full-time to Gordon-Conwell Theological Seminary in Boston, Massachusetts. At Gordon-Conwell he completed a Master's Degree in Divinity studying Theology, Philosophy, Church History, Biblical Languages (Hebrew & Greek), and Exegetical Methods. Following seminary he was involved with reconciliation efforts in the former Yugoslavia shortly after the war ended there in1995.  Arnold started acting in his early thirties in Texas. After an encouraging visit to Los Angeles where he spent time with childhood friend George Eads (of CSI Las Vegas) he decided to move to Los Angeles in 2001 to pursue acting full-time. While in Los Angeles he has studied acting with Judith Weston at Judith Weston Studio for Actors and Directors.  Arnold's acting career has been one of steady development, booking co-star and guest-star roles in nighttime television. He guest-starred opposite of Jane Seymour on the night time television drama Justice. He played the lead, Michael Hollister, in the film The Seer, written and directed by Patrick Masset (Friday Night Lights).  He was nominated Best Actor in the168 Film Festival for the role of Phil Stevens in the short-film Useless. In Useless he played a US Marshal who must choose between mercy and justice as he confronts the man who murdered his father. Arnold's performance in Useless confirmed his ability to carry lead roles, and he continues to work toward solidifying himself as a male lead in film and television.  Arnold married fellow Texan Stacy Rudd of San Antonio in 2003 and they are now raising their three children in the Los Angeles area."]]
+Query: 8a
+Loading title
+Loading ci
+Loading n1
+Loading rt
+Loading mc
+Loading cn
+Loading aka_name
+trie construction takes 871.557583ms
+join takes 4.652875ms
+[["Chambers, Linda"], [".hack//Quantum"]]
+Query: 8b
+Loading aka_name
+Loading ci
+Loading t
+Loading rt
+Loading n
+Loading mc
+Loading cn
+trie construction takes 193.532041ms
+join takes 1.015625ms
+[["Chambers, Linda"], ["Dragon Ball Z: Shin Budokai"]]
+Query: 9a
+Loading char_name
+Loading ci
+Loading rt
+Loading aka_name
+Loading n
+Loading t
+Loading mc
+Loading cn
+trie construction takes 1.524769541s
+join takes 215.325375ms
+[["AJ"], ["Airport Announcer"], ["Blue Harvest"]]
+Query: 9b
+Loading char_name
+Loading aka_name
+Loading ci
+Loading mc
+Loading n
+Loading t
+Loading rt
+Loading cn
+trie construction takes 1.286637166s
+join takes 57.94575ms
+[["Blue Harvest"], ["Bassett, Angela"], ["Airport Announcer"], ["AJ"]]
+Query: 9c
+Loading char_name
+Loading movie_companies
+Loading cn
+Loading title
+Loading ci
+Loading n
+Loading rt
+Loading aka_name
+trie construction takes 2.41279975s
+join takes 8.936373625s
+[["(1975-01-20)"], ["Alborg, Ana Esther"], ["2nd Balladeer"], ["'Annette'"]]
+Query: 10a
+Loading char_name
+Loading movie_companies
+Loading company_type
+Loading cn
+Loading t
+Loading ci
+Loading rt
+trie construction takes 1.686523166s
+join takes 4.378666ms
+[["Actor"], ["12 Rounds"]]
+Query: 10b
+Loading char_name
+Loading ci
+Loading rt
+Loading movie_companies
+Loading company_type
+Loading cn
+Loading t
+trie construction takes 1.499568916s
+join takes 6.875µs
+[]
+Query: 10c
+Loading char_name
+Loading ci
+Loading movie_companies
+Loading company_type
+Loading cn
+Loading t
+Loading role_type
+trie construction takes 1.903310166s
+join takes 31.416µs
+[["Himself"], ["Evil Eyes: Behind the Scenes"]]
+Query: 11a
+Loading movie_keyword
+Loading k
+Loading mc
+Loading ct
+Loading cn
+Loading movie_link
+Loading lt
+Loading t
+trie construction takes 1.03483175s
+join takes 1.342041ms
+[["Churchill Films"], ["followed by"], ["Batman Beyond"]]
+Query: 11b
+Loading movie_keyword
+Loading k
+Loading movie_link
+Loading t
+Loading mc
+Loading cn
+Loading lt
+Loading ct
+trie construction takes 826.882625ms
+join takes 9.375µs
+[["Filmlance International AB"], ["follows"], ["The Money Man"]]
+Query: 11c
+Loading movie_keyword
+Loading k
+Loading t
+Loading movie_link
+Loading link_type
+Loading mc
+Loading cn
+Loading ct
+trie construction takes 1.493009875s
+join takes 2.790208ms
+[["20th Century Fox Home Entertainment"], ["(1997-2002) (worldwide) (all media)"], ["24"]]
+Query: 11d
+Loading movie_keyword
+Loading mc
+Loading k
+Loading cn
+Loading movie_link
+Loading ct
+Loading t
+Loading link_type
+trie construction takes 1.51161675s
+join takes 3.182833ms
+[["13th Street"], ["(1954) (UK) (TV)"], ["...denn sie wissen nicht, was sie tun"]]
+Query: 12a
+Loading movie_companies
+Loading cn
+Loading t
+Loading mi_idx
+Loading mi
+Loading it1
+Loading it2
+Loading ct
+trie construction takes 782.919166ms
+join takes 5.104958ms
+[["10th Grade Reunion Films"], ["8.1"], ["3:20"]]
+Query: 12b
+Loading movie_info
+Loading movie_info_idx
+Loading it1
+Loading t
+Loading movie_companies
+Loading cn
+Loading ct
+Loading it2
+trie construction takes 6.862447416s
+join takes 9.508125ms
+[["$10,000"], ["Birdemic: Shock and Terror"]]
+Query: 12c
+Loading movie_companies
+Loading cn
+Loading ct
+Loading mi
+Loading mi_idx
+Loading it2
+Loading t
+Loading it1
+trie construction takes 972.5275ms
+join takes 29.474625ms
+[["\"Oh That Gus!\""], ["7.1"], ["$1.11"]]
+Query: 13a
+Loading movie_info
+Loading it2
+Loading movie_companies
+Loading title
+Loading kt
+Loading ct
+Loading movie_info_idx
+Loading it
+Loading cn
+trie construction takes 7.839198375s
+join takes 968.97925ms
+[["Afghanistan:24 June 2012"], ["1.0"], ["&Me"]]
+Query: 13b
+Loading movie_info
+Loading movie_info_idx
+Loading it
+Loading movie_companies
+Loading ct
+Loading cn
+Loading it2
+Loading t
+Loading kt
+trie construction takes 4.675909583s
+join takes 639.541µs
+[["501audio"], ["1.8"], ["5 Time Champion"]]
+Query: 13c
+Loading movie_info
+Loading t
+Loading kt
+Loading movie_info_idx
+Loading it
+Loading it2
+Loading movie_companies
+Loading cn
+Loading ct
+trie construction takes 4.438964708s
+join takes 1.332583ms
+[["DL Sites"], ["1.8"], ["Champion"]]
+Query: 13d
+Loading movie_info
+Loading it2
+Loading movie_companies
+Loading cn
+Loading title
+Loading kt
+Loading ct
+Loading movie_info_idx
+Loading it
+trie construction takes 5.470279875s
+join takes 951.878541ms
+[["\"O\" Films"], ["1.0"], ["#54 Meets #47"]]
+Query: 14a
+Loading movie_keyword
+Loading k
+Loading mi_idx
+Loading it2
+Loading mi
+Loading t
+Loading kt
+Loading it1
+trie construction takes 1.004920541s
+join takes 29.099708ms
+[["1.0"], ["$lowdown"]]
+Query: 14b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi_idx
+Loading kt
+Loading mi
+Loading it1
+Loading it2
+trie construction takes 726.608125ms
+join takes 50.291µs
+[["6.4"], ["Of Dolls and Murder"]]
+Query: 14c
+Loading movie_keyword
+Loading t
+Loading mi
+Loading it1
 Loading kt
 Loading k
+Loading mi_idx
+Loading it2
+trie construction takes 1.193534625s
+join takes 71.569416ms
+[["1.0"], ["$lowdown"]]
+Query: 16a
+Loading cast_info
+Loading movie_keyword
+Loading movie_companies
+Loading cn
 Loading name
-Loading complete_cast
-Loading cct2
-Loading cct1
-trie construction takes 5.976264958s
-join takes 5.121531s
-[["Abell, Alistair"], ["...And Then I..."]]
+Loading aka_name
+Loading t
+Loading k
+trie construction takes 7.820117375s
+join takes 2.031149375s
+[["Adams, Stan"], ["Carol Burnett vs. Anthony Perkins"]]
+Query: 16b
+Loading cast_info
+Loading movie_keyword
+Loading title
+Loading movie_companies
+Loading cn
+Loading aka_name
+Loading name
+Loading k
+trie construction takes 7.845394041s
+join takes 5.937949333s
+[["!!!, Toy"], ["& Teller"]]
+Query: 16c
+Loading cast_info
+Loading movie_keyword
+Loading k
+Loading name
+Loading aka_name
+Loading movie_companies
+Loading cn
+Loading t
+trie construction takes 7.581677458s
+join takes 3.280680958s
+[["\"Brooklyn\" Tony Danza"], ["(#1.5)"]]
+Query: 16d
+Loading cast_info
+Loading t
+Loading name
+Loading aka_name
+Loading movie_keyword
+Loading k
+Loading movie_companies
+Loading cn
+trie construction takes 7.234703s
+join takes 3.260719375s
+[["\"Brooklyn\" Tony Danza"], ["(#1.5)"]]
+Query: 17a
+Loading cast_info
+Loading movie_companies
+Loading cn
+Loading title
+Loading n
+Loading movie_keyword
+Loading k
+trie construction takes 6.588738541s
+join takes 957.632541ms
+[["B, Khaz"]]
+Query: 17b
+Loading cast_info
+Loading n
+Loading title
+Loading movie_keyword
+Loading movie_companies
+Loading company_name
+Loading k
+trie construction takes 6.511182208s
+join takes 258.826375ms
+[["Z'Dar, Robert"]]
+Query: 17c
+Loading cast_info
+Loading n
+Loading movie_keyword
+Loading k
+Loading movie_companies
+Loading company_name
+Loading title
+trie construction takes 6.370346375s
+join takes 22.47025ms
+[["X'Volaitis, John"]]
+Query: 17d
+Loading cast_info
+Loading movie_keyword
+Loading movie_companies
+Loading company_name
+Loading k
+Loading title
+Loading n
+trie construction takes 6.236880666s
+join takes 74.405083ms
+[["Abrahamsson, Bertil"]]
+Query: 17e
+Loading cast_info
+Loading movie_companies
+Loading movie_keyword
+Loading k
+Loading cn
+Loading name
+Loading title
+trie construction takes 7.660302625s
+join takes 12.592678041s
+[["$hort, Too"]]
+Query: 17f
+Loading cast_info
+Loading movie_keyword
+Loading k
+Loading movie_companies
+Loading company_name
+Loading n
+Loading title
+trie construction takes 7.000097958s
+join takes 1.943886333s
+[["'El Galgo PornoStar', Blanquito"]]
+Query: 18a
+Loading movie_info
+Loading ci
+Loading n
+Loading title
+Loading it1
+Loading movie_info_idx
+Loading it2
+trie construction takes 6.994017833s
+join takes 28.259416ms
+[["$1,000"], ["10"], ["40 Days and 40 Nights"]]
+Query: 18b
+Loading ci
+Loading mi
+Loading it1
+Loading t
+Loading n
+Loading mi_idx
+Loading it2
+trie construction takes 472.642875ms
+join takes 17.321583ms
+[["Horror"], ["8.1"], ["Agorable"]]
+Query: 18c
+Loading title
+Loading ci
+Loading mi
+Loading it1
+Loading n
+Loading movie_info_idx
+Loading it2
+trie construction takes 1.319278166s
+join takes 162.45525ms
+[["Action"], ["10"], ["#PostModem"]]
+Query: 19a
+Loading char_name
+Loading aka_name
+Loading ci
+Loading n
+Loading rt
+Loading mc
+Loading cn
+Loading t
+Loading mi
+Loading it
+trie construction takes 1.058466583s
+join takes 305.291µs
+[["Angeline, Moriah"], ["Blue Harvest"]]
+Query: 19b
+Loading char_name
+Loading ci
+Loading n
+Loading mi
+Loading aka_name
+Loading mc
+Loading cn
+Loading it
+Loading rt
+Loading t
+trie construction takes 755.680083ms
+join takes 175µs
+[["Jolie, Angelina"], ["Kung Fu Panda"]]
+Query: 19c
+Loading char_name
+Loading movie_companies
+Loading cn
+Loading t
+Loading aka_name
+Loading ci
+Loading rt
+Loading n
+Loading mi
+Loading it
+trie construction takes 1.762128625s
+join takes 4.283416ms
+[["Alborg, Ana Esther"], [".hack//Akusei heni vol. 2"]]
+Query: 19d
+Loading movie_info
+Loading it
+Loading char_name
+Loading movie_companies
+Loading cn
+Loading t
+Loading aka_name
+Loading ci
+Loading rt
+Loading n
+trie construction takes 5.743977208s
+join takes 133.581416ms
+[["Aaron, Caroline"], ["$9.99"]]
 Query: 21a
 Loading movie_keyword
 Loading k
@@ -22,8 +660,8 @@ Loading t
 Loading mc
 Loading ct
 Loading cn
-trie construction takes 1.067687875s
-join takes 1.00575ms
+trie construction takes 1.011526541s
+join takes 1.012583ms
 [["Det Danske Filminstitut"], ["followed by"], ["Der Serienkiller - Klinge des Todes"]]
 Query: 21b
 Loading movie_keyword
@@ -35,8 +673,8 @@ Loading t
 Loading ct
 Loading k
 Loading cn
-trie construction takes 1.066156s
-join takes 894.333µs
+trie construction takes 1.061285458s
+join takes 890.125µs
 [["Filmlance International AB"], ["followed by"], ["Hämndens pris"]]
 Query: 21c
 Loading movie_keyword
@@ -48,8 +686,8 @@ Loading cn
 Loading ct
 Loading k
 Loading mi
-trie construction takes 1.408294708s
-join takes 2.320375ms
+trie construction takes 1.463243916s
+join takes 2.368875ms
 [["Churchill Films"], ["followed by"], ["Batman Beyond"]]
 Query: 22a
 Loading movie_keyword
@@ -63,8 +701,8 @@ Loading kt
 Loading mc
 Loading cn
 Loading company_type
-trie construction takes 1.8203855s
-join takes 64.970291ms
+trie construction takes 1.735842291s
+join takes 59.149791ms
 [["01 Distribution"], ["2.1"], ["12 Rounds"]]
 Query: 22b
 Loading movie_keyword
@@ -78,8 +716,8 @@ Loading t
 Loading kt
 Loading mi
 Loading it1
-trie construction takes 1.812099833s
-join takes 50.900458ms
+trie construction takes 1.873478083s
+join takes 46.432666ms
 [["Boll Kino Beteiligungs GmbH & Co. KG"], ["3.0"], ["A Small Act"]]
 Query: 22c
 Loading movie_keyword
@@ -93,8 +731,8 @@ Loading it2
 Loading t
 Loading kt
 Loading cn
-trie construction takes 2.044835416s
-join takes 112.329875ms
+trie construction takes 1.933618291s
+join takes 109.828333ms
 [["01 Distribution"], ["1.9"], ["(#1.1)"]]
 Query: 22d
 Loading movie_keyword
@@ -108,8 +746,8 @@ Loading t
 Loading kt
 Loading mi
 Loading it1
-trie construction takes 2.551548041s
-join takes 598.502833ms
+trie construction takes 2.538299375s
+join takes 577.766458ms
 [["01 Distribution"], ["1.6"], ["(#1.1)"]]
 Query: 23b
 Loading movie_keyword
@@ -123,8 +761,8 @@ Loading t
 Loading kt
 Loading mi
 Loading it1
-trie construction takes 2.084722416s
-join takes 302.841208ms
+trie construction takes 2.04780225s
+join takes 304.265166ms
 [["movie"], ["The Big Mope"]]
 Query: 24a
 Loading movie_keyword
@@ -139,8 +777,8 @@ Loading it
 Loading aka_name
 Loading n
 Loading rt
-trie construction takes 2.289774083s
-join takes 59.818541ms
+trie construction takes 2.342438791s
+join takes 69.448916ms
 [["Additional Voices"], ["Baker, Andrea"], ["Baiohazâdo 6"]]
 Query: 24b
 Loading movie_keyword
@@ -155,8 +793,8 @@ Loading rt
 Loading mi
 Loading t
 Loading it
-trie construction takes 2.164234791s
-join takes 61.95025ms
+trie construction takes 2.156338875s
+join takes 59.45875ms
 [["Tigress"], ["Jolie, Angelina"], ["Kung Fu Panda 2"]]
 Query: 25a
 Loading movie_keyword
@@ -168,8 +806,8 @@ Loading it2
 Loading mi
 Loading it1
 Loading k
-trie construction takes 2.122008375s
-join takes 76.90225ms
+trie construction takes 1.952847583s
+join takes 80.777916ms
 [["10"], ["Horror"], ["-- And Now the Screaming Starts!"], ["Abdallah, Damon"]]
 Query: 25b
 Loading movie_keyword
@@ -181,8 +819,8 @@ Loading it1
 Loading ci
 Loading t
 Loading n
-trie construction takes 1.378033083s
-join takes 46.353708ms
+trie construction takes 1.308470958s
+join takes 47.5235ms
 [["138"], ["Horror"], ["Vampire Boys"], ["Campbell, Jeremiah"]]
 Query: 25c
 Loading movie_keyword
@@ -194,8 +832,8 @@ Loading ci
 Loading title
 Loading mi
 Loading it1
-trie construction takes 2.0346365s
-join takes 92.131875ms
+trie construction takes 2.042512583s
+join takes 110.481291ms
 [["10"], ["Action"], ["$"], ["Aakeson, Kim Fupz"]]
 Query: 26a
 Loading cast_info
@@ -210,8 +848,21 @@ Loading it2
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 6.350247125s
-join takes 4.99458075s
+Query: 26a
+Loading cast_info
+Loading name
+Loading chn
+Loading movie_keyword
+Loading t
+Loading kt
+Loading mi_idx
+Loading k
+Loading it2
+Loading complete_cast
+Loading cct2
+Loading cct1
+trie construction takes 6.351470666s
+join takes 4.249124583s
 [["3:10 to Yuma"], ["Acereda, Hermie"], ["7.1"], ["'Agua' Man"]]
 Query: 26b
 Loading cast_info
@@ -226,8 +877,8 @@ Loading cct2
 Loading cct1
 Loading mi_idx
 Loading it2
-trie construction takes 5.3144555s
-join takes 3.314203625s
+trie construction takes 5.508577333s
+join takes 3.137466916s
 [["Bank Manager"], ["8.2"], ["Inception"]]
 Query: 26c
 Loading cast_info
@@ -242,8 +893,8 @@ Loading it2
 Loading complete_cast
 Loading cct1
 Loading cct2
-trie construction takes 5.890973416s
-join takes 4.703375041s
+trie construction takes 5.833377125s
+join takes 3.739186833s
 [["'Agua' Man"], ["1.9"], ["12 Rounds"]]
 Query: 27a
 Loading movie_keyword
@@ -258,8 +909,8 @@ Loading cct1
 Loading mi
 Loading movie_link
 Loading lt
-trie construction takes 1.768591s
-join takes 56.874083ms
+trie construction takes 1.709794125s
+join takes 56.973125ms
 [["Det Danske Filminstitut"], ["followed by"], ["Spår i mörker"]]
 Query: 27b
 Loading movie_keyword
@@ -274,8 +925,8 @@ Loading cct2
 Loading t
 Loading mi
 Loading lt
-trie construction takes 1.574780666s
-join takes 54.153666ms
+trie construction takes 1.593614916s
+join takes 56.797125ms
 [["Filmlance International AB"], ["followed by"], ["Vita nätter"]]
 Query: 27c
 Loading movie_keyword
@@ -290,8 +941,8 @@ Loading movie_link
 Loading cct2
 Loading cct1
 Loading lt
-trie construction takes 2.168470083s
-join takes 52.838ms
+trie construction takes 2.081800666s
+join takes 52.267708ms
 [["Det Danske Filminstitut"], ["followed by"], ["Spår i mörker"]]
 Query: 28a
 Loading movie_keyword
@@ -308,8 +959,8 @@ Loading cn
 Loading complete_cast
 Loading cct1
 Loading cct2
-trie construction takes 2.152123875s
-join takes 182.0885ms
+trie construction takes 2.084323833s
+join takes 180.039875ms
 [["01 Distribuzione"], ["2.9"], ["(#1.1)"]]
 Query: 28b
 Loading movie_keyword
@@ -326,8 +977,8 @@ Loading cct2
 Loading cct1
 Loading mi
 Loading it1
-trie construction takes 1.613123166s
-join takes 142.864875ms
+trie construction takes 1.6147805s
+join takes 141.403166ms
 [["20th Century Fox"], ["6.6"], ["(#1.1)"]]
 Query: 28c
 Loading movie_keyword
@@ -344,8 +995,8 @@ Loading mc
 Loading cn
 Loading company_type
 Loading cct1
-trie construction takes 2.04818125s
-join takes 187.403708ms
+trie construction takes 1.975067208s
+join takes 183.03925ms
 [["01 Distribuzione"], ["1.9"], ["(#1.1)"]]
 Query: 29a
 Loading movie_keyword
@@ -365,8 +1016,8 @@ Loading complete_cast
 Loading t
 Loading cct2
 Loading cct1
-trie construction takes 2.402636416s
-join takes 81.483666ms
+trie construction takes 2.378392958s
+join takes 69.638625ms
 [["Queen"], ["Andrews, Julie"], ["Shrek 2"]]
 Query: 29b
 Loading movie_keyword
@@ -386,8 +1037,8 @@ Loading it
 Loading complete_cast
 Loading cct1
 Loading cct2
-trie construction takes 2.356935541s
-join takes 80.720875ms
+trie construction takes 2.379868791s
+join takes 75.944416ms
 [["Queen"], ["Andrews, Julie"], ["Shrek 2"]]
 Query: 29c
 Loading movie_keyword
@@ -407,8 +1058,8 @@ Loading it
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 3.570413833s
-join takes 32.19642375s
+trie construction takes 3.428497416s
+join takes 30.755293s
 [["Lola"], ["Andrews, Julie"], ["Hoodwinked!"]]
 Query: 30a
 Loading movie_keyword
@@ -423,8 +1074,8 @@ Loading cct1
 Loading cct2
 Loading mi
 Loading it1
-trie construction takes 2.484654708s
-join takes 456.924291ms
+trie construction takes 2.5022145s
+join takes 464.890541ms
 [["100356"], ["Abrams, J.J."], ["Horror"], ["16 Blocks"]]
 Query: 30b
 Loading movie_keyword
@@ -439,8 +1090,8 @@ Loading cct1
 Loading t
 Loading mi
 Loading it1
-trie construction takes 2.099900708s
-join takes 434.476291ms
+trie construction takes 2.226006916s
+join takes 439.994041ms
 [["194782"], ["Shannon, Damian"], ["Horror"], ["Freddy vs. Jason"]]
 Query: 30c
 Loading movie_keyword
@@ -455,8 +1106,8 @@ Loading it1
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 2.808681166s
-join takes 292.985958ms
+trie construction takes 2.916025708s
+join takes 299.013625ms
 [["100356"], ["Abernathy, Lewis"], ["Action"], ["$"]]
 Query: 31a
 Loading movie_keyword
@@ -470,8 +1121,8 @@ Loading it2
 Loading ci
 Loading mi
 Loading it1
-trie construction takes 2.438010166s
-join takes 82.047416ms
+trie construction takes 2.560279125s
+join takes 87.322041ms
 [["1040"], ["Horror"], ["2001 Maniacs"], ["Agnew, Jim"]]
 Query: 31b
 Loading movie_keyword
@@ -485,8 +1136,8 @@ Loading it1
 Loading mc
 Loading t
 Loading cn
-trie construction takes 1.315819583s
-join takes 49.861208ms
+trie construction takes 1.339288666s
+join takes 48.0625ms
 [["129755"], ["Horror"], ["Saw"], ["Bousman, Darren Lynn"]]
 Query: 31c
 Loading movie_keyword
@@ -500,8 +1151,8 @@ Loading it2
 Loading ci
 Loading mi
 Loading it1
-trie construction takes 3.387170458s
-join takes 206.856041ms
+trie construction takes 3.593796458s
+join takes 212.7465ms
 [["1008"], ["Action"], ["11:14"], ["Abraham, Brad"]]
 Query: 32a
 Loading movie_keyword
@@ -510,6 +1161,6 @@ Loading movie_link
 Loading title
 Loading link_type
 Loading k
-trie construction takes 1.355055958s
-join takes 2.317291ms
+trie construction takes 1.6062935s
+join takes 2.825375ms
 []
