@@ -56,8 +56,10 @@ pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
         result.extend(payload.iter().map(|ss| ss.to_vec()));
     } else if payload.len() == result.len() {
         for (i, s) in payload.iter().enumerate() {
-            if *s < &result[i] {
-                result[i] = s.to_vec();
+            for (j, v) in s.iter().enumerate() {
+                if result[i][j] > *v {
+                    result[i][j] = v.clone();
+                }
             }
         }
     }
@@ -146,11 +148,19 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                 Field::Int(i) => {
                     let col = table
                         .entry(col_name.to_string())
-                        .or_insert(Col::IdCol(vec![]));
+                        .or_insert(
+                            if col_name.ends_with("id") {
+                                Col::IdCol(vec![])
+                            } else {
+                                Col::NumCol(vec![])
+                            }
+                        );
                     if let Col::IdCol(ref mut v) = col {
                         v.push(*i);
+                    } else if let Col::NumCol(ref mut v) = col {
+                        v.push(*i);
                     } else {
-                        panic!("expected id col");
+                        panic!("unexpected column type");
                     }
                 }
                 Field::Str(s) => {
@@ -248,6 +258,9 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                     }
                     Col::StrCol(ref v) => {
                         data.push(Value::Str(v[i].clone()));
+                    }
+                    Col::NumCol(ref v) => {
+                        data.push(Value::Num(v[i]));
                     }
                 }
             }

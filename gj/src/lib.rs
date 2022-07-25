@@ -8,6 +8,7 @@ use std::collections::HashMap;
 pub enum Col {
     IdCol(Vec<i32>),
     StrCol(Vec<String>),
+    NumCol(Vec<i32>),
 }
 
 impl Col {
@@ -15,6 +16,7 @@ impl Col {
         match self {
             Col::IdCol(v) => v.len(),
             Col::StrCol(v) => v.len(),
+            Col::NumCol(v) => v.len(),
         }
     }
 
