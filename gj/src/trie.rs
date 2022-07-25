@@ -87,7 +87,6 @@ impl<T> Trie<T> {
             d.get_data_mut().unwrap().push(data);
         }
         if d.get_data().unwrap().len() == 0 {
-            println!("BOOM");
         }
     }
 }

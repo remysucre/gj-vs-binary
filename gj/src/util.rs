@@ -251,7 +251,6 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                     }
                 }
             }
-            // TODO: somehow we are inserting empty data
             trie.insert(&ids, data);
         }
         tries.push(trie);
