@@ -12,7 +12,7 @@ use parquet::{
 use std::sync::Arc;
 use std::{fs, fs::File};
 
-use crate::{sql::*, trie::Trie, *};
+use crate::{sql::*, trie::{Trie, Value}, *};
 
 pub type Plan = Vec<Vec<Attribute>>;
 pub type Payload = Vec<Attribute>;
@@ -50,7 +50,7 @@ pub fn compile_plan(
     (compiled_plan, compiled_payload)
 }
 
-pub fn aggregate_min(result: &mut Vec<Vec<String>>, payload: &[&[String]]) {
+pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
     // println!("aggregate_min");
     if result.is_empty() {
         result.extend(payload.iter().map(|ss| ss.to_vec()));
@@ -203,7 +203,7 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> Vec<Trie<String>> {
+pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> Vec<Trie<Value>> {
     let mut tries = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -247,7 +247,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                         ids.push(v[i]);
                     }
                     Col::StrCol(ref v) => {
-                        data.push(v[i].clone());
+                        data.push(Value::Str(v[i].clone()));
                     }
                 }
             }

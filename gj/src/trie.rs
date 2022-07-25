@@ -4,6 +4,12 @@ use std::fmt::{Debug, Display};
 
 type Id = i32;
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub enum Value {
+    Str(String),
+    Num(i32),
+}
+
 #[derive(Debug, Clone)]
 pub enum Trie<T> {
     Node(HashMap<Id, Self>),
