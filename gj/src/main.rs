@@ -14,7 +14,7 @@ fn main() {
         let scan_profile = format!("../logs/scan-profiles/{}.json", q);
         let (scan, _, _) = sql_to_gj(&scan_profile).unwrap();
 
-        println!("{:#?}", (&plan, &payload));
+        // println!("{:#?}", (&plan, &payload));
 
         let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
@@ -34,6 +34,8 @@ fn main() {
             &compiled_payload,
             &mut |t| aggregate_min(&mut result, t),
         );
+
+        // assert!(!result.is_empty());
     
         println!("join takes {:?}", start.elapsed());
         println!("{:?}", result);
@@ -43,10 +45,10 @@ fn main() {
 
 fn queries() -> Vec<(&'static str, &'static str)> {
     vec![
-        // ("1a", "IMDBQ001"),
-        // ("1b", "IMDBQ002"),
-        // ("1c", "IMDBQ003"),
-        // ("1d", "IMDBQ004"),
+        // // NotAData ("1a", "IMDBQ001"),
+        // // NotAData ("1b", "IMDBQ002"),
+        // // NotAData ("1c", "IMDBQ003"),
+        // // NotAData ("1d", "IMDBQ004"),
         // ("2a", "IMDBQ005"),
         // ("2b", "IMDBQ006"),
         // ("2c", "IMDBQ007"),
@@ -77,8 +79,8 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         // ("9b", "IMDBQ032"),
         // ("9c", "IMDBQ033"),
         // // SLOW ("9d", "IMDBQ034"),
-        ("10a", "IMDBQ035"),
-        // ("10b", "IMDBQ036"),
+        // ("10a", "IMDBQ035"),
+        // ("10b", "IMDBQ036"), // EMPTY
         // ("10c", "IMDBQ037"),
         // ("11a", "IMDBQ038"),
         // ("11b", "IMDBQ039"),
@@ -116,45 +118,45 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         // ("19c", "IMDBQ071"),
         // ("19d", "IMDBQ072"),
         // // index out of bounds ("20a", "IMDBQ073"),
-        // ("20b", "IMDBQ074"),
-        // ("20c", "IMDBQ075"),
-        // ("21a", "IMDBQ076"),
-        // ("21b", "IMDBQ077"),
-        // ("21c", "IMDBQ078"),
-        // ("22a", "IMDBQ079"),
-        // ("22b", "IMDBQ080"),
-        // ("22c", "IMDBQ081"),
-        // ("22d", "IMDBQ082"),
-        // // SLOW ("23a", "IMDBQ083"),
-        // ("23b", "IMDBQ084"),
-        // // SLOW ("23c", "IMDBQ085"),
-        // ("24a", "IMDBQ086"),
-        // ("24b", "IMDBQ087"),
-        // ("25a", "IMDBQ088"),
-        // ("25b", "IMDBQ089"),
-        // ("25c", "IMDBQ090"),
-        // ("26a", "IMDBQ091"),
-        // ("26b", "IMDBQ092"),
-        // ("26c", "IMDBQ093"),
-        // ("27a", "IMDBQ094"),
-        // ("27b", "IMDBQ095"),
-        // ("27c", "IMDBQ096"),
-        // ("28a", "IMDBQ097"),
-        // ("28b", "IMDBQ098"),
-        // ("28c", "IMDBQ099"),
-        // ("29a", "IMDBQ100"),
-        // ("29b", "IMDBQ101"),
-        // ("29c", "IMDBQ102"),
-        // ("30a", "IMDBQ103"),
-        // ("30b", "IMDBQ104"),
-        // ("30c", "IMDBQ105"),
-        // ("31a", "IMDBQ106"),
-        // ("31b", "IMDBQ107"),
-        // ("31c", "IMDBQ108"),
-        // ("32a", "IMDBQ109"),
-        // ("32b", "IMDBQ110"),
-        // ("33a", "IMDBQ111"),
-        // ("33b", "IMDBQ112"),
-        // ("33c", "IMDBQ113"),
+        // // index out of bounds ("20b", "IMDBQ074"),
+        // // index out of bounds ("20c", "IMDBQ075"),
+        ("21a", "IMDBQ076"),
+        ("21b", "IMDBQ077"),
+        ("21c", "IMDBQ078"),
+        ("22a", "IMDBQ079"),
+        ("22b", "IMDBQ080"),
+        ("22c", "IMDBQ081"),
+        ("22d", "IMDBQ082"),
+        // SLOW ("23a", "IMDBQ083"),
+        ("23b", "IMDBQ084"),
+        // SLOW ("23c", "IMDBQ085"),
+        ("24a", "IMDBQ086"),
+        ("24b", "IMDBQ087"),
+        ("25a", "IMDBQ088"),
+        ("25b", "IMDBQ089"),
+        ("25c", "IMDBQ090"),
+        ("26a", "IMDBQ091"),
+        ("26b", "IMDBQ092"),
+        ("26c", "IMDBQ093"),
+        ("27a", "IMDBQ094"),
+        ("27b", "IMDBQ095"),
+        ("27c", "IMDBQ096"),
+        ("28a", "IMDBQ097"),
+        ("28b", "IMDBQ098"),
+        ("28c", "IMDBQ099"),
+        ("29a", "IMDBQ100"),
+        ("29b", "IMDBQ101"),
+        ("29c", "IMDBQ102"),
+        ("30a", "IMDBQ103"),
+        ("30b", "IMDBQ104"),
+        ("30c", "IMDBQ105"),
+        ("31a", "IMDBQ106"),
+        ("31b", "IMDBQ107"),
+        ("31c", "IMDBQ108"),
+        ("32a", "IMDBQ109"), // EMPTY
+        // EMPTY but shouldn't be ("32b", "IMDBQ110"),
+        // EMPTY but shouldn't be ("33a", "IMDBQ111"),
+        // EMPTY but shouldn't be  ("33b", "IMDBQ112"),
+        // EMPTY but shouldn't be ("33c", "IMDBQ113"),
     ]
 }
