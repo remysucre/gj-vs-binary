@@ -102,9 +102,10 @@ pub fn load_db_mut(db: &mut DB, q: &str, scan: &[ScanAttr]) {
         let table_name = &attr.table_name;
         let cols = &attr.attributes;
         println!("Loading {}", table_name);
-        if !is_shared(table_name) {
-            db.remove(table_name);
-        }
+        // if !is_shared(table_name) {
+        // TODO figure out how to handle nulls when loading lazily
+        db.remove(table_name);
+        // }
         let table = db.entry(table_name.to_string()).or_default();
         let mut col_types = vec![];
 
@@ -174,7 +175,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                     }
                 }
                 Field::Null => {
-                    // println!("null");
+                    unreachable!("Null found when loading DB");
                 }
                 _ => {
                     panic!("Unsupported field type {:?}", field);
