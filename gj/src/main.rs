@@ -18,6 +18,8 @@ fn main() {
 
         let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
+        // println!("{:#?}", (&compiled_plan, &compiled_payload));
+
         load_db_mut(&mut db, q, &scan);
 
         let start = Instant::now();
@@ -156,10 +158,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         ("31b", "IMDBQ107"),
         ("31c", "IMDBQ108"),
         ("32a", "IMDBQ109"), // EMPTY
-        // The following are empty; maybe it's self-joins?
         ("32b", "IMDBQ110"),
-        ("33a", "IMDBQ111"),
-        ("33b", "IMDBQ112"),
-        ("33c", "IMDBQ113"),
+        // ("33a", "IMDBQ111"), // SLOW
+        // ("33b", "IMDBQ112"), // SLOW
+        // ("33c", "IMDBQ113"), // SLOW
     ]
 }

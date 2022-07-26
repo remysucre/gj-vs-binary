@@ -220,6 +220,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
 
     for node in plan {
         for a in node {
+            let trie_name = a.table_name.as_str();
             let mut table_name = a.table_name.as_str();
             if !db.contains_key(table_name) {
                 table_name = find_shared(table_name);
@@ -228,13 +229,14 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
             // println!("{} {}", table_name, col_name);
             let col = db[table_name].get(col_name).unwrap();
             columns
-                .entry(table_name.to_string())
+                .entry(trie_name.to_string())
                 .or_insert(vec![])
                 .push(col);
         }
     }
 
     for a in payload {
+        let trie_name = a.table_name.as_str();
         let mut table_name = a.table_name.as_str();
         if !db.contains_key(table_name) {
             table_name = find_shared(table_name);
@@ -242,7 +244,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
         let col_name = &a.attr_name;
         // println!("table {} column {}", table_name, col_name);
         columns
-            .entry(table_name.to_string())
+            .entry(trie_name.to_string())
             .or_insert(vec![])
             .push(&db.get(table_name).unwrap()[col_name]);
     }
