@@ -3,30 +3,31 @@ use std::time::Instant;
 use gj::{join::*, util::*, *};
 
 fn main() {
+    // a db maps each table name to a table;
+    // a table maps each column name to a column (vector of values)
     let mut db = DB::new();
 
-    let query_number = queries();
+    for (q, number) in queries() {
 
-    for (q, number) in query_number {
-
+        // due to an issue in duckdb's profiler, for each query we need to parse two different profiles
+        // one providing the scans and the other the join order
         let plan_profile = format!("../logs/plan-profiles/{}.json", number);
         let (_, plan, payload) = sql_to_gj(&plan_profile).unwrap();
         let scan_profile = format!("../logs/scan-profiles/{}.json", q);
         let (scan, _, _) = sql_to_gj(&scan_profile).unwrap();
-
         // println!("{:#?}", (&scan, &plan, &payload));
 
+        // the compiled plan and payload refer to each table by index
         let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-
         // println!("{:#?}", (&compiled_plan, &compiled_payload));
 
+        // load the parquet file into memory
         load_db_mut(&mut db, q, &scan);
 
         let start = Instant::now();
         let relations = build_tries(&db, &plan, &payload);
         println!("trie construction takes {:?}", start.elapsed());
-
-        // assert!(relations.iter().all(|t| !t.get_map().unwrap().is_empty()));
+        // assert!(relations.iter().all(|t| !t.get_map().unwrap().[is_empty()));
     
         let mut result = vec![];
     
@@ -38,15 +39,15 @@ fn main() {
             &compiled_payload,
             &mut |t| aggregate_min(&mut result, t),
         );
-
-        // assert!(!result.is_empty());
     
         println!("join takes {:?}", start.elapsed());
         println!("{:?}", result);
+        // TODO we might be also cleaning in util.rs
         clean_db(&mut db);
     }
 }
 
+// mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
     vec![
         ("1a", "IMDBQ001"),

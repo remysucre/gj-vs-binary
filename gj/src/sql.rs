@@ -53,25 +53,6 @@ pub struct TreeOp {
     pub attr: Option<NodeAttr>,
 }
 
-pub struct TraverseFuncs<'a, MR, RR, CR> {
-    pub map_func: &'a dyn Fn(&TreeOp) -> MR,
-    pub combine_func: &'a dyn Fn(MR, RR) -> CR,
-    pub reduce_func: &'a dyn Fn(RR, CR) -> RR,
-    pub default_func: &'a dyn Fn() -> RR,
-}
-
-pub fn traverse<R, S, T>(node: &TreeOp, traverse_funcs: &TraverseFuncs<R, S, T>) -> T {
-    let map_result: R = (traverse_funcs.map_func)(node);
-    let reduce_result: S = node
-        .children
-        .iter()
-        .map(|child_node| traverse(child_node, traverse_funcs))
-        .fold((traverse_funcs.default_func)(), |a: S, b: T| -> S {
-            (traverse_funcs.reduce_func)(a, b)
-        });
-    (traverse_funcs.combine_func)(map_result, reduce_result)
-}
-
 pub fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
 where
     T: FnMut(&mut TreeOp),
