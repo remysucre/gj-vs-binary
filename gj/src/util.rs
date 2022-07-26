@@ -237,7 +237,6 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                 table_name = find_shared(table_name);
             }
             let col_name = &a.attr_name;
-            // println!("{} {}", table_name, col_name);
             let col = db[table_name].get(col_name).unwrap();
             columns
                 .entry(trie_name.to_string())

@@ -211,17 +211,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
                 }
             }
             Some(NodeAttr::Project(cols)) => {
-                // TODO this is probably not needed anymore with the new profiles.
-                // try replacing with the commented-out oneliner.
-                for mut a in cols.columns.iter().cloned() {
-                    if !a.table_name.is_empty() {
-                        if a.attr_name == "\"name\"" {
-                            a.attr_name = "name".to_string();
-                        }
-                        payload.push(a);
-                    }
-                }
-                // payload.extend_from_slice(&cols.columns);
+                payload.extend(cols.columns.iter().cloned().filter(|a| !a.table_name.is_empty()));
             }
             Some(NodeAttr::Scan(attr)) => {
                 scan.push(attr.clone());
