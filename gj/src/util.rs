@@ -12,7 +12,11 @@ use parquet::{
 use std::sync::Arc;
 use std::{fs, fs::File};
 
-use crate::{sql::*, trie::{Trie, Value}, *};
+use crate::{
+    sql::*,
+    trie::{Trie, Value},
+    *,
+};
 
 pub type Plan = Vec<Vec<Attribute>>;
 pub type Payload = Vec<Attribute>;
@@ -122,7 +126,10 @@ pub fn load_db_mut(db: &mut DB, q: &str, scan: &[ScanAttr]) {
         let file_name = if is_shared(table_name) {
             format!("../data/imdb/{}.parquet", table_name)
         } else {
-            format!("../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet", q, table_name)
+            format!(
+                "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
+                q, table_name
+            )
         };
         from_parquet(table, &file_name, table_schema);
     }
@@ -147,15 +154,14 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
-                    let col = table
-                        .entry(col_name.to_string())
-                        .or_insert(
-                            if col_name.ends_with("id") {
+                    let col =
+                        table
+                            .entry(col_name.to_string())
+                            .or_insert(if col_name.ends_with("id") {
                                 Col::IdCol(vec![])
                             } else {
                                 Col::NumCol(vec![])
-                            }
-                        );
+                            });
                     if let Col::IdCol(ref mut v) = col {
                         v.push(*i);
                     } else if let Col::NumCol(ref mut v) = col {
@@ -276,23 +282,14 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
 }
 
 fn type_of(col: &str) -> Type {
-    if col.ends_with("id") {
-        Type::primitive_type_builder(col, PhysicalType::INT32)
-            .with_repetition(Repetition::OPTIONAL)
-            .with_converted_type(ConvertedType::INT_32)
-            .build()
-            .unwrap()
-    } else if col.ends_with("year") {
-        Type::primitive_type_builder(col, PhysicalType::INT32)
-            .with_repetition(Repetition::OPTIONAL)
-            .with_converted_type(ConvertedType::INT_32)
-            .build()
-            .unwrap()
+    let (physical_type, converted_type) = if col.ends_with("id") || col.ends_with("year") {
+        (PhysicalType::INT32, ConvertedType::INT_32)
     } else {
-        Type::primitive_type_builder(col, PhysicalType::BYTE_ARRAY)
-            .with_converted_type(ConvertedType::UTF8)
-            .with_repetition(Repetition::OPTIONAL)
-            .build()
-            .unwrap()
-    }
+        (PhysicalType::BYTE_ARRAY, ConvertedType::UTF8)
+    };
+    Type::primitive_type_builder(col, physical_type)
+        .with_converted_type(converted_type)
+        .with_repetition(Repetition::OPTIONAL)
+        .build()
+        .unwrap()
 }

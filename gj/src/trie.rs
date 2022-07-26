@@ -92,7 +92,6 @@ impl<T> Trie<T> {
         if !data.is_empty() {
             d.get_data_mut().unwrap().push(data);
         }
-        if d.get_data().unwrap().len() == 0 {
-        }
+        if d.get_data().unwrap().is_empty() {}
     }
 }

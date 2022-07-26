@@ -7,9 +7,9 @@ use std::collections::HashMap;
 
 // TODO refactor these types into different modules?
 pub enum Col {
-    IdCol(Vec<i32>), // join attributes
+    IdCol(Vec<i32>),     // join attributes
     StrCol(Vec<String>), // text data
-    NumCol(Vec<i32>), // numeric data
+    NumCol(Vec<i32>),    // numeric data
 }
 
 impl Col {

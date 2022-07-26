@@ -82,9 +82,9 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
                 .filter(|s| !s.is_empty())
                 .collect();
 
-            let join_type = match &extra_info[0] {
-                &"INNER" => JoinType::Inner,
-                &"MARK" => return,
+            let join_type = match extra_info[0] {
+                "INNER" => JoinType::Inner,
+                "MARK" => return,
                 _ => panic!("Fail to parse Join Type {}", extra_info[0]),
             };
 
@@ -197,7 +197,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
 
                     // We have four cases and enumerate
                     match (lpos_opt, rpos_opt) {
-                        (Some(lpos), Some(rpos)) => {}, // TODO add this back assert_eq!(lpos, rpos),
+                        (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
                         (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
                         (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
                         (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),

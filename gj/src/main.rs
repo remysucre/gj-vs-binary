@@ -8,7 +8,6 @@ fn main() {
     let mut db = DB::new();
 
     for (q, number) in queries() {
-
         // due to an issue in duckdb's profiler, for each query we need to parse two different profiles
         // one providing the scans and the other the join order
         let plan_profile = format!("../logs/plan-profiles/{}.json", number);
@@ -28,18 +27,18 @@ fn main() {
         let relations = build_tries(&db, &plan, &payload);
         println!("trie construction takes {:?}", start.elapsed());
         // assert!(relations.iter().all(|t| !t.get_map().unwrap().[is_empty()));
-    
+
         let mut result = vec![];
-    
+
         let start = Instant::now();
-    
+
         join(
             &relations.iter().collect::<Vec<_>>(),
             &compiled_plan,
             &compiled_payload,
             &mut |t| aggregate_min(&mut result, t),
         );
-    
+
         println!("join takes {:?}", start.elapsed());
         println!("{:?}", result);
         // TODO we might be also cleaning in util.rs
@@ -65,7 +64,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         ("4b", "IMDBQ013"),
         ("4c", "IMDBQ014"),
         // EMPTY input ("5a", "IMDBQ015"),
-        // EMPTY input ("5b", "IMDBQ016"), 
+        // EMPTY input ("5b", "IMDBQ016"),
         ("5c", "IMDBQ017"),
         ("6a", "IMDBQ018"),
         ("6b", "IMDBQ019"),
