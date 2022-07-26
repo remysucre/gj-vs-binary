@@ -41,7 +41,7 @@ fn main() {
 
         println!("join takes {:?}", start.elapsed());
         println!("{:?}", result);
-        // TODO we might be also cleaning in util.rs
+        // TODO try removing this, we already clean elsewhere
         clean_db(&mut db);
     }
 }

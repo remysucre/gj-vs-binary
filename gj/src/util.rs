@@ -54,6 +54,8 @@ pub fn compile_plan(
     (compiled_plan, compiled_payload)
 }
 
+// take the min of each attribute
+// the result is in the form [[t1.c1, t1.c2, ...], [t2.c1, t2.c2, ...], ...]
 pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
     // println!("aggregate_min");
     if result.is_empty() {
@@ -62,6 +64,7 @@ pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
         for (i, s) in payload.iter().enumerate() {
             for (j, v) in s.iter().enumerate() {
                 if result[i][j] > *v {
+                    // TODO maybe don't clone?
                     result[i][j] = v.clone();
                 }
             }
@@ -146,6 +149,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
 
     // NOTE this is awkward. Ideally we want to load column by column,
     // but the ColumnReader API is lacking.
+    // changing to use Data Fusion's RecordBatch API may be cleaner.
     for row in rows {
         // check if row has nulls TODO handle this carefully
         if row.get_column_iter().any(|(_, f)| matches!(f, Field::Null)) {
@@ -162,6 +166,7 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                             } else {
                                 Col::NumCol(vec![])
                             });
+                    // TODO very ugly code
                     if let Col::IdCol(ref mut v) = col {
                         v.push(*i);
                     } else if let Col::NumCol(ref mut v) = col {
