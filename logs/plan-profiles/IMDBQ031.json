@@ -1,21 +1,21 @@
 {
    "name":  "Query", 
-   "result": 0.181926,
-   "timing": 0.181926,
+   "result": 0.184053,
+   "timing": 0.184053,
    "cardinality": 0,
    "extra_info": "SELECT MIN(an.name) AS alternative_name,\n       MIN(chn.name) AS character_name,\n       MIN(t.title) AS movie\nFROM aka_name AS an,\n     char_name AS chn,\n     cast_info AS ci,\n     company_name AS cn,\n     movie_companies AS mc,\n     name AS n,\n     role_type AS rt,\n     title AS t\nWHERE ci.note IN ('(voice)',\n                  '(voice: Japanese version)',\n                  '(voice) (uncredited)',\n                  '(voice: English version)')\n  AND cn.country_code ='[us]'\n  AND mc.note IS NOT NULL\n  AND (mc.note LIKE '%(USA)%'\n       OR mc.note LIKE '%(worldwide)%')\n  AND n.gender ='f'\n  AND n.name LIKE '%Ang%'\n  AND rt.role ='actress'\n  AND t.production_year BETWEEN 2005 AND 2015\n  AND ci.movie_id = t.id\n  AND t.id = mc.movie_id\n  AND ci.movie_id = mc.movie_id\n  AND mc.company_id = cn.id\n  AND ci.role_id = rt.id\n  AND n.id = ci.person_id\n  AND chn.id = ci.person_role_id\n  AND an.person_id = n.id\n  AND an.person_id = ci.person_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.001348
+   "timing": 0.001367
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000013
+   "timing": 0.000012
    },
    {
    "annotation": "optimizer > common_aggregate", 
-   "timing": 0.000004
+   "timing": 0.000003
    },
    {
    "annotation": "optimizer > common_subexpressions", 
@@ -23,11 +23,11 @@
    },
    {
    "annotation": "optimizer > deliminator", 
-   "timing": 0.000001
+   "timing": 0.000000
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000075
+   "timing": 0.000077
    },
    {
    "annotation": "optimizer > filter_pullup", 
@@ -35,7 +35,7 @@
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000170
+   "timing": 0.000171
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -43,7 +43,7 @@
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.000873
+   "timing": 0.000885
    },
    {
    "annotation": "optimizer > regex_range", 
@@ -55,7 +55,7 @@
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000178
+   "timing": 0.000185
    },
    {
    "annotation": "optimizer > top_n", 
@@ -63,19 +63,19 @@
    },
    {
    "annotation": "optimizer > unused_columns", 
-   "timing": 0.000009
+   "timing": 0.000008
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000077
+   "timing": 0.000075
    },
    {
    "annotation": "physical_planner > column_binding", 
-   "timing": 0.000014
+   "timing": 0.000012
    },
    {
    "annotation": "physical_planner > create_plan", 
-   "timing": 0.000047
+   "timing": 0.000049
    },
    {
    "annotation": "physical_planner > resolve_types", 
@@ -83,17 +83,17 @@
    },
    {
    "annotation": "planner", 
-   "timing": 0.000287
+   "timing": 0.000283
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000283
+   "timing": 0.000279
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000004,
+      "timing":0.000014,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -101,7 +101,7 @@
       "children": [
        {
          "name": "SIMPLE_AGGREGATE",
-         "timing":0.000046,
+         "timing":0.000042,
          "cardinality":1,
          "extra_info": "min(#0)\nmin(#1)\nmin(#2)",
          "timings": [
@@ -109,15 +109,15 @@
          "children": [
           {
             "name": "PROJECTION",
-            "timing":0.000014,
+            "timing":0.000018,
             "cardinality":121,
-            "extra_info": "an.\"name\"\nchn.\"name\"\nt.title\n",
+            "extra_info": "an.name\nchn.name\nt.title\n",
             "timings": [
             ],
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.063483,
+               "timing":0.067057,
                "cardinality":121,
                "extra_info": "INNER\nn.id = an.person_id\nci.person_id = an.person_id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.273742,
+                  "timing":0.277243,
                   "cardinality":115,
                   "extra_info": "INNER\nci.person_role_id = chn.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.130011,
+                     "timing":0.121927,
                      "cardinality":125,
                      "extra_info": "INNER\nci.movie_id = t.id\nmc.movie_id = t.id\n",
                      "timings": [
@@ -149,7 +149,7 @@
                         "children": [
                          {
                            "name": "HASH_JOIN",
-                           "timing":0.044637,
+                           "timing":0.044942,
                            "cardinality":333,
                            "extra_info": "INNER\nci.movie_id = mc.movie_id\n",
                            "timings": [
@@ -157,7 +157,7 @@
                            "children": [
                             {
                               "name": "HASH_JOIN",
-                              "timing":0.024487,
+                              "timing":0.016349,
                               "cardinality":728,
                               "extra_info": "INNER\nci.person_id = n.id\n",
                               "timings": [
@@ -165,7 +165,7 @@
                               "children": [
                                {
                                  "name": "PROJECTION",
-                                 "timing":0.001317,
+                                 "timing":0.001464,
                                  "cardinality":867477,
                                  "extra_info": "#1\n#2\n#3\n#4\n",
                                  "timings": [
@@ -173,7 +173,7 @@
                                  "children": [
                                   {
                                     "name": "FILTER",
-                                    "timing":0.790771,
+                                    "timing":0.800930,
                                     "cardinality":867477,
                                     "extra_info": "(ci.note = '(voice)' OR ci.note = '(voice: Japanese version)' OR ci.note = '(voice) (uncredited)' OR ci.note = '(voice: English version)')",
                                     "timings": [
@@ -181,7 +181,7 @@
                                     "children": [
                                      {
                                        "name": "SEQ_SCAN",
-                                       "timing":0.867041,
+                                       "timing":0.868209,
                                        "cardinality":36244344,
                                        "extra_info": "cast_info\n[INFOSEPARATOR]\nnote\nmovie_id\nrole_id\nperson_id\nperson_role_id",
                                        "timings": [
@@ -204,15 +204,15 @@
                                  "children": [
                                   {
                                     "name": "FILTER",
-                                    "timing":0.031769,
+                                    "timing":0.027260,
                                     "cardinality":6768,
-                                    "extra_info": "contains(n.\"name\", 'Ang')",
+                                    "extra_info": "contains(n.name, 'Ang')",
                                     "timings": [
                                     ],
                                     "children": [
                                      {
                                        "name": "SEQ_SCAN",
-                                       "timing":0.060812,
+                                       "timing":0.051956,
                                        "cardinality":961555,
                                        "extra_info": "name\n[INFOSEPARATOR]\ngender\nname\nid\n[INFOSEPARATOR]\nFilters: gender=f AND gender IS NOT NULL\n",
                                        "timings": [
@@ -229,7 +229,7 @@
 ,
                             {
                               "name": "HASH_JOIN",
-                              "timing":0.014489,
+                              "timing":0.012225,
                               "cardinality":542096,
                               "extra_info": "INNER\nmc.company_id = cn.id\n",
                               "timings": [
@@ -237,7 +237,7 @@
                               "children": [
                                {
                                  "name": "PROJECTION",
-                                 "timing":0.000310,
+                                 "timing":0.000299,
                                  "cardinality":590994,
                                  "extra_info": "#1\n#2\n",
                                  "timings": [
@@ -245,7 +245,7 @@
                                  "children": [
                                   {
                                     "name": "FILTER",
-                                    "timing":0.111359,
+                                    "timing":0.109321,
                                     "cardinality":590994,
                                     "extra_info": "((mc.note IS NOT NULL) AND (contains(mc.note, '(USA)') OR contains(mc.note, '(worldwide)')))",
                                     "timings": [
@@ -253,7 +253,7 @@
                                     "children": [
                                      {
                                        "name": "SEQ_SCAN",
-                                       "timing":0.050019,
+                                       "timing":0.051400,
                                        "cardinality":2609129,
                                        "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\nmovie_id\ncompany_id",
                                        "timings": [
@@ -268,7 +268,7 @@
 ,
                                {
                                  "name": "SEQ_SCAN",
-                                 "timing":0.009765,
+                                 "timing":0.008094,
                                  "cardinality":84843,
                                  "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid\n[INFOSEPARATOR]\nFilters: country_code=[us] AND country_code IS NOT NULL\n",
                                  "timings": [
@@ -283,7 +283,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.000014,
+                           "timing":0.000012,
                            "cardinality":1,
                            "extra_info": "role_type\n[INFOSEPARATOR]\nrole\nid\n[INFOSEPARATOR]\nFilters: role=actress AND role IS NOT NULL\n",
                            "timings": [
@@ -296,7 +296,7 @@
 ,
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.110922,
+                        "timing":0.098142,
                         "cardinality":1107888,
                         "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>=2005 AND production_year<=2015 AND production_year IS NOT NULL\n",
                         "timings": [
@@ -309,7 +309,7 @@
 ,
                    {
                      "name": "SEQ_SCAN",
-                     "timing":0.090544,
+                     "timing":0.089798,
                      "cardinality":3140339,
                      "extra_info": "char_name\n[INFOSEPARATOR]\nid\nname",
                      "timings": [
@@ -322,7 +322,7 @@
 ,
                 {
                   "name": "SEQ_SCAN",
-                  "timing":0.024332,
+                  "timing":0.024587,
                   "cardinality":901343,
                   "extra_info": "aka_name\n[INFOSEPARATOR]\nperson_id\nname",
                   "timings": [

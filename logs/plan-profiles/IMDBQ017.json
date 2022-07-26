@@ -1,25 +1,25 @@
 {
    "name":  "Query", 
-   "result": 0.144380,
-   "timing": 0.144380,
+   "result": 0.131585,
+   "timing": 0.131585,
    "cardinality": 0,
    "extra_info": "SELECT MIN(t.title) AS american_movie\nFROM company_type AS ct,\n     info_type AS it,\n     movie_companies AS mc,\n     movie_info AS mi,\n     title AS t\nWHERE ct.kind = 'production companies'\n  AND mc.note NOT LIKE '%(TV)%'\n  AND mc.note LIKE '%(USA)%'\n  AND mi.info IN ('Sweden',\n                  'Norway',\n                  'Germany',\n                  'Denmark',\n                  'Swedish',\n                  'Denish',\n                  'Norwegian',\n                  'German',\n                  'USA',\n                  'American')\n  AND t.production_year > 1990\n  AND t.id = mi.movie_id\n  AND t.id = mc.movie_id\n  AND mc.movie_id = mi.movie_id\n  AND ct.id = mc.company_type_id\n  AND it.id = mi.info_type_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.000417
+   "timing": 0.000379
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000007
+   "timing": 0.000006
    },
    {
    "annotation": "optimizer > common_aggregate", 
-   "timing": 0.000003
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > common_subexpressions", 
-   "timing": 0.000003
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > deliminator", 
@@ -27,7 +27,7 @@
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000052
+   "timing": 0.000045
    },
    {
    "annotation": "optimizer > filter_pullup", 
@@ -35,15 +35,15 @@
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000100
+   "timing": 0.000090
    },
    {
    "annotation": "optimizer > in_clause", 
-   "timing": 0.000019
+   "timing": 0.000017
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.000105
+   "timing": 0.000097
    },
    {
    "annotation": "optimizer > regex_range", 
@@ -51,11 +51,11 @@
    },
    {
    "annotation": "optimizer > reorder_filter", 
-   "timing": 0.000005
+   "timing": 0.000004
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000106
+   "timing": 0.000099
    },
    {
    "annotation": "optimizer > top_n", 
@@ -63,11 +63,11 @@
    },
    {
    "annotation": "optimizer > unused_columns", 
-   "timing": 0.000006
+   "timing": 0.000005
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000051
+   "timing": 0.000050
    },
    {
    "annotation": "physical_planner > column_binding", 
@@ -79,21 +79,21 @@
    },
    {
    "annotation": "physical_planner > resolve_types", 
-   "timing": 0.000003
+   "timing": 0.000002
    },
    {
    "annotation": "planner", 
-   "timing": 0.000189
+   "timing": 0.000168
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000187
+   "timing": 0.000166
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000022,
+      "timing":0.000004,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -101,7 +101,7 @@
       "children": [
        {
          "name": "SIMPLE_AGGREGATE",
-         "timing":0.000072,
+         "timing":0.000066,
          "cardinality":1,
          "extra_info": "min(#0)",
          "timings": [
@@ -109,7 +109,7 @@
          "children": [
           {
             "name": "PROJECTION",
-            "timing":0.000010,
+            "timing":0.000012,
             "cardinality":669,
             "extra_info": "t.title\n",
             "timings": [
@@ -117,7 +117,7 @@
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.000878,
+               "timing":0.001006,
                "cardinality":669,
                "extra_info": "INNER\nmc.company_type_id = ct.id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.000723,
+                  "timing":0.000824,
                   "cardinality":99367,
                   "extra_info": "INNER\nmi.info_type_id = it.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.180913,
+                     "timing":0.178114,
                      "cardinality":99367,
                      "extra_info": "INNER\nt.id = mc.movie_id\nmi.movie_id = mc.movie_id\n",
                      "timings": [
@@ -141,7 +141,7 @@
                      "children": [
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.204167,
+                        "timing":0.207748,
                         "cardinality":476405,
                         "extra_info": "INNER\nmi.movie_id = t.id\n",
                         "timings": [
@@ -149,7 +149,7 @@
                         "children": [
                          {
                            "name": "PROJECTION",
-                           "timing":0.000492,
+                           "timing":0.000515,
                            "cardinality":706674,
                            "extra_info": "#1\n#2\n",
                            "timings": [
@@ -157,7 +157,7 @@
                            "children": [
                             {
                               "name": "FILTER",
-                              "timing":0.035267,
+                              "timing":0.036797,
                               "cardinality":706674,
                               "extra_info": "IN (...)",
                               "timings": [
@@ -165,7 +165,7 @@
                               "children": [
                                {
                                  "name": "HASH_JOIN",
-                                 "timing":0.610639,
+                                 "timing":0.620469,
                                  "cardinality":14835720,
                                  "extra_info": "MARK\nmi.info = #0\n",
                                  "timings": [
@@ -173,7 +173,7 @@
                                  "children": [
                                   {
                                     "name": "SEQ_SCAN",
-                                    "timing":0.550571,
+                                    "timing":0.563062,
                                     "cardinality":14835720,
                                     "extra_info": "movie_info\n[INFOSEPARATOR]\ninfo\nmovie_id\ninfo_type_id",
                                     "timings": [
@@ -184,7 +184,7 @@
 ,
                                   {
                                     "name": "CHUNK_SCAN",
-                                    "timing":0.000002,
+                                    "timing":0.000000,
                                     "cardinality":10,
                                     "extra_info": "",
                                     "timings": [
@@ -201,7 +201,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.094177,
+                           "timing":0.093358,
                            "cardinality":1749032,
                            "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>1990 AND production_year IS NOT NULL\n",
                            "timings": [
@@ -214,7 +214,7 @@
 ,
                       {
                         "name": "PROJECTION",
-                        "timing":0.000309,
+                        "timing":0.000314,
                         "cardinality":295628,
                         "extra_info": "#1\n#2\n",
                         "timings": [
@@ -222,7 +222,7 @@
                         "children": [
                          {
                            "name": "FILTER",
-                           "timing":0.096132,
+                           "timing":0.095502,
                            "cardinality":295628,
                            "extra_info": "(contains(mc.note, '(USA)') AND NOT(contains(mc.note, '(TV)')))",
                            "timings": [
@@ -230,7 +230,7 @@
                            "children": [
                             {
                               "name": "SEQ_SCAN",
-                              "timing":0.052322,
+                              "timing":0.052019,
                               "cardinality":2609129,
                               "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\nmovie_id\ncompany_type_id",
                               "timings": [
@@ -247,7 +247,7 @@
 ,
                    {
                      "name": "SEQ_SCAN",
-                     "timing":0.000008,
+                     "timing":0.000006,
                      "cardinality":113,
                      "extra_info": "info_type\n[INFOSEPARATOR]\nid",
                      "timings": [

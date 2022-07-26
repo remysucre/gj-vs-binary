@@ -1,13 +1,13 @@
 {
    "name":  "Query", 
-   "result": 0.058999,
-   "timing": 0.058999,
+   "result": 0.060278,
+   "timing": 0.060278,
    "cardinality": 0,
    "extra_info": "SELECT MIN(t.title) AS movie_title\nFROM keyword AS k,\n     movie_info AS mi,\n     movie_keyword AS mk,\n     title AS t\nWHERE k.keyword LIKE '%sequel%'\n  AND mi.info IN ('Bulgaria')\n  AND t.production_year > 2010\n  AND t.id = mi.movie_id\n  AND t.id = mk.movie_id\n  AND mk.movie_id = mi.movie_id\n  AND k.id = mk.keyword_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.000274
+   "timing": 0.000282
    },
    {
    "annotation": "optimizer > column_lifetime", 
@@ -27,7 +27,7 @@
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000031
+   "timing": 0.000030
    },
    {
    "annotation": "optimizer > filter_pullup", 
@@ -35,7 +35,7 @@
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000068
+   "timing": 0.000071
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -55,7 +55,7 @@
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000086
+   "timing": 0.000091
    },
    {
    "annotation": "optimizer > top_n", 
@@ -67,7 +67,7 @@
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000041
+   "timing": 0.000042
    },
    {
    "annotation": "physical_planner > column_binding", 
@@ -75,7 +75,7 @@
    },
    {
    "annotation": "physical_planner > create_plan", 
-   "timing": 0.000028
+   "timing": 0.000030
    },
    {
    "annotation": "physical_planner > resolve_types", 
@@ -83,17 +83,17 @@
    },
    {
    "annotation": "planner", 
-   "timing": 0.000156
+   "timing": 0.000149
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000154
+   "timing": 0.000146
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000008,
+      "timing":0.000006,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -109,7 +109,7 @@
          "children": [
           {
             "name": "PROJECTION",
-            "timing":0.000001,
+            "timing":0.000002,
             "cardinality":5,
             "extra_info": "t.title\n",
             "timings": [
@@ -117,7 +117,7 @@
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.000101,
+               "timing":0.000098,
                "cardinality":5,
                "extra_info": "INNER\nmk.keyword_id = k.id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.059990,
+                  "timing":0.057723,
                   "cardinality":920,
                   "extra_info": "INNER\nmi.movie_id = t.id\nmi.movie_id = mk.movie_id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "PROJECTION",
-                     "timing":0.000014,
+                     "timing":0.000015,
                      "cardinality":2287,
                      "extra_info": "#1\n",
                      "timings": [
@@ -141,7 +141,7 @@
                      "children": [
                       {
                         "name": "FILTER",
-                        "timing":0.081596,
+                        "timing":0.078190,
                         "cardinality":2287,
                         "extra_info": "mi.info = 'Bulgaria'",
                         "timings": [
@@ -149,7 +149,7 @@
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.569179,
+                           "timing":0.573348,
                            "cardinality":14835720,
                            "extra_info": "movie_info\n[INFOSEPARATOR]\ninfo\nmovie_id",
                            "timings": [
@@ -164,7 +164,7 @@
 ,
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.157833,
+                     "timing":0.166615,
                      "cardinality":299534,
                      "extra_info": "INNER\nmk.movie_id = t.id\n",
                      "timings": [
@@ -172,7 +172,7 @@
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.007066,
+                        "timing":0.007735,
                         "cardinality":4523930,
                         "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
                         "timings": [
@@ -183,7 +183,7 @@
 ,
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.115638,
+                        "timing":0.111729,
                         "cardinality":391666,
                         "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>2010 AND production_year IS NOT NULL\n",
                         "timings": [
@@ -198,7 +198,7 @@
 ,
                 {
                   "name": "PROJECTION",
-                  "timing":0.000001,
+                  "timing":0.000002,
                   "cardinality":30,
                   "extra_info": "#1\n",
                   "timings": [
@@ -206,7 +206,7 @@
                   "children": [
                    {
                      "name": "FILTER",
-                     "timing":0.006813,
+                     "timing":0.005687,
                      "cardinality":30,
                      "extra_info": "contains(k.keyword, 'sequel')",
                      "timings": [
@@ -214,7 +214,7 @@
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.005126,
+                        "timing":0.004603,
                         "cardinality":134170,
                         "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid",
                         "timings": [

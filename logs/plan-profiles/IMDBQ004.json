@@ -1,13 +1,13 @@
 {
    "name":  "Query", 
-   "result": 0.142605,
-   "timing": 0.142605,
+   "result": 0.134364,
+   "timing": 0.134364,
    "cardinality": 0,
    "extra_info": "SELECT MIN(mc.note) AS production_note,\n       MIN(t.title) AS movie_title,\n       MIN(t.production_year) AS movie_year\nFROM company_type AS ct,\n     info_type AS it,\n     movie_companies AS mc,\n     movie_info_idx AS mi_idx,\n     title AS t\nWHERE ct.kind = 'production companies'\n  AND it.info = 'bottom 10 rank'\n  AND mc.note NOT LIKE '%(as Metro-Goldwyn-Mayer Pictures)%'\n  AND t.production_year >2000\n  AND ct.id = mc.company_type_id\n  AND t.id = mc.movie_id\n  AND t.id = mi_idx.movie_id\n  AND mc.movie_id = mi_idx.movie_id\n  AND it.id = mi_idx.info_type_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.000371
+   "timing": 0.000387
    },
    {
    "annotation": "optimizer > column_lifetime", 
@@ -23,11 +23,11 @@
    },
    {
    "annotation": "optimizer > deliminator", 
-   "timing": 0.000000
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000042
+   "timing": 0.000043
    },
    {
    "annotation": "optimizer > filter_pullup", 
@@ -35,7 +35,7 @@
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000094
+   "timing": 0.000098
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -43,7 +43,7 @@
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.000102
+   "timing": 0.000106
    },
    {
    "annotation": "optimizer > regex_range", 
@@ -55,7 +55,7 @@
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000099
+   "timing": 0.000106
    },
    {
    "annotation": "optimizer > top_n", 
@@ -83,7 +83,7 @@
    },
    {
    "annotation": "planner", 
-   "timing": 0.000192
+   "timing": 0.000191
    },
    {
    "annotation": "planner > binder", 
@@ -93,7 +93,7 @@
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000007,
+      "timing":0.000006,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -101,7 +101,7 @@
       "children": [
        {
          "name": "SIMPLE_AGGREGATE",
-         "timing":0.000015,
+         "timing":0.000016,
          "cardinality":1,
          "extra_info": "min(#0)\nmin(#1)\nmin(#2)",
          "timings": [
@@ -117,7 +117,7 @@
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.000065,
+               "timing":0.000066,
                "cardinality":4,
                "extra_info": "INNER\nmc.company_type_id = ct.id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.014709,
+                  "timing":0.012204,
                   "cardinality":78,
                   "extra_info": "INNER\nmi_idx.info_type_id = it.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.677813,
+                     "timing":0.625590,
                      "cardinality":1185623,
                      "extra_info": "INNER\nmc.movie_id = t.id\nmc.movie_id = mi_idx.movie_id\n",
                      "timings": [
@@ -141,7 +141,7 @@
                      "children": [
                       {
                         "name": "FILTER",
-                        "timing":0.045759,
+                        "timing":0.042144,
                         "cardinality":1337088,
                         "extra_info": "NOT(contains(mc.note, '(as Metro-Goldwyn-Mayer Pictures)'))",
                         "timings": [
@@ -149,7 +149,7 @@
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.052958,
+                           "timing":0.051526,
                            "cardinality":2609129,
                            "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\ncompany_type_id\nmovie_id",
                            "timings": [
@@ -162,7 +162,7 @@
 ,
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.116473,
+                        "timing":0.120027,
                         "cardinality":664016,
                         "extra_info": "INNER\nt.id = mi_idx.movie_id\n",
                         "timings": [
@@ -170,7 +170,7 @@
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.100881,
+                           "timing":0.099221,
                            "cardinality":1381453,
                            "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>2000 AND production_year IS NOT NULL\n",
                            "timings": [
@@ -181,7 +181,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.001460,
+                           "timing":0.001506,
                            "cardinality":1380035,
                            "extra_info": "movie_info_idx\n[INFOSEPARATOR]\nmovie_id\ninfo_type_id",
                            "timings": [
@@ -196,7 +196,7 @@
 ,
                    {
                      "name": "SEQ_SCAN",
-                     "timing":0.000026,
+                     "timing":0.000021,
                      "cardinality":1,
                      "extra_info": "info_type\n[INFOSEPARATOR]\ninfo\nid\n[INFOSEPARATOR]\nFilters: info=bottom 10 rank AND info IS NOT NULL\n",
                      "timings": [
@@ -209,7 +209,7 @@
 ,
                 {
                   "name": "SEQ_SCAN",
-                  "timing":0.000022,
+                  "timing":0.000020,
                   "cardinality":1,
                   "extra_info": "company_type\n[INFOSEPARATOR]\nkind\nid\n[INFOSEPARATOR]\nFilters: kind=production companies AND kind IS NOT NULL\n",
                   "timings": [

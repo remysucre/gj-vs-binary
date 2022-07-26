@@ -1,33 +1,33 @@
 {
    "name":  "Query", 
-   "result": 0.026099,
-   "timing": 0.026099,
+   "result": 0.025474,
+   "timing": 0.025474,
    "cardinality": 0,
    "extra_info": "SELECT MIN(k.keyword) AS movie_keyword,\n       MIN(n.name) AS actor_name,\n       MIN(t.title) AS marvel_movie\nFROM cast_info AS ci,\n     keyword AS k,\n     movie_keyword AS mk,\n     name AS n,\n     title AS t\nWHERE k.keyword = 'marvel-cinematic-universe'\n  AND n.name LIKE '%Downey%Robert%'\n  AND t.production_year > 2014\n  AND k.id = mk.keyword_id\n  AND t.id = mk.movie_id\n  AND t.id = ci.movie_id\n  AND ci.movie_id = mk.movie_id\n  AND n.id = ci.person_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.000485
+   "timing": 0.000348
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000010
+   "timing": 0.000008
    },
    {
    "annotation": "optimizer > common_aggregate", 
-   "timing": 0.000004
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > common_subexpressions", 
-   "timing": 0.000003
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > deliminator", 
-   "timing": 0.000001
+   "timing": 0.000000
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000038
+   "timing": 0.000027
    },
    {
    "annotation": "optimizer > filter_pullup", 
@@ -35,27 +35,27 @@
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000126
+   "timing": 0.000085
    },
    {
    "annotation": "optimizer > in_clause", 
-   "timing": 0.000002
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.000128
+   "timing": 0.000093
    },
    {
    "annotation": "optimizer > regex_range", 
-   "timing": 0.000002
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > reorder_filter", 
-   "timing": 0.000004
+   "timing": 0.000003
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000146
+   "timing": 0.000108
    },
    {
    "annotation": "optimizer > top_n", 
@@ -63,37 +63,37 @@
    },
    {
    "annotation": "optimizer > unused_columns", 
-   "timing": 0.000007
+   "timing": 0.000006
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000066
+   "timing": 0.000048
    },
    {
    "annotation": "physical_planner > column_binding", 
-   "timing": 0.000008
+   "timing": 0.000006
    },
    {
    "annotation": "physical_planner > create_plan", 
-   "timing": 0.000046
+   "timing": 0.000033
    },
    {
    "annotation": "physical_planner > resolve_types", 
-   "timing": 0.000004
+   "timing": 0.000003
    },
    {
    "annotation": "planner", 
-   "timing": 0.000290
+   "timing": 0.000187
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000287
+   "timing": 0.000184
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000009,
+      "timing":0.000008,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -101,7 +101,7 @@
       "children": [
        {
          "name": "SIMPLE_AGGREGATE",
-         "timing":0.000011,
+         "timing":0.000010,
          "cardinality":1,
          "extra_info": "min(#0)\nmin(#1)\nmin(#2)",
          "timings": [
@@ -111,13 +111,13 @@
             "name": "PROJECTION",
             "timing":0.000002,
             "cardinality":2,
-            "extra_info": "k.keyword\nn.\"name\"\nt.title\n",
+            "extra_info": "k.keyword\nn.name\nt.title\n",
             "timings": [
             ],
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.000083,
+               "timing":0.000105,
                "cardinality":2,
                "extra_info": "INNER\nci.movie_id = t.id\nci.movie_id = mk.movie_id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.178725,
+                  "timing":0.186073,
                   "cardinality":486,
                   "extra_info": "INNER\nci.person_id = n.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "SEQ_SCAN",
-                     "timing":0.078130,
+                     "timing":0.080874,
                      "cardinality":36244344,
                      "extra_info": "cast_info\n[INFOSEPARATOR]\nmovie_id\nperson_id",
                      "timings": [
@@ -144,15 +144,15 @@
 ,
                    {
                      "name": "FILTER",
-                     "timing":0.139878,
+                     "timing":0.129358,
                      "cardinality":2,
-                     "extra_info": "(n.\"name\" ~~ '%Downey%Robert%')",
+                     "extra_info": "(n.name ~~ '%Downey%Robert%')",
                      "timings": [
                      ],
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.139563,
+                        "timing":0.127145,
                         "cardinality":4167491,
                         "extra_info": "name\n[INFOSEPARATOR]\nname\nid",
                         "timings": [
@@ -167,7 +167,7 @@
 ,
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.000130,
+                  "timing":0.000132,
                   "cardinality":2,
                   "extra_info": "INNER\nmk.keyword_id = k.id\n",
                   "timings": [
@@ -175,7 +175,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.030442,
+                     "timing":0.035600,
                      "cardinality":1054,
                      "extra_info": "INNER\nmk.movie_id = t.id\n",
                      "timings": [
@@ -183,7 +183,7 @@
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.006378,
+                        "timing":0.005923,
                         "cardinality":4523930,
                         "extra_info": "movie_keyword\n[INFOSEPARATOR]\nkeyword_id\nmovie_id",
                         "timings": [
@@ -194,7 +194,7 @@
 ,
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.015984,
+                        "timing":0.018883,
                         "cardinality":438,
                         "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>2014 AND production_year IS NOT NULL\n",
                         "timings": [
@@ -207,7 +207,7 @@
 ,
                    {
                      "name": "SEQ_SCAN",
-                     "timing":0.006052,
+                     "timing":0.006207,
                      "cardinality":1,
                      "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid\n[INFOSEPARATOR]\nFilters: keyword=marvel-cinematic-universe AND keyword IS NOT NULL\n",
                      "timings": [

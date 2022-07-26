@@ -1,17 +1,17 @@
 {
    "name":  "Query", 
-   "result": 0.304684,
-   "timing": 0.304684,
+   "result": 0.313727,
+   "timing": 0.313727,
    "cardinality": 0,
    "extra_info": "SELECT MIN(t.title) AS complete_downey_ironman_movie\nFROM complete_cast AS cc,\n     comp_cast_type AS cct1,\n     comp_cast_type AS cct2,\n     char_name AS chn,\n     cast_info AS ci,\n     keyword AS k,\n     kind_type AS kt,\n     movie_keyword AS mk,\n     name AS n,\n     title AS t\nWHERE cct1.kind = 'cast'\n  AND cct2.kind LIKE '%complete%'\n  AND chn.name NOT LIKE '%Sherlock%'\n  AND (chn.name LIKE '%Tony%Stark%'\n       OR chn.name LIKE '%Iron%Man%')\n  AND k.keyword IN ('superhero',\n                    'sequel',\n                    'second-part',\n                    'marvel-comics',\n                    'based-on-comic',\n                    'tv-special',\n                    'fight',\n                    'violence')\n  AND kt.kind = 'movie'\n  AND t.production_year > 1950\n  AND kt.id = t.kind_id\n  AND t.id = mk.movie_id\n  AND t.id = ci.movie_id\n  AND t.id = cc.movie_id\n  AND mk.movie_id = ci.movie_id\n  AND mk.movie_id = cc.movie_id\n  AND ci.movie_id = cc.movie_id\n  AND chn.id = ci.person_role_id\n  AND n.id = ci.person_id\n  AND k.id = mk.keyword_id\n  AND cct1.id = cc.subject_id\n  AND cct2.id = cc.status_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.003287
+   "timing": 0.003244
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000018
+   "timing": 0.000016
    },
    {
    "annotation": "optimizer > common_aggregate", 
@@ -19,7 +19,7 @@
    },
    {
    "annotation": "optimizer > common_subexpressions", 
-   "timing": 0.000003
+   "timing": 0.000004
    },
    {
    "annotation": "optimizer > deliminator", 
@@ -31,11 +31,11 @@
    },
    {
    "annotation": "optimizer > filter_pullup", 
-   "timing": 0.000002
+   "timing": 0.000003
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000182
+   "timing": 0.000184
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -43,7 +43,7 @@
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.002739
+   "timing": 0.002694
    },
    {
    "annotation": "optimizer > regex_range", 
@@ -63,11 +63,11 @@
    },
    {
    "annotation": "optimizer > unused_columns", 
-   "timing": 0.000010
+   "timing": 0.000011
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000093
+   "timing": 0.000091
    },
    {
    "annotation": "physical_planner > column_binding", 
@@ -75,25 +75,25 @@
    },
    {
    "annotation": "physical_planner > create_plan", 
-   "timing": 0.000062
+   "timing": 0.000059
    },
    {
    "annotation": "physical_planner > resolve_types", 
-   "timing": 0.000005
+   "timing": 0.000006
    },
    {
    "annotation": "planner", 
-   "timing": 0.000299
+   "timing": 0.000294
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000296
+   "timing": 0.000290
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000018,
+      "timing":0.000007,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -117,7 +117,7 @@
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.004061,
+               "timing":0.005137,
                "cardinality":33,
                "extra_info": "INNER\nt.id = cc.movie_id\nmk.movie_id = cc.movie_id\nci.movie_id = cc.movie_id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.014246,
+                  "timing":0.014398,
                   "cardinality":63,
                   "extra_info": "INNER\nci.person_role_id = chn.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":3.362798,
+                     "timing":3.391970,
                      "cardinality":985102,
                      "extra_info": "INNER\nci.movie_id = t.id\nci.movie_id = mk.movie_id\n",
                      "timings": [
@@ -141,7 +141,7 @@
                      "children": [
                       {
                         "name": "HASH_JOIN",
-                        "timing":1.127570,
+                        "timing":1.139154,
                         "cardinality":36244344,
                         "extra_info": "INNER\nci.person_id = n.id\n",
                         "timings": [
@@ -149,7 +149,7 @@
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.188805,
+                           "timing":0.182875,
                            "cardinality":36244344,
                            "extra_info": "cast_info\n[INFOSEPARATOR]\nmovie_id\nperson_role_id\nperson_id",
                            "timings": [
@@ -160,7 +160,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.004814,
+                           "timing":0.004803,
                            "cardinality":4167491,
                            "extra_info": "name\n[INFOSEPARATOR]\nid",
                            "timings": [
@@ -173,7 +173,7 @@
 ,
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.017060,
+                        "timing":0.019321,
                         "cardinality":15994,
                         "extra_info": "INNER\nmk.keyword_id = k.id\n",
                         "timings": [
@@ -181,7 +181,7 @@
                         "children": [
                          {
                            "name": "HASH_JOIN",
-                           "timing":0.021951,
+                           "timing":0.025138,
                            "cardinality":2343162,
                            "extra_info": "INNER\nt.kind_id = kt.id\n",
                            "timings": [
@@ -189,7 +189,7 @@
                            "children": [
                             {
                               "name": "HASH_JOIN",
-                              "timing":0.370844,
+                              "timing":0.442729,
                               "cardinality":3961736,
                               "extra_info": "INNER\nmk.movie_id = t.id\n",
                               "timings": [
@@ -197,7 +197,7 @@
                               "children": [
                                {
                                  "name": "SEQ_SCAN",
-                                 "timing":0.007570,
+                                 "timing":0.009177,
                                  "cardinality":4523930,
                                  "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
                                  "timings": [
@@ -208,7 +208,7 @@
 ,
                                {
                                  "name": "SEQ_SCAN",
-                                 "timing":0.089396,
+                                 "timing":0.089158,
                                  "cardinality":2287271,
                                  "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nkind_id\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>1950 AND production_year IS NOT NULL\n",
                                  "timings": [
@@ -221,7 +221,7 @@
 ,
                             {
                               "name": "SEQ_SCAN",
-                              "timing":0.000017,
+                              "timing":0.000026,
                               "cardinality":1,
                               "extra_info": "kind_type\n[INFOSEPARATOR]\nkind\nid\n[INFOSEPARATOR]\nFilters: kind=movie AND kind IS NOT NULL\n",
                               "timings": [
@@ -242,7 +242,7 @@
                            "children": [
                             {
                               "name": "FILTER",
-                              "timing":0.000230,
+                              "timing":0.000264,
                               "cardinality":8,
                               "extra_info": "IN (...)",
                               "timings": [
@@ -250,7 +250,7 @@
                               "children": [
                                {
                                  "name": "HASH_JOIN",
-                                 "timing":0.003952,
+                                 "timing":0.004116,
                                  "cardinality":134170,
                                  "extra_info": "MARK\nk.keyword = #0\n",
                                  "timings": [
@@ -258,7 +258,7 @@
                                  "children": [
                                   {
                                     "name": "SEQ_SCAN",
-                                    "timing":0.003506,
+                                    "timing":0.003776,
                                     "cardinality":134170,
                                     "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid",
                                     "timings": [
@@ -269,7 +269,7 @@
 ,
                                   {
                                     "name": "CHUNK_SCAN",
-                                    "timing":0.000005,
+                                    "timing":0.000004,
                                     "cardinality":8,
                                     "extra_info": "",
                                     "timings": [
@@ -290,7 +290,7 @@
 ,
                    {
                      "name": "PROJECTION",
-                     "timing":0.000013,
+                     "timing":0.000012,
                      "cardinality":30,
                      "extra_info": "#1\n",
                      "timings": [
@@ -298,15 +298,15 @@
                      "children": [
                       {
                         "name": "FILTER",
-                        "timing":0.182117,
+                        "timing":0.192695,
                         "cardinality":30,
-                        "extra_info": "(((chn.\"name\" ~~ '%Tony%Stark%') OR (chn.\"name\" ~~ '%Iron%Man%')) AND NOT(contains(chn.\"name\", 'Sherlock')))",
+                        "extra_info": "(((chn.name ~~ '%Tony%Stark%') OR (chn.name ~~ '%Iron%Man%')) AND NOT(contains(chn.name, 'Sherlock')))",
                         "timings": [
                         ],
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.084979,
+                           "timing":0.086784,
                            "cardinality":3140339,
                            "extra_info": "char_name\n[INFOSEPARATOR]\nname\nid",
                            "timings": [
@@ -323,7 +323,7 @@
 ,
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.000247,
+                  "timing":0.000289,
                   "cardinality":85941,
                   "extra_info": "INNER\ncc.status_id = cct2.id\n",
                   "timings": [
@@ -331,7 +331,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.000373,
+                     "timing":0.000461,
                      "cardinality":85941,
                      "extra_info": "INNER\ncc.subject_id = cct1.id\n",
                      "timings": [
@@ -339,7 +339,7 @@
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.000181,
+                        "timing":0.000192,
                         "cardinality":135086,
                         "extra_info": "complete_cast\n[INFOSEPARATOR]\nmovie_id\nsubject_id\nstatus_id",
                         "timings": [
@@ -350,7 +350,7 @@
 ,
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.000011,
+                        "timing":0.000013,
                         "cardinality":1,
                         "extra_info": "comp_cast_type\n[INFOSEPARATOR]\nkind\nid\n[INFOSEPARATOR]\nFilters: kind=cast AND kind IS NOT NULL\n",
                         "timings": [
@@ -371,7 +371,7 @@
                      "children": [
                       {
                         "name": "FILTER",
-                        "timing":0.000004,
+                        "timing":0.000003,
                         "cardinality":2,
                         "extra_info": "contains(cct2.kind, 'complete')",
                         "timings": [
@@ -379,7 +379,7 @@
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.000008,
+                           "timing":0.000003,
                            "cardinality":4,
                            "extra_info": "comp_cast_type\n[INFOSEPARATOR]\nkind\nid",
                            "timings": [
