@@ -4,8 +4,8 @@ Loading movie_info_idx
 Loading it
 Loading mc
 Loading ct
-trie construction takes 807.147041ms
-join takes 6.729166ms
+trie construction takes 842.833041ms
+join takes 6.930166ms
 [[Str("(A Warner Bros.-First National Picture) (presents)")], [Str("A Clockwork Orange"), Num(1934)]]
 Query: 1b
 Loading movie_info_idx
@@ -13,8 +13,8 @@ Loading it
 Loading mc
 Loading ct
 Loading t
-trie construction takes 811.605333ms
-join takes 47.8845ms
+trie construction takes 631.209208ms
+join takes 40.291458ms
 [[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2008)]]
 Query: 1c
 Loading movie_info_idx
@@ -22,8 +22,8 @@ Loading t
 Loading mc
 Loading ct
 Loading it
-trie construction takes 268.240583ms
-join takes 993.833µs
+trie construction takes 267.974958ms
+join takes 1.063666ms
 [[Str("(co-production)")], [Str("Intouchables"), Num(2011)]]
 Query: 1d
 Loading t
@@ -31,8 +31,8 @@ Loading mc
 Loading ct
 Loading movie_info_idx
 Loading it
-trie construction takes 976.896958ms
-join takes 67.290458ms
+trie construction takes 824.1195ms
+join takes 66.608875ms
 [[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2004)]]
 Query: 2a
 Loading movie_keyword
@@ -40,8 +40,8 @@ Loading movie_companies
 Loading title
 Loading cn
 Loading k
-trie construction takes 1.799521083s
-join takes 181.554666ms
+trie construction takes 1.750875125s
+join takes 187.983083ms
 [[Str("'Doc'")]]
 Query: 2b
 Loading movie_keyword
@@ -49,8 +49,8 @@ Loading movie_companies
 Loading title
 Loading k
 Loading cn
-trie construction takes 1.750107416s
-join takes 172.4375ms
+trie construction takes 1.665587375s
+join takes 162.069125ms
 [[Str("'Doc'")]]
 Query: 2c
 Loading movie_keyword
@@ -58,8 +58,8 @@ Loading title
 Loading k
 Loading movie_companies
 Loading cn
-trie construction takes 1.626710958s
-join takes 151.664583ms
+trie construction takes 1.654869708s
+join takes 161.72425ms
 []
 Query: 2d
 Loading movie_keyword
@@ -67,32 +67,32 @@ Loading movie_companies
 Loading cn
 Loading title
 Loading k
-trie construction takes 1.631703291s
-join takes 181.679583ms
+trie construction takes 1.829534875s
+join takes 208.128458ms
 [[Str("& Teller")]]
 Query: 3a
 Loading movie_keyword
 Loading mi
 Loading t
 Loading k
-trie construction takes 793.88975ms
-join takes 12.385833ms
+trie construction takes 767.556958ms
+join takes 12.683416ms
 [[Str("2 Days in New York")]]
 Query: 3b
 Loading movie_keyword
 Loading k
 Loading t
 Loading mi
-trie construction takes 594.251666ms
-join takes 233.041µs
+trie construction takes 618.586833ms
+join takes 283.333µs
 [[Str("300: Rise of an Empire")]]
 Query: 3c
 Loading movie_keyword
 Loading k
 Loading t
 Loading mi
-trie construction takes 1.215056958s
-join takes 149.031791ms
+trie construction takes 1.021925083s
+join takes 118.967958ms
 [[Str("& Teller 2")]]
 Query: 4a
 Loading movie_keyword
@@ -100,8 +100,8 @@ Loading t
 Loading mi_idx
 Loading it
 Loading k
-trie construction takes 863.480208ms
-join takes 65.805625ms
+trie construction takes 874.092333ms
+join takes 65.1085ms
 [[Str("5.1")], [Str("& Teller 2")]]
 Query: 4b
 Loading movie_keyword
@@ -109,8 +109,8 @@ Loading k
 Loading t
 Loading mi_idx
 Loading it
-trie construction takes 589.29875ms
-join takes 1.544125ms
+trie construction takes 604.9845ms
+join takes 1.535833ms
 [[Str("9.1")], [Str("Batman: Arkham City")]]
 Query: 4c
 Loading movie_keyword
@@ -118,8 +118,8 @@ Loading mi_idx
 Loading t
 Loading it
 Loading k
-trie construction takes 1.0991545s
-join takes 117.792416ms
+trie construction takes 1.096717833s
+join takes 111.865333ms
 [[Str("2.1")], [Str("& Teller 2")]]
 Query: 5c
 Loading t
@@ -127,8 +127,8 @@ Loading mc
 Loading ct
 Loading mi
 Loading info_type
-trie construction takes 589.788625ms
-join takes 62.280875ms
+trie construction takes 615.212125ms
+join takes 56.599875ms
 [[Str("11,830,420")]]
 Query: 6a
 Loading cast_info
@@ -136,8 +136,8 @@ Loading n
 Loading t
 Loading movie_keyword
 Loading k
-trie construction takes 6.145269416s
-join takes 123.625µs
+trie construction takes 6.645597875s
+join takes 134.333µs
 [[Str("Iron Man 3")], [Str("marvel-cinematic-universe")], [Str("Downey Jr., Robert")]]
 Query: 6b
 Loading cast_info
@@ -145,8 +145,8 @@ Loading t
 Loading n
 Loading movie_keyword
 Loading k
-trie construction takes 5.232099916s
-join takes 82.625µs
+trie construction takes 5.257495416s
+join takes 55.5µs
 [[Str("The Avengers 2")], [Str("based-on-comic")], [Str("Downey Jr., Robert")]]
 Query: 6c
 Loading cast_info
@@ -154,8 +154,8 @@ Loading movie_keyword
 Loading t
 Loading k
 Loading n
-trie construction takes 5.21022875s
-join takes 51.166µs
+trie construction takes 5.348690875s
+join takes 59.166µs
 [[Str("The Avengers 2")], [Str("marvel-cinematic-universe")], [Str("Downey Jr., Robert")]]
 Query: 6d
 Loading cast_info
@@ -163,8 +163,8 @@ Loading movie_keyword
 Loading k
 Loading t
 Loading n
-trie construction takes 5.594552958s
-join takes 360.666µs
+trie construction takes 5.715379625s
+join takes 306.625µs
 [[Str("2008 MTV Movie Awards")], [Str("based-on-comic")], [Str("Downey Jr., Robert")]]
 Query: 6e
 Loading cast_info
@@ -172,8 +172,8 @@ Loading n
 Loading movie_keyword
 Loading k
 Loading t
-trie construction takes 5.557610583s
-join takes 302.208µs
+trie construction takes 5.721731833s
+join takes 257.125µs
 [[Str("Iron Man 3")], [Str("marvel-cinematic-universe")], [Str("Downey Jr., Robert")]]
 Query: 6f
 Loading cast_info
@@ -181,8 +181,8 @@ Loading t
 Loading name
 Loading movie_keyword
 Loading k
-trie construction takes 6.898689958s
-join takes 7.565925666s
+trie construction takes 7.1435105s
+join takes 8.780784333s
 [[Str("& Teller 2")], [Str("based-on-comic")], [Str("\"Steff\", Stefanie Oxmann Mcgaha")]]
 Query: 7a
 Loading cast_info
@@ -193,8 +193,8 @@ Loading movie_link
 Loading lt
 Loading n
 Loading it
-trie construction takes 15.840110583s
-join takes 3.385291ms
+trie construction takes 17.680575708s
+join takes 4.102541ms
 [[Str("Antonioni, Michelangelo")], [Str("Dressed to Kill")]]
 Query: 7b
 Loading cast_info
@@ -205,8 +205,8 @@ Loading movie_link
 Loading lt
 Loading pi
 Loading it
-trie construction takes 15.685477416s
-join takes 1.054708ms
+trie construction takes 16.946494875s
+join takes 1.090916ms
 [[Str("De Palma, Brian")], [Str("Dressed to Kill")]]
 Query: 7c
 Loading cast_info
@@ -217,8 +217,8 @@ Loading it
 Loading an
 Loading t
 Loading lt
-trie construction takes 16.017114083s
-join takes 34.745125ms
+trie construction takes 17.2810835s
+join takes 38.4785ms
 [[Str("50 Cent")], [Str("\"Boo\" Arnold was born Earl Arnold in Hattiesburg, Mississippi in 1966. His father gave him the nickname 'Boo' early in life and it stuck through grade school, high school, and college. He is still known as \"Boo\" to family and friends.  Raised in central Texas, Arnold played baseball at Texas Tech University where he graduated with a BA in Advertising and Marketing. While at Texas Tech he was also a member of the Texas Epsilon chapter of Phi Delta Theta fraternity. After college he worked with Young Life, an outreach to high school students, in San Antonio, Texas.  While with Young Life Arnold began taking extension courses through Fuller Theological Seminary and ultimately went full-time to Gordon-Conwell Theological Seminary in Boston, Massachusetts. At Gordon-Conwell he completed a Master's Degree in Divinity studying Theology, Philosophy, Church History, Biblical Languages (Hebrew & Greek), and Exegetical Methods. Following seminary he was involved with reconciliation efforts in the former Yugoslavia shortly after the war ended there in1995.  Arnold started acting in his early thirties in Texas. After an encouraging visit to Los Angeles where he spent time with childhood friend George Eads (of CSI Las Vegas) he decided to move to Los Angeles in 2001 to pursue acting full-time. While in Los Angeles he has studied acting with Judith Weston at Judith Weston Studio for Actors and Directors.  Arnold's acting career has been one of steady development, booking co-star and guest-star roles in nighttime television. He guest-starred opposite of Jane Seymour on the night time television drama Justice. He played the lead, Michael Hollister, in the film The Seer, written and directed by Patrick Masset (Friday Night Lights).  He was nominated Best Actor in the168 Film Festival for the role of Phil Stevens in the short-film Useless. In Useless he played a US Marshal who must choose between mercy and justice as he confronts the man who murdered his father. Arnold's performance in Useless confirmed his ability to carry lead roles, and he continues to work toward solidifying himself as a male lead in film and television.  Arnold married fellow Texan Stacy Rudd of San Antonio in 2003 and they are now raising their three children in the Los Angeles area.")]]
 Query: 8a
 Loading title
@@ -228,8 +228,8 @@ Loading rt
 Loading mc
 Loading cn
 Loading aka_name
-trie construction takes 846.2785ms
-join takes 4.713958ms
+trie construction takes 872.133333ms
+join takes 4.700791ms
 [[Str("Chambers, Linda")], [Str(".hack//Quantum")]]
 Query: 8b
 Loading aka_name
@@ -239,8 +239,8 @@ Loading rt
 Loading n
 Loading mc
 Loading cn
-trie construction takes 196.113041ms
-join takes 1.020208ms
+trie construction takes 208.66ms
+join takes 1.120625ms
 [[Str("Chambers, Linda")], [Str("Dragon Ball Z: Shin Budokai")]]
 Query: 9a
 Loading char_name
@@ -251,8 +251,8 @@ Loading n
 Loading t
 Loading mc
 Loading cn
-trie construction takes 1.50513725s
-join takes 183.792041ms
+trie construction takes 1.517726625s
+join takes 201.346583ms
 [[Str("AJ")], [Str("Airport Announcer")], [Str("Blue Harvest")]]
 Query: 9b
 Loading char_name
@@ -263,8 +263,8 @@ Loading n
 Loading t
 Loading rt
 Loading cn
-trie construction takes 1.260585s
-join takes 56.550958ms
+trie construction takes 1.290777125s
+join takes 57.435791ms
 [[Str("Blue Harvest")], [Str("Bassett, Angela")], [Str("Airport Announcer")], [Str("AJ")]]
 Query: 9c
 Loading char_name
@@ -275,8 +275,8 @@ Loading ci
 Loading n
 Loading rt
 Loading aka_name
-trie construction takes 2.316940791s
-join takes 8.694935958s
+trie construction takes 2.352663333s
+join takes 8.95516175s
 [[Str("(1975-01-20)")], [Str("Alborg, Ana Esther")], [Str("2nd Balladeer")], [Str("'Annette'")]]
 Query: 10a
 Loading char_name
@@ -286,8 +286,8 @@ Loading cn
 Loading t
 Loading ci
 Loading rt
-trie construction takes 1.62867725s
-join takes 3.954375ms
+trie construction takes 1.694217375s
+join takes 3.993625ms
 [[Str("Actor")], [Str("12 Rounds")]]
 Query: 10b
 Loading char_name
@@ -297,8 +297,8 @@ Loading movie_companies
 Loading company_type
 Loading cn
 Loading t
-trie construction takes 1.473875208s
-join takes 6.541µs
+trie construction takes 1.519793291s
+join takes 6.416µs
 []
 Query: 10c
 Loading char_name
@@ -308,8 +308,8 @@ Loading company_type
 Loading cn
 Loading t
 Loading role_type
-trie construction takes 1.79895225s
-join takes 27.958µs
+trie construction takes 1.845537125s
+join takes 30.291µs
 [[Str("Himself")], [Str("Evil Eyes: Behind the Scenes")]]
 Query: 11a
 Loading movie_keyword
@@ -320,8 +320,8 @@ Loading cn
 Loading movie_link
 Loading lt
 Loading t
-trie construction takes 1.010199541s
-join takes 1.322958ms
+trie construction takes 1.028065708s
+join takes 1.339375ms
 [[Str("Churchill Films")], [Str("followed by")], [Str("Batman Beyond")]]
 Query: 11b
 Loading movie_keyword
@@ -332,8 +332,8 @@ Loading mc
 Loading cn
 Loading lt
 Loading ct
-trie construction takes 805.180708ms
-join takes 12.916µs
+trie construction takes 808.926ms
+join takes 12.5µs
 [[Str("Filmlance International AB")], [Str("follows")], [Str("The Money Man")]]
 Query: 11c
 Loading movie_keyword
@@ -344,8 +344,8 @@ Loading link_type
 Loading mc
 Loading cn
 Loading ct
-trie construction takes 1.468902916s
-join takes 2.881708ms
+trie construction takes 1.489817666s
+join takes 3.611416ms
 [[Str("20th Century Fox Home Entertainment")], [Str("(1997-2002) (worldwide) (all media)")], [Str("24")]]
 Query: 11d
 Loading movie_keyword
@@ -356,8 +356,8 @@ Loading movie_link
 Loading ct
 Loading t
 Loading link_type
-trie construction takes 1.512716541s
-join takes 3.1525ms
+trie construction takes 1.53610675s
+join takes 3.24625ms
 [[Str("13th Street")], [Str("(1954) (UK) (TV)")], [Str("...denn sie wissen nicht, was sie tun")]]
 Query: 12a
 Loading movie_companies
@@ -368,8 +368,8 @@ Loading mi
 Loading it1
 Loading it2
 Loading ct
-trie construction takes 759.564666ms
-join takes 4.915125ms
+trie construction takes 773.308ms
+join takes 4.975333ms
 [[Str("10th Grade Reunion Films")], [Str("8.1")], [Str("3:20")]]
 Query: 12b
 Loading movie_info
@@ -380,8 +380,8 @@ Loading movie_companies
 Loading cn
 Loading ct
 Loading it2
-trie construction takes 5.847554916s
-join takes 1.283833ms
+trie construction takes 6.785693125s
+join takes 6.339958ms
 [[Str("$10,000")], [Str("Birdemic: Shock and Terror")]]
 Query: 12c
 Loading movie_companies
@@ -392,8 +392,8 @@ Loading mi_idx
 Loading it2
 Loading t
 Loading it1
-trie construction takes 965.159541ms
-join takes 28.036541ms
+trie construction takes 984.006708ms
+join takes 37.122208ms
 [[Str("\"Oh That Gus!\"")], [Str("7.1")], [Str("$1.11")]]
 Query: 13a
 Loading movie_info
@@ -405,8 +405,8 @@ Loading ct
 Loading movie_info_idx
 Loading it
 Loading cn
-trie construction takes 7.139756416s
-join takes 924.383958ms
+trie construction takes 8.027672458s
+join takes 945.23075ms
 [[Str("Afghanistan:24 June 2012")], [Str("1.0")], [Str("&Me")]]
 Query: 13b
 Loading movie_info
@@ -418,8 +418,8 @@ Loading cn
 Loading it2
 Loading t
 Loading kt
-trie construction takes 4.318052958s
-join takes 443.458µs
+trie construction takes 4.7051635s
+join takes 545.833µs
 [[Str("501audio")], [Str("1.8")], [Str("5 Time Champion")]]
 Query: 13c
 Loading movie_info
@@ -431,8 +431,8 @@ Loading it2
 Loading movie_companies
 Loading cn
 Loading ct
-trie construction takes 4.320465083s
-join takes 92.375µs
+trie construction takes 4.68151175s
+join takes 112.875µs
 [[Str("DL Sites")], [Str("1.8")], [Str("Champion")]]
 Query: 13d
 Loading movie_info
@@ -444,8 +444,8 @@ Loading kt
 Loading ct
 Loading movie_info_idx
 Loading it
-trie construction takes 5.317859291s
-join takes 733.743583ms
+trie construction takes 5.521868625s
+join takes 1.009242458s
 [[Str("\"O\" Films")], [Str("1.0")], [Str("#54 Meets #47")]]
 Query: 14a
 Loading movie_keyword
@@ -456,8 +456,8 @@ Loading mi
 Loading t
 Loading kt
 Loading it1
-trie construction takes 1.005770458s
-join takes 17.151125ms
+trie construction takes 1.253766s
+join takes 18.386ms
 [[Str("1.0")], [Str("$lowdown")]]
 Query: 14b
 Loading movie_keyword
@@ -468,8 +468,8 @@ Loading kt
 Loading mi
 Loading it1
 Loading it2
-trie construction takes 736.870125ms
-join takes 48µs
+trie construction takes 743.806ms
+join takes 48.583µs
 [[Str("6.4")], [Str("Of Dolls and Murder")]]
 Query: 14c
 Loading movie_keyword
@@ -480,8 +480,8 @@ Loading kt
 Loading k
 Loading mi_idx
 Loading it2
-trie construction takes 1.210934541s
-join takes 72.112583ms
+trie construction takes 1.220141125s
+join takes 71.0285ms
 [[Str("1.0")], [Str("$lowdown")]]
 Query: 15a
 Loading movie_keyword
@@ -493,8 +493,8 @@ Loading mc
 Loading company_type
 Loading mi
 Loading it1
-trie construction takes 896.912375ms
-join takes 438.125µs
+trie construction takes 910.306666ms
+join takes 453.041µs
 [[Str("USA:1 June 2007")], [Str("Battlestar Galactica: The Resistance")]]
 Query: 15b
 Loading movie_keyword
@@ -506,8 +506,8 @@ Loading company_type
 Loading it1
 Loading aka_title
 Loading keyword
-trie construction takes 719.293291ms
-join takes 349.375µs
+trie construction takes 718.693875ms
+join takes 349.625µs
 [[Str("USA:27 April 2007")], [Str("RoboCop vs Terminator")]]
 Query: 15c
 Loading movie_keyword
@@ -519,8 +519,8 @@ Loading it1
 Loading cn
 Loading t
 Loading company_type
-trie construction takes 1.571895583s
-join takes 1.065833ms
+trie construction takes 1.665401625s
+join takes 1.303375ms
 [[Str("USA:1 April 2003")], [Str("24: Day Six - Debrief")]]
 Query: 15d
 Loading movie_keyword
@@ -532,8 +532,8 @@ Loading mi
 Loading cn
 Loading t
 Loading it1
-trie construction takes 1.605768083s
-join takes 4.623916ms
+trie construction takes 1.673804291s
+join takes 5.98975ms
 [[Str("(Not So) Instant Photo")], [Str("06/05")]]
 Query: 16a
 Loading cast_info
@@ -544,8 +544,8 @@ Loading name
 Loading aka_name
 Loading t
 Loading k
-trie construction takes 7.577244625s
-join takes 1.876580208s
+trie construction takes 7.920185583s
+join takes 1.814830583s
 [[Str("Adams, Stan")], [Str("Carol Burnett vs. Anthony Perkins")]]
 Query: 16b
 Loading cast_info
@@ -556,8 +556,8 @@ Loading cn
 Loading aka_name
 Loading name
 Loading k
-trie construction takes 7.355630416s
-join takes 3.368093208s
+trie construction takes 7.558012708s
+join takes 4.707933333s
 [[Str("!!!, Toy")], [Str("& Teller")]]
 Query: 16c
 Loading cast_info
@@ -568,8 +568,8 @@ Loading aka_name
 Loading movie_companies
 Loading cn
 Loading t
-trie construction takes 6.817463583s
-join takes 1.693506875s
+trie construction takes 7.0370605s
+join takes 2.376740208s
 [[Str("\"Brooklyn\" Tony Danza")], [Str("(#1.5)")]]
 Query: 16d
 Loading cast_info
@@ -580,8 +580,8 @@ Loading movie_keyword
 Loading k
 Loading movie_companies
 Loading cn
-trie construction takes 6.735410791s
-join takes 1.597726958s
+trie construction takes 6.956911833s
+join takes 2.059653791s
 [[Str("\"Brooklyn\" Tony Danza")], [Str("(#1.5)")]]
 Query: 17a
 Loading cast_info
@@ -591,8 +591,8 @@ Loading title
 Loading n
 Loading movie_keyword
 Loading k
-trie construction takes 6.163699791s
-join takes 683.598291ms
+trie construction takes 6.350614s
+join takes 891.07625ms
 [[Str("B, Khaz")]]
 Query: 17b
 Loading cast_info
@@ -602,8 +602,8 @@ Loading movie_keyword
 Loading movie_companies
 Loading company_name
 Loading k
-trie construction takes 6.106471916s
-join takes 74.172458ms
+trie construction takes 6.398887666s
+join takes 142.312875ms
 [[Str("Z'Dar, Robert")]]
 Query: 17c
 Loading cast_info
@@ -613,8 +613,8 @@ Loading k
 Loading movie_companies
 Loading company_name
 Loading title
-trie construction takes 6.088793875s
-join takes 4.524708ms
+trie construction takes 6.240993291s
+join takes 8.763833ms
 [[Str("X'Volaitis, John")]]
 Query: 17d
 Loading cast_info
@@ -624,8 +624,8 @@ Loading company_name
 Loading k
 Loading title
 Loading n
-trie construction takes 6.089657541s
-join takes 17.320708ms
+trie construction takes 6.23532775s
+join takes 56.832083ms
 [[Str("Abrahamsson, Bertil")]]
 Query: 17e
 Loading cast_info
@@ -635,8 +635,8 @@ Loading k
 Loading cn
 Loading name
 Loading title
-trie construction takes 7.402386583s
-join takes 8.423632333s
+trie construction takes 7.584244916s
+join takes 10.489250583s
 [[Str("$hort, Too")]]
 Query: 17f
 Loading cast_info
@@ -646,8 +646,8 @@ Loading movie_companies
 Loading company_name
 Loading n
 Loading title
-trie construction takes 6.202086208s
-join takes 1.115540541s
+trie construction takes 6.423389916s
+join takes 1.521284s
 [[Str("'El Galgo PornoStar', Blanquito")]]
 Query: 18a
 Loading movie_info
@@ -657,8 +657,8 @@ Loading title
 Loading it1
 Loading movie_info_idx
 Loading it2
-trie construction takes 6.158545416s
-join takes 8.627875ms
+trie construction takes 6.409780166s
+join takes 10.397416ms
 [[Str("$1,000")], [Str("10")], [Str("40 Days and 40 Nights")]]
 Query: 18b
 Loading ci
@@ -668,8 +668,8 @@ Loading t
 Loading n
 Loading mi_idx
 Loading it2
-trie construction takes 469.614833ms
-join takes 17.290041ms
+trie construction takes 478.010666ms
+join takes 17.757791ms
 [[Str("Horror")], [Str("8.1")], [Str("Agorable")]]
 Query: 18c
 Loading title
@@ -679,8 +679,8 @@ Loading it1
 Loading n
 Loading movie_info_idx
 Loading it2
-trie construction takes 1.308861416s
-join takes 156.947875ms
+trie construction takes 1.339026666s
+join takes 163.915208ms
 [[Str("Action")], [Str("10")], [Str("#PostModem")]]
 Query: 19a
 Loading char_name
@@ -693,8 +693,8 @@ Loading cn
 Loading t
 Loading mi
 Loading it
-trie construction takes 1.013432291s
-join takes 291.958µs
+trie construction takes 1.036439333s
+join takes 286.333µs
 [[Str("Angeline, Moriah")], [Str("Blue Harvest")]]
 Query: 19b
 Loading char_name
@@ -707,8 +707,8 @@ Loading cn
 Loading it
 Loading rt
 Loading t
-trie construction takes 720.925791ms
-join takes 167.875µs
+trie construction takes 724.060333ms
+join takes 168.333µs
 [[Str("Jolie, Angelina")], [Str("Kung Fu Panda")]]
 Query: 19c
 Loading char_name
@@ -721,8 +721,8 @@ Loading rt
 Loading n
 Loading mi
 Loading it
-trie construction takes 1.596632208s
-join takes 2.634291ms
+trie construction takes 1.708928625s
+join takes 2.932041ms
 [[Str("Alborg, Ana Esther")], [Str(".hack//Akusei heni vol. 2")]]
 Query: 19d
 Loading movie_info
@@ -735,8 +735,8 @@ Loading aka_name
 Loading ci
 Loading rt
 Loading n
-trie construction takes 5.352262875s
-join takes 83.774791ms
+trie construction takes 5.535452041s
+join takes 199.819791ms
 [[Str("Aaron, Caroline")], [Str("$9.99")]]
 Query: 20a
 Loading cast_info
@@ -749,8 +749,8 @@ Loading cct2
 Loading k
 Loading t
 Loading kt
-trie construction takes 6.137595791s
-join takes 5.601698041s
+trie construction takes 5.945720666s
+join takes 5.592307083s
 [[Str("Disaster Movie")]]
 Query: 20b
 Loading cast_info
@@ -763,8 +763,8 @@ Loading complete_cast
 Loading cct1
 Loading cct2
 Loading kt
-trie construction takes 4.502313625s
-join takes 341.375µs
+trie construction takes 4.636902041s
+join takes 215.166µs
 [[Str("Iron Man")]]
 Query: 20c
 Loading cast_info
@@ -777,8 +777,8 @@ Loading name
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 5.852624916s
-join takes 3.784470541s
+trie construction takes 5.919266416s
+join takes 4.422779541s
 [[Str("Abell, Alistair")], [Str("...And Then I...")]]
 Query: 21a
 Loading movie_keyword
@@ -790,8 +790,8 @@ Loading t
 Loading mc
 Loading ct
 Loading cn
-trie construction takes 1.030186708s
-join takes 999.208µs
+trie construction takes 1.10994575s
+join takes 1.045041ms
 [[Str("Det Danske Filminstitut")], [Str("followed by")], [Str("Der Serienkiller - Klinge des Todes")]]
 Query: 21b
 Loading movie_keyword
@@ -803,8 +803,8 @@ Loading t
 Loading ct
 Loading k
 Loading cn
-trie construction takes 1.074322666s
-join takes 879.041µs
+trie construction takes 1.1874475s
+join takes 986.333µs
 [[Str("Filmlance International AB")], [Str("followed by")], [Str("Hämndens pris")]]
 Query: 21c
 Loading movie_keyword
@@ -816,8 +816,8 @@ Loading cn
 Loading ct
 Loading k
 Loading mi
-trie construction takes 1.408307916s
-join takes 2.352916ms
+trie construction takes 1.515105666s
+join takes 2.47875ms
 [[Str("Churchill Films")], [Str("followed by")], [Str("Batman Beyond")]]
 Query: 22a
 Loading movie_keyword
@@ -831,8 +831,8 @@ Loading kt
 Loading mc
 Loading cn
 Loading company_type
-trie construction takes 1.760241083s
-join takes 57.510375ms
+trie construction takes 1.933102875s
+join takes 75.044375ms
 [[Str("01 Distribution")], [Str("2.1")], [Str("12 Rounds")]]
 Query: 22b
 Loading movie_keyword
@@ -846,8 +846,8 @@ Loading t
 Loading kt
 Loading mi
 Loading it1
-trie construction takes 1.713195958s
-join takes 41.87175ms
+trie construction takes 2.059990416s
+join takes 43.21275ms
 [[Str("Boll Kino Beteiligungs GmbH & Co. KG")], [Str("3.0")], [Str("A Small Act")]]
 Query: 22c
 Loading movie_keyword
@@ -861,8 +861,8 @@ Loading it2
 Loading t
 Loading kt
 Loading cn
-trie construction takes 1.892423s
-join takes 108.186958ms
+trie construction takes 2.161293666s
+join takes 134.010625ms
 [[Str("01 Distribution")], [Str("1.9")], [Str("(#1.1)")]]
 Query: 22d
 Loading movie_keyword
@@ -876,8 +876,8 @@ Loading t
 Loading kt
 Loading mi
 Loading it1
-trie construction takes 2.4930535s
-join takes 573.619875ms
+trie construction takes 3.331421833s
+join takes 605.961625ms
 [[Str("01 Distribution")], [Str("1.6")], [Str("(#1.1)")]]
 Query: 23b
 Loading movie_keyword
@@ -891,8 +891,8 @@ Loading t
 Loading kt
 Loading mi
 Loading it1
-trie construction takes 2.06327625s
-join takes 325.391416ms
+trie construction takes 2.26910275s
+join takes 309.188958ms
 [[Str("movie")], [Str("The Big Mope")]]
 Query: 24a
 Loading movie_keyword
@@ -907,8 +907,8 @@ Loading it
 Loading aka_name
 Loading n
 Loading rt
-trie construction takes 2.20899675s
-join takes 58.666125ms
+trie construction takes 2.681980833s
+join takes 74.228666ms
 [[Str("Additional Voices")], [Str("Baker, Andrea")], [Str("Baiohazâdo 6")]]
 Query: 24b
 Loading movie_keyword
@@ -923,8 +923,8 @@ Loading rt
 Loading mi
 Loading t
 Loading it
-trie construction takes 2.121836625s
-join takes 69.426333ms
+trie construction takes 2.290533s
+join takes 69.001166ms
 [[Str("Tigress")], [Str("Jolie, Angelina")], [Str("Kung Fu Panda 2")]]
 Query: 25a
 Loading movie_keyword
@@ -936,8 +936,8 @@ Loading it2
 Loading mi
 Loading it1
 Loading k
-trie construction takes 1.98062325s
-join takes 72.447875ms
+trie construction takes 2.165257875s
+join takes 89.727458ms
 [[Str("10")], [Str("Horror")], [Str("-- And Now the Screaming Starts!")], [Str("Abdallah, Damon")]]
 Query: 25b
 Loading movie_keyword
@@ -949,8 +949,8 @@ Loading it1
 Loading ci
 Loading t
 Loading n
-trie construction takes 1.321287s
-join takes 44.03625ms
+trie construction takes 1.356673s
+join takes 44.4375ms
 [[Str("138")], [Str("Horror")], [Str("Vampire Boys")], [Str("Campbell, Jeremiah")]]
 Query: 25c
 Loading movie_keyword
@@ -962,8 +962,8 @@ Loading ci
 Loading title
 Loading mi
 Loading it1
-trie construction takes 2.012679708s
-join takes 87.039458ms
+trie construction takes 2.120927833s
+join takes 115.248791ms
 [[Str("10")], [Str("Action")], [Str("$")], [Str("Aakeson, Kim Fupz")]]
 Query: 26a
 Loading cast_info
@@ -978,8 +978,8 @@ Loading it2
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 6.125423833s
-join takes 4.630593541s
+trie construction takes 6.42703625s
+join takes 4.889652666s
 [[Str("3:10 to Yuma")], [Str("Acereda, Hermie")], [Str("7.1")], [Str("'Agua' Man")]]
 Query: 26b
 Loading cast_info
@@ -994,8 +994,8 @@ Loading cct2
 Loading cct1
 Loading mi_idx
 Loading it2
-trie construction takes 5.032418833s
-join takes 2.034774875s
+trie construction takes 5.278899583s
+join takes 3.358282708s
 [[Str("Bank Manager")], [Str("8.2")], [Str("Inception")]]
 Query: 26c
 Loading cast_info
@@ -1010,8 +1010,8 @@ Loading it2
 Loading complete_cast
 Loading cct1
 Loading cct2
-trie construction takes 5.623423416s
-join takes 3.642606833s
+trie construction takes 6.006444333s
+join takes 4.696661916s
 [[Str("'Agua' Man")], [Str("1.9")], [Str("12 Rounds")]]
 Query: 27a
 Loading movie_keyword
@@ -1026,8 +1026,8 @@ Loading cct1
 Loading mi
 Loading movie_link
 Loading lt
-trie construction takes 1.6533015s
-join takes 57.305416ms
+trie construction takes 1.803424375s
+join takes 57.114375ms
 [[Str("Det Danske Filminstitut")], [Str("followed by")], [Str("Spår i mörker")]]
 Query: 27b
 Loading movie_keyword
@@ -1042,8 +1042,8 @@ Loading cct2
 Loading t
 Loading mi
 Loading lt
-trie construction takes 1.454287041s
-join takes 57.03425ms
+trie construction takes 1.704924166s
+join takes 57.489541ms
 [[Str("Filmlance International AB")], [Str("followed by")], [Str("Vita nätter")]]
 Query: 27c
 Loading movie_keyword
@@ -1058,8 +1058,8 @@ Loading movie_link
 Loading cct2
 Loading cct1
 Loading lt
-trie construction takes 2.037805916s
-join takes 52.396041ms
+trie construction takes 2.178127458s
+join takes 49.735041ms
 [[Str("Det Danske Filminstitut")], [Str("followed by")], [Str("Spår i mörker")]]
 Query: 28a
 Loading movie_keyword
@@ -1076,8 +1076,8 @@ Loading cn
 Loading complete_cast
 Loading cct1
 Loading cct2
-trie construction takes 2.042276916s
-join takes 180.117375ms
+trie construction takes 2.134007708s
+join takes 187.595208ms
 [[Str("01 Distribuzione")], [Str("2.9")], [Str("(#1.1)")]]
 Query: 28b
 Loading movie_keyword
@@ -1094,8 +1094,8 @@ Loading cct2
 Loading cct1
 Loading mi
 Loading it1
-trie construction takes 1.561296166s
-join takes 140.891625ms
+trie construction takes 1.673561333s
+join takes 143.645625ms
 [[Str("20th Century Fox")], [Str("6.6")], [Str("(#1.1)")]]
 Query: 28c
 Loading movie_keyword
@@ -1112,8 +1112,8 @@ Loading mc
 Loading cn
 Loading company_type
 Loading cct1
-trie construction takes 1.932692125s
-join takes 182.7745ms
+trie construction takes 1.996117666s
+join takes 190.69275ms
 [[Str("01 Distribuzione")], [Str("1.9")], [Str("(#1.1)")]]
 Query: 29a
 Loading movie_keyword
@@ -1133,8 +1133,8 @@ Loading complete_cast
 Loading t
 Loading cct2
 Loading cct1
-trie construction takes 2.329798s
-join takes 80.743458ms
+trie construction takes 2.462294791s
+join takes 73.205875ms
 [[Str("Queen")], [Str("Andrews, Julie")], [Str("Shrek 2")]]
 Query: 29b
 Loading movie_keyword
@@ -1154,8 +1154,8 @@ Loading it
 Loading complete_cast
 Loading cct1
 Loading cct2
-trie construction takes 2.330193166s
-join takes 75.021666ms
+trie construction takes 2.428207375s
+join takes 80.193583ms
 [[Str("Queen")], [Str("Andrews, Julie")], [Str("Shrek 2")]]
 Query: 29c
 Loading movie_keyword
@@ -1175,8 +1175,8 @@ Loading it
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 3.417041958s
-join takes 31.458558875s
+trie construction takes 3.504017666s
+join takes 31.191539875s
 [[Str("Lola")], [Str("Andrews, Julie")], [Str("Hoodwinked!")]]
 Query: 30a
 Loading movie_keyword
@@ -1191,8 +1191,8 @@ Loading cct1
 Loading cct2
 Loading mi
 Loading it1
-trie construction takes 2.422227625s
-join takes 457.461583ms
+trie construction takes 2.601352375s
+join takes 468.722083ms
 [[Str("100356")], [Str("Abrams, J.J.")], [Str("Horror")], [Str("16 Blocks")]]
 Query: 30b
 Loading movie_keyword
@@ -1207,8 +1207,8 @@ Loading cct1
 Loading t
 Loading mi
 Loading it1
-trie construction takes 2.09020425s
-join takes 435.460625ms
+trie construction takes 2.233003041s
+join takes 436.924791ms
 [[Str("194782")], [Str("Shannon, Damian")], [Str("Horror")], [Str("Freddy vs. Jason")]]
 Query: 30c
 Loading movie_keyword
@@ -1223,8 +1223,8 @@ Loading it1
 Loading complete_cast
 Loading cct2
 Loading cct1
-trie construction takes 2.795418916s
-join takes 290.302083ms
+trie construction takes 3.0434885s
+join takes 301.689916ms
 [[Str("100356")], [Str("Abernathy, Lewis")], [Str("Action")], [Str("$")]]
 Query: 31a
 Loading movie_keyword
@@ -1238,8 +1238,8 @@ Loading it2
 Loading ci
 Loading mi
 Loading it1
-trie construction takes 2.536733125s
-join takes 85.299208ms
+trie construction takes 2.577750875s
+join takes 90.169041ms
 [[Str("1040")], [Str("Horror")], [Str("2001 Maniacs")], [Str("Agnew, Jim")]]
 Query: 31b
 Loading movie_keyword
@@ -1253,8 +1253,8 @@ Loading it1
 Loading mc
 Loading t
 Loading cn
-trie construction takes 1.338948458s
-join takes 49.346875ms
+trie construction takes 1.347089541s
+join takes 49.625833ms
 [[Str("129755")], [Str("Horror")], [Str("Saw")], [Str("Bousman, Darren Lynn")]]
 Query: 31c
 Loading movie_keyword
@@ -1268,8 +1268,8 @@ Loading it2
 Loading ci
 Loading mi
 Loading it1
-trie construction takes 3.420295416s
-join takes 204.934208ms
+trie construction takes 3.579548791s
+join takes 280.85875ms
 [[Str("1008")], [Str("Action")], [Str("11:14")], [Str("Abraham, Brad")]]
 Query: 32a
 Loading movie_keyword
@@ -1278,8 +1278,8 @@ Loading movie_link
 Loading title
 Loading link_type
 Loading k
-trie construction takes 1.374074166s
-join takes 2.4415ms
+trie construction takes 1.915768666s
+join takes 8.213666ms
 []
 Query: 32b
 Loading movie_keyword
@@ -1288,60 +1288,6 @@ Loading title
 Loading movie_link
 Loading link_type
 Loading title
-trie construction takes 1.376865875s
-join takes 2.390541ms
-[]
-Query: 33a
-Loading movie_companies
-Loading company_name
-Loading movie_companies
-Loading cn1
-Loading title
-Loading kt1
-Loading movie_info_idx
-Loading it1
-Loading mi_idx2
-Loading it2
-Loading t2
-Loading kt2
-Loading movie_link
-Loading lt
-trie construction takes 2.276938291s
-join takes 202.444541ms
-[]
-Query: 33b
-Loading movie_companies
-Loading cn1
-Loading movie_companies
-Loading company_name
-Loading title
-Loading kt1
-Loading movie_info_idx
-Loading it1
-Loading mi_idx2
-Loading it2
-Loading t2
-Loading kt2
-Loading movie_link
-Loading lt
-trie construction takes 2.172791291s
-join takes 53.190708ms
-[]
-Query: 33c
-Loading movie_companies
-Loading company_name
-Loading movie_companies
-Loading cn1
-Loading title
-Loading kt1
-Loading movie_info_idx
-Loading it1
-Loading t2
-Loading kt2
-Loading mi_idx2
-Loading it2
-Loading movie_link
-Loading lt
-trie construction takes 2.489177208s
-join takes 193.442791ms
-[]
+trie construction takes 1.953241166s
+join takes 14.901375ms
+[[Str("'Angel': Season 2 Overview")], [Str("alternate language version of")], [Str("12 oz. Mouse")]]
