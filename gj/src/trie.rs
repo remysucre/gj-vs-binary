@@ -4,6 +4,8 @@ use std::fmt::{Debug, Display};
 
 type Id = i32;
 
+static VEC_CAPACITY: usize = 1;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
 pub enum Value<'a> {
     Str(&'a str),
@@ -83,15 +85,16 @@ impl<T> Trie<T> {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();
         }
 
+        let capacity = if data.is_empty() { 0 } else { VEC_CAPACITY };
+
         let d = trie
             .get_map_mut()
             .unwrap()
             .entry(*ids.last().unwrap())
-            .or_insert_with(|| Trie::Data(vec![]));
+            .or_insert_with(|| Trie::Data(Vec::with_capacity(capacity)));
         // I think this skips NULL...
         if !data.is_empty() {
             d.get_data_mut().unwrap().push(data);
         }
-        if d.get_data().unwrap().is_empty() {}
     }
 }
