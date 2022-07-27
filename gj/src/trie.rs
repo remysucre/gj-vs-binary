@@ -4,9 +4,9 @@ use std::fmt::{Debug, Display};
 
 type Id = i32;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
-pub enum Value {
-    Str(String),
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
+pub enum Value<'a> {
+    Str(&'a str),
     Num(i32),
 }
 

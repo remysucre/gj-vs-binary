@@ -56,7 +56,7 @@ pub fn compile_plan(
 
 // take the min of each attribute
 // the result is in the form [[t1.c1, t1.c2, ...], [t2.c1, t2.c2, ...], ...]
-pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
+pub fn aggregate_min<'a>(result: &mut Vec<Vec<Value<'a>>>, payload: &[&[Value<'a>]]) {
     // println!("aggregate_min");
     if result.is_empty() {
         result.extend(payload.iter().map(|ss| ss.to_vec()));
@@ -64,8 +64,7 @@ pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
         for (i, s) in payload.iter().enumerate() {
             for (j, v) in s.iter().enumerate() {
                 if result[i][j] > *v {
-                    // TODO maybe don't clone?
-                    result[i][j] = v.clone();
+                    result[i][j] = *v;
                 }
             }
         }
@@ -225,7 +224,7 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> Vec<Trie<Value>> {
+pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Trie<Value<'a>>> {
     let mut tries = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -270,7 +269,7 @@ pub fn build_tries(db: &DB, plan: &[Vec<Attribute>], payload: &[Attribute]) -> V
                         ids.push(v[i]);
                     }
                     Col::StrCol(ref v) => {
-                        data.push(Value::Str(v[i].clone()));
+                        data.push(Value::Str(&v[i]));
                     }
                     Col::NumCol(ref v) => {
                         data.push(Value::Num(v[i]));
