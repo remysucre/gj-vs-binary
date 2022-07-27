@@ -6,6 +6,7 @@ use std::ffi::OsStr;
 use std::fs;
 use translator::*;
 use walkdir::WalkDir;
+use translator::JoinType::Inner;
 
 // 0. Each Join is hash join
 fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
@@ -29,7 +30,13 @@ fn check_each_join_is_hash_join(root: &TreeOp) -> bool {
 fn check_only_contain_linear_join(root: &TreeOp) -> bool {
     let map_func = |node: &TreeOp| -> usize {
         match &node.attr {
-            Some(NodeAttr::Join(_)) => node.children.len(),
+            Some(NodeAttr::Join(join_attr)) => {
+                if join_attr.join_type == Inner {
+                    node.children.len()
+                } else {
+                    0
+                }
+            },
             _ => 0,
         }
     };
@@ -54,13 +61,15 @@ fn check_aggregate_is_on_top_only(root: &TreeOp) -> bool {
     }
 
     let map_func = |node: &TreeOp| -> TraverseState {
-        match node.name.as_str() {
-            str if str.contains("AGGREGATE") => TraverseState {
+        match node {
+            n if n.name.contains("AGGREGATE") => TraverseState {
                 is_aggr: true,
                 is_join: false,
                 results: true,
             },
-            str if str.contains("JOIN") => TraverseState {
+            n if n.name.contains("JOIN") &&
+                matches!(&n.attr, Some(NodeAttr::Join(join_attr)) if join_attr.join_type == Inner)
+            => TraverseState {
                 is_aggr: false,
                 is_join: true,
                 results: true,
@@ -132,7 +141,9 @@ fn main() {
     // print name and check
     // check three or four cases and output to the screen
 
-    println!("filename allhash linear topaggr uniqtbl");
+
+
+    let mut results: Vec<(String, bool, bool, bool, bool)> = vec![];
 
     let dirname = &args[1];
     for file in WalkDir::new(dirname)
@@ -150,7 +161,9 @@ fn main() {
             let mut root: TreeOp =
                 serde_json::from_str(contents.as_str()).expect("Failed to Parse Json!");
 
-            parse_tree_extra_info(&mut root);
+            let filename = file.path().file_name().and_then(OsStr::to_str).unwrap().to_string();
+
+            parse_tree_extra_info(&mut root, filename.as_str());
             let allhash = check_each_join_is_hash_join(&root);
             let linear = check_only_contain_linear_join(&root);
             let topaggr = check_aggregate_is_on_top_only(&root);
@@ -158,17 +171,26 @@ fn main() {
             let gj_plan = to_gj_plan(&mut root);
             let uniqtbl = check_var_has_unique_table_combs(&gj_plan);
 
-            println!(
-                "{:?} {:?} {:?} {:?} {:?}",
-                file.path().file_name().unwrap(),
-                allhash,
-                linear,
-                topaggr,
-                uniqtbl
-            );
+
+
+            results.push((filename,
+                                   allhash,
+                                   linear,
+                                   topaggr,
+                                   uniqtbl));
 
             // println!("{:?}", gj_plan);
         }
+
+    }
+
+    results.sort_by(|x, y| { x.cmp(y) });
+
+    println!("filename allhash linear topaggr uniqtbl");
+
+    for (filename, allhash, linear, topaggr, uniqtbl) in results.iter()
+    {
+        println!("{} {:?} {:?} {:?} {:?}", filename, allhash, linear, topaggr, uniqtbl)
     }
 }
 

@@ -1,35 +1,37 @@
 use serde::{Deserialize, Serialize};
+use crate::JoinType::Inner;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum JoinType {
     Inner,
     LeftOuter,
     RightOuter,
     FullOuter,
+    Mark,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Attribute {
-    attr_name: String,
+    pub attr_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Equalizer {
-    left_attr: Attribute,
-    right_attr: Attribute,
+    pub left_attr: Attribute,
+    pub right_attr: Attribute,
 }
 
 // Force to rename "extra-info" into "extra_info"
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JoinAttr {
-    join_type: JoinType,
-    equalizers: Vec<Equalizer>,
+    pub join_type: JoinType,
+    pub equalizers: Vec<Equalizer>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ScanAttr {
-    table_name: String,
-    attributes: Vec<Attribute>,
+    pub table_name: String,
+    pub attributes: Vec<Attribute>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -86,7 +88,7 @@ where
     func(node);
 }
 
-pub fn parse_tree_extra_info(root: &mut TreeOp) {
+pub fn parse_tree_extra_info(root: &mut TreeOp, filename: &str) {
     let mut parse_func = |node: &mut TreeOp| match node.name.as_str() {
         "HASH_JOIN" => {
             let extra_info: Vec<_> = node
@@ -97,6 +99,9 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 
             let join_type = match &extra_info[0] {
                 &"INNER" => JoinType::Inner,
+                &"MARK" => {eprintln!("{} contains MARK Join", filename);
+                JoinType::Mark
+                },
                 _ => panic!("Fail to parse Join Type {}", extra_info[0]),
             };
 
@@ -139,23 +144,25 @@ pub fn to_gj_plan(root: &mut TreeOp) -> Vec<Vec<String>> {
 
     let mut get_plan = |node: &mut TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
-            for equalizer in &attr.equalizers {
-                let lattr_name = equalizer.left_attr.attr_name.clone();
-                let rattr_name = equalizer.right_attr.attr_name.clone();
+            if attr.join_type == Inner {
+                for equalizer in &attr.equalizers {
+                    let lattr_name = equalizer.left_attr.attr_name.clone();
+                    let rattr_name = equalizer.right_attr.attr_name.clone();
 
-                // Find in plan the index of vector which contains attr_name;
-                let lpos_opt = plan.iter().position(|x| x.contains(&lattr_name));
-                let rpos_opt = plan.iter().position(|x| x.contains(&rattr_name));
+                    // Find in plan the index of vector which contains attr_name;
+                    let lpos_opt = plan.iter().position(|x| x.contains(&lattr_name));
+                    let rpos_opt = plan.iter().position(|x| x.contains(&rattr_name));
 
-                // We have four cases and enumerate
-                match (lpos_opt, rpos_opt) {
-                    (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
-                    (Some(lpos), None) => plan[lpos].push(rattr_name),
-                    (None, Some(rpos)) => plan[rpos].push(lattr_name),
-                    (None, None) => {
-                        plan.push(vec![]);
-                        plan.last_mut().unwrap().push(lattr_name);
-                        plan.last_mut().unwrap().push(rattr_name);
+                    // We have four cases and enumerate
+                    match (lpos_opt, rpos_opt) {
+                        (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
+                        (Some(lpos), None) => plan[lpos].push(rattr_name),
+                        (None, Some(rpos)) => plan[rpos].push(lattr_name),
+                        (None, None) => {
+                            plan.push(vec![]);
+                            plan.last_mut().unwrap().push(lattr_name);
+                            plan.last_mut().unwrap().push(rattr_name);
+                        }
                     }
                 }
             }
