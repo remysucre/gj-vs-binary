@@ -1,5 +1,5 @@
 /target
 /.idea
 /input
-/output
+/output/*
 !/output/res.txt
