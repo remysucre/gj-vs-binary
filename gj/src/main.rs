@@ -54,7 +54,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         ("1d", "IMDBQ004"),
         ("2a", "IMDBQ005"),
         ("2b", "IMDBQ006"),
-        ("2c", "IMDBQ007"),
+        ("2c", "IMDBQ007"), // EMPTY
         ("2d", "IMDBQ008"),
         ("3a", "IMDBQ009"),
         ("3b", "IMDBQ010"),

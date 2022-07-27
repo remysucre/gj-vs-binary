@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Display};
+use rustc_hash::FxHashMap as HashMap;
 
 type Id = i32;
 
@@ -42,7 +42,7 @@ impl std::error::Error for NotANode {}
 
 impl<T> Default for Trie<T> {
     fn default() -> Self {
-        Trie::Node(HashMap::new())
+        Trie::Node(HashMap::default())
     }
 }
 
