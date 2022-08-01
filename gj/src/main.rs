@@ -23,9 +23,11 @@ fn main() {
         // load the parquet file into memory
         load_db_mut(&mut db, q, &scan);
 
+        let time = Instant::now();
+
         let start = Instant::now();
         let relations = build_tries(&db, &plan, &payload);
-        println!("trie construction takes {:?}", start.elapsed());
+        println!("trie construction takes {}s", start.elapsed().as_secs_f32());
         // assert!(relations.iter().all(|t| !t.get_map().unwrap().[is_empty()));
 
         let mut result = vec![];
@@ -40,6 +42,7 @@ fn main() {
         );
 
         println!("join takes {:?}", start.elapsed());
+        println!("total takes {:?}", time.elapsed().as_secs_f32());
         println!("{:?}", result);
         clean_db(&mut db);
     }
