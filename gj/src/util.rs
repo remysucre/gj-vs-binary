@@ -1,5 +1,6 @@
 use std::path;
 use std::{collections::HashMap, error::Error};
+use std::time::Instant;
 
 use indexmap::IndexMap;
 use parquet::{
@@ -258,7 +259,8 @@ pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Att
             .push(&db.get(table_name).unwrap()[col_name]);
     }
 
-    for (_table_name, cols) in columns {
+    for (table_name, cols) in columns {
+        let start = Instant::now();
         let mut trie = Trie::default();
         for i in 0..cols[0].len() {
             let mut ids = Vec::new();
@@ -279,6 +281,7 @@ pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Att
             trie.insert(&ids, data);
         }
         tries.push(trie);
+        println!("building {} takes {}s", table_name, start.elapsed().as_secs_f32());
     }
 
     tries
