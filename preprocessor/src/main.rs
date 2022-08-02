@@ -28,7 +28,7 @@ fn main() {
             let mut joins: Vec<Expr> = vec![];
 
             if let Some(sel) = &q.selection {
-                get_joins(sel, &mut joins, &mut filters);
+                get_joins_and_filters(sel, &mut joins, &mut filters);
             }
 
             let mut from_aliases: HashMap<String, TableWithJoins> = HashMap::new();
@@ -36,6 +36,9 @@ fn main() {
 
             let mut filter_aliases: HashMap<String, Vec<String>> = HashMap::new();
             map_filter_aliases(&filters, &mut filter_aliases);
+
+            let mut join_aliases: HashMap<String, Vec<String>> = HashMap::new();
+            map_join_aliases(&joins, &mut join_aliases);
 
             if mode == "filters" {
                 // constructs the filter queries for each table matching by alias
@@ -45,7 +48,9 @@ fn main() {
                             if let TableFactor::Table{name: _, alias, args: _, with_hints: _} = &parsed_from.relation {
                                 if let Some(a) = &alias {
                                     let alias_string = a.to_string();
-                                    println!("COPY (SELECT * FROM {} WHERE {}) TO '../data/{}/{}.parquet' (FORMAT 'parquet');", parsed_from, parsed_filters.join(" AND "), name, alias_string);
+                                    if let Some(columns) = join_aliases.get(&alias_string) {
+                                        println!("COPY (SELECT {} FROM {} WHERE {}) TO '../data/{}/{}.parquet' (FORMAT 'parquet');", columns.join(", "), parsed_from, parsed_filters.join(" AND "), name, alias_string);
+                                    }
                                 }
                             }
                         }
@@ -54,16 +59,8 @@ fn main() {
             }
             
             if mode == "joins" {
-                print!("SELECT ");
-                if q.distinct {
-                    print!("DISTINCT ");
-                }
-                print!("{}", (&q.projection)[0]);
-                for select in &q.projection[1..] {
-                    print!(", {}", select.to_string());
-                }
+                println!("SELECT COUNT(*)");
 
-                println!("");
                 print!(" FROM ");
                 for (from_alias, parsed_from) in &from_aliases {
                     let mut was_filtered = false;
@@ -115,8 +112,7 @@ fn map_from_aliases(froms: &Vec<TableWithJoins>, aliases: &mut HashMap<String, T
 fn map_filter_aliases(filters: &Vec<Expr>, aliases: &mut HashMap<String, Vec<String>>) {
     for fil in filters {
         let alias_string = get_filter_alias(fil);
-        aliases.entry(alias_string).or_insert(vec![]);
-        let alias_string = get_filter_alias(fil);
+        aliases.entry(alias_string.clone()).or_insert(vec![]);
         if let Some(fs) = aliases.get_mut(&alias_string) {
             fs.push((*fil).to_string());
         }
@@ -171,8 +167,48 @@ fn get_filter_alias(filter: &Expr) -> String {
     }
 }
 
+// maps table aliases (ie. cn) to their joined columns (ie. movie_id)
+fn map_join_aliases(joins: &Vec<Expr>, aliases: &mut HashMap<String, Vec<String>>) {
+    for join in joins {
+        let aliases_and_columns = get_join_aliases_and_columns(join);
+        aliases.entry(aliases_and_columns[0].clone()).or_insert(vec![]);
+        aliases.entry(aliases_and_columns[2].clone()).or_insert(vec![]);
+        if let Some(js) = aliases.get_mut(&aliases_and_columns[0]) {
+            if !js.contains(&aliases_and_columns[1].clone()) {
+                js.push(aliases_and_columns[1].clone());
+            }
+        }
+        if let Some(js) = aliases.get_mut(&aliases_and_columns[2]) {
+            if !js.contains(&aliases_and_columns[3].clone()) {
+                js.push(aliases_and_columns[3].clone());
+            }
+        }
+    }
+}
+
+// gets a vector representing the aliases and columns of a given join in the form [left_alias, left_column, right_alias, right_column]
+fn get_join_aliases_and_columns(join: &Expr) -> Vec<String> {
+    if let Expr::BinaryOp {
+        left: l,
+        op: o,
+        right: r,
+    } = join
+    {
+        match(&**l, o, &**r) {
+            (Expr::CompoundIdentifier(left_ident), BinaryOperator::Eq, Expr::CompoundIdentifier(right_ident)) => {
+                return vec![(&left_ident[0]).to_string(), 
+                            (&left_ident[1]).to_string(),
+                            (&right_ident[0]).to_string(),
+                            (&right_ident[1]).to_string()];
+            }
+            _ => return vec![String::new(), String::new(), String::new(), String::new()],
+        }
+    }
+    return vec![String::new(), String::new(), String::new(), String::new()];
+}
+
 // gets all of the joins and filters from the expression
-fn get_joins(e: &Expr, joins: &mut Vec<Expr>, filters: &mut Vec<Expr>) {
+fn get_joins_and_filters(e: &Expr, joins: &mut Vec<Expr>, filters: &mut Vec<Expr>) {
     if let Expr::BinaryOp {
         left: l,
         op: o,
@@ -184,8 +220,8 @@ fn get_joins(e: &Expr, joins: &mut Vec<Expr>, filters: &mut Vec<Expr>) {
                 joins.push(e.clone())
             }
             (e_l, BinaryOperator::And, e_r) => {
-                get_joins(e_l, joins, filters);
-                get_joins(e_r, joins, filters)
+                get_joins_and_filters(e_l, joins, filters);
+                get_joins_and_filters(e_r, joins, filters)
             }
             _ => filters.push(e.clone()),
         }
