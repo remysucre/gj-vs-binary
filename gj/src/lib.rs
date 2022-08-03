@@ -9,7 +9,7 @@ use trie::Value;
 
 // TODO refactor these types into different modules?
 pub enum Col {
-    IdCol(Vec<i32>),     // join attributes
+    IdCol(Vec<i32>), // join attributes
     DataCol(Vec<Value>),
 }
 

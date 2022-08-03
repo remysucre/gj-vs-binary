@@ -20,7 +20,7 @@ where
 
 pub fn fj<T, F>(relations: &[&Table<T>], plan: &[Vec<usize>], payload: &[usize], f: &mut F)
 where
-    T:Clone + Debug,
+    T: Clone + Debug,
     F: FnMut(&[&[T]]),
 {
     if !plan.is_empty() {
@@ -28,7 +28,6 @@ where
 
         if let Some(j_min) = js.iter().find(|&&j| matches!(relations[j], Table::Arr(_))) {
             if let Table::Arr((id_cols, data_cols)) = relations[*j_min] {
-
                 for (i, id) in id_cols[0].iter().enumerate() {
                     if let Some(tries) = js
                         .iter()
@@ -44,17 +43,18 @@ where
                     {
                         // TODO singleton compression
                         let mut trie_min = Trie::default();
-                        let ids:Vec<_> = id_cols[1..].iter().map(|c| c[i]).collect();
-                        let data:Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
+                        let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i]).collect();
+                        let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
                         trie_min.insert(&ids, data);
 
-                        let mut rels: Vec<_> = relations.iter().map(|t| {
-                            match t {
+                        let mut rels: Vec<_> = relations
+                            .iter()
+                            .map(|t| match t {
                                 Table::Arr(_) => &trie_min,
                                 Table::Trie(trie) => trie,
-                            }
-                        }).collect();
-                        
+                            })
+                            .collect();
+
                         for (j, trie) in tries.iter() {
                             rels[*j] = trie;
                         }
@@ -65,12 +65,13 @@ where
                 unreachable!()
             }
         } else {
-            let rels: Vec<_> = relations.iter().map(|t| {
-                match t {
+            let rels: Vec<_> = relations
+                .iter()
+                .map(|t| match t {
                     Table::Arr(_) => unreachable!(),
                     Table::Trie(trie) => trie,
-                }
-            }).collect();
+                })
+                .collect();
             join(&rels, plan, payload, f);
         }
     } else {

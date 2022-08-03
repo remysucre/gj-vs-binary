@@ -1,6 +1,6 @@
+use rustc_hash::FxHashMap as HashMap;
 use std::fmt;
 use std::fmt::{Debug, Display};
-use rustc_hash::FxHashMap as HashMap;
 
 type Id = i32;
 
@@ -18,9 +18,9 @@ pub enum Trie<T> {
     Data(Vec<Vec<T>>),
 }
 
-pub enum Table <'a, T> {
+pub enum Table<'a, T> {
     Trie(Trie<T>),
-    Arr((Vec<&'a [i32]>, Vec<&'a [T]>))
+    Arr((Vec<&'a [i32]>, Vec<&'a [T]>)),
 }
 
 impl<'a, T> Table<'a, T> {

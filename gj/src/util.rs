@@ -1,6 +1,6 @@
 use std::path;
-use std::{collections::HashMap, error::Error};
 use std::time::Instant;
+use std::{collections::HashMap, error::Error};
 
 use indexmap::IndexMap;
 use parquet::{
@@ -226,7 +226,11 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Table<'a, Value>> {
+pub fn build_tables<'a>(
+    db: &'a DB,
+    plan: &'a [Vec<Attribute>],
+    payload: &'a [Attribute],
+) -> Vec<Table<'a, Value>> {
     let mut tables = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -296,13 +300,21 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [At
             }
             tables.push(Table::Trie(trie));
         }
-        println!("building {} takes {}s", table_name, start.elapsed().as_secs_f32());
+        println!(
+            "building {} takes {}s",
+            table_name,
+            start.elapsed().as_secs_f32()
+        );
     }
 
     tables
 }
 
-pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Trie<Value>> {
+pub fn build_tries<'a>(
+    db: &'a DB,
+    plan: &'a [Vec<Attribute>],
+    payload: &'a [Attribute],
+) -> Vec<Trie<Value>> {
     let mut tries = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -355,7 +367,11 @@ pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Att
             trie.insert(&ids, data);
         }
         tries.push(trie);
-        println!("building {} takes {}s", table_name, start.elapsed().as_secs_f32());
+        println!(
+            "building {} takes {}s",
+            table_name,
+            start.elapsed().as_secs_f32()
+        );
     }
 
     tries
