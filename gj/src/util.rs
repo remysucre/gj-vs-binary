@@ -13,6 +13,7 @@ use parquet::{
 use std::sync::Arc;
 use std::{fs, fs::File};
 
+use crate::trie::Table;
 use crate::{
     sql::*,
     trie::{Trie, Value},
@@ -223,6 +224,92 @@ fn find_shared(table_name: &str) -> &str {
         "t" => "title",
         _ => panic!("unsupported table {}", table_name),
     }
+}
+
+pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Table<Value<'a>>> {
+    let mut tables = Vec::new();
+    let mut columns = IndexMap::new();
+
+    for node in plan {
+        for a in node {
+            let trie_name = a.table_name.as_str();
+            let mut table_name = a.table_name.as_str();
+            if !db.contains_key(table_name) {
+                table_name = find_shared(table_name);
+            }
+            let col_name = &a.attr_name;
+            let col = db[table_name].get(col_name).unwrap();
+            columns
+                .entry(trie_name.to_string())
+                .or_insert(vec![])
+                .push(col);
+        }
+    }
+
+    for a in payload {
+        let trie_name = a.table_name.as_str();
+        let mut table_name = a.table_name.as_str();
+        if !db.contains_key(table_name) {
+            table_name = find_shared(table_name);
+        }
+        let col_name = &a.attr_name;
+        // println!("table {} column {}", table_name, col_name);
+        columns
+            .entry(trie_name.to_string())
+            .or_insert(vec![])
+            .push(&db.get(table_name).unwrap()[col_name]);
+    }
+
+    for (i, (table_name, cols)) in columns.iter().enumerate() {
+        let start = Instant::now();
+        if i == 0 {
+            println!("building flat table on {}", table_name);
+            let mut rows = vec![];
+            for i in 0..cols[0].len() {
+                let mut ids = vec![];
+                let mut data = vec![];
+                for col in cols {
+                    match col {
+                        Col::IdCol(ref v) => {
+                            ids.push(v[i]);
+                        }
+                        Col::StrCol(ref v) => {
+                            data.push(Value::Str(&v[i]));
+                        }
+                        Col::NumCol(ref v) => {
+                            data.push(Value::Num(v[i]));
+                        }
+                    }
+                }
+                rows.push((ids, data));
+            }
+            tables.push(Table::Arr(rows));
+        } else {
+            let mut trie = Trie::default();
+            for i in 0..cols[0].len() {
+                let mut ids = Vec::new();
+                let mut data = Vec::new();
+                for col in cols {
+                    match col {
+                        Col::IdCol(ref v) => {
+                            ids.push(v[i]);
+                        }
+                        Col::StrCol(ref v) => {
+                            data.push(Value::Str(&v[i]));
+                        }
+                        Col::NumCol(ref v) => {
+                            data.push(Value::Num(v[i]));
+                        }
+                    }
+                }
+                trie.insert(&ids, data);
+            }
+            tables.push(Table::Trie(trie));
+        }
+        println!("building {} takes {}s", table_name, start.elapsed().as_secs_f32());
+    }
+
+    tables
 }
 
 pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Trie<Value<'a>>> {

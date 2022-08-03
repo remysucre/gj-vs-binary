@@ -18,6 +18,64 @@ where
     }
 }
 
+pub fn fj<T, F>(relations: &[&Table<T>], plan: &[Vec<usize>], payload: &[usize], f: &mut F)
+where
+    T:Clone + Debug,
+    F: FnMut(&[&[T]]),
+{
+    if !plan.is_empty() {
+        let js = &plan[0];
+
+        if let Some(j_min) = js.iter().find(|&&j| matches!(relations[j], Table::Arr(_))) {
+            if let Table::Arr(rows) = relations[*j_min] {
+                for (ids, data) in rows {
+                    let id = ids[0];
+                    if let Some(tries) = js
+                        .iter()
+                        .filter(|j| j != &j_min)
+                        .map(|&j| {
+                            relations[j]
+                                .get_map()
+                                .unwrap()
+                                .get(&id)
+                                .map(|trie| (j, trie))
+                        })
+                        .collect::<Option<Vec<_>>>()
+                    {
+                        // TODO singleton compression
+                        let mut trie_min = Trie::default();
+                        trie_min.insert(&ids[1..], data.to_vec());
+
+                        let mut rels: Vec<_> = relations.iter().map(|t| {
+                            match t {
+                                Table::Arr(_) => &trie_min,
+                                Table::Trie(trie) => trie,
+                            }
+                        }).collect();
+                        
+                        for (j, trie) in tries.iter() {
+                            rels[*j] = trie;
+                        }
+                        join(&rels, &plan[1..], payload, f);
+                    }
+                }
+            } else {
+                unreachable!()
+            }
+        } else {
+            let rels: Vec<_> = relations.iter().map(|t| {
+                match t {
+                    Table::Arr(_) => unreachable!(),
+                    Table::Trie(trie) => trie,
+                }
+            }).collect();
+            join(&rels, plan, payload, f);
+        }
+    } else {
+        unreachable!()
+    }
+}
+
 pub fn join<T, F>(relations: &[&Trie<T>], plan: &[Vec<usize>], payload: &[usize], f: &mut F)
 where
     T: Clone + Debug,

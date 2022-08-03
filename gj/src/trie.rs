@@ -18,6 +18,29 @@ pub enum Trie<T> {
     Data(Vec<Vec<T>>),
 }
 
+pub enum Table <T> {
+    Trie(Trie<T>),
+    Arr(Vec<(Vec<Id>, Vec<T>)>), // TODO data is always 1 element
+    // Single((Vec<Id>, Vec<Vec<T>>)), // TODO data is always 1 element
+}
+
+impl<T> Table<T> {
+    pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
+        match self {
+            Table::Trie(Trie::Data(data)) => Ok(data),
+            // Table::Single((_, data)) => Ok(&data),
+            _ => Err(NotAData),
+        }
+    }
+
+    pub fn get_map(&self) -> Result<&HashMap<Id, Trie<T>>, NotANode> {
+        match self {
+            Table::Trie(Trie::Node(map)) => Ok(map),
+            _ => Err(NotANode),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct NotAData;
 
@@ -81,20 +104,14 @@ impl<T> Trie<T> {
 
     pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
         let mut trie = self;
-        for id in &ids[..ids.len() - 1] {
+        for id in ids {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();
         }
 
-        let capacity = if data.is_empty() { 0 } else { VEC_CAPACITY };
-
-        let d = trie
-            .get_map_mut()
-            .unwrap()
-            .entry(*ids.last().unwrap())
-            .or_insert_with(|| Trie::Data(Vec::with_capacity(capacity)));
-        // I think this skips NULL...
         if !data.is_empty() {
-            d.get_data_mut().unwrap().push(data);
+            *trie = Trie::Data(vec![data]);
+        } else {
+            *trie = Trie::Data(vec![]);
         }
     }
 }

@@ -73,6 +73,21 @@ where
     func(node);
 }
 
+pub fn inorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
+where
+    T: FnMut(&mut TreeOp),
+{
+    if !node.children.is_empty() {
+        inorder_traverse_mut(&mut node.children[0], func);
+    }
+    func(node);
+    if !node.children.is_empty() {
+        for child_node in &mut node.children[1..] {
+            inorder_traverse_mut(child_node, func);
+        }
+    }
+}
+
 // fill in the attributes for scans, projections and joins
 pub fn parse_tree_extra_info(root: &mut TreeOp) {
     let mut parse_func = |node: &mut TreeOp| match node.name.as_str() {
@@ -220,7 +235,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
         }
     };
 
-    postorder_traverse_mut(root, &mut get_plan);
+    inorder_traverse_mut(root, &mut get_plan);
 
     (scan, plan, payload)
 }
