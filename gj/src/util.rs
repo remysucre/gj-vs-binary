@@ -58,7 +58,7 @@ pub fn compile_plan(
 
 // take the min of each attribute
 // the result is in the form [[t1.c1, t1.c2, ...], [t2.c1, t2.c2, ...], ...]
-pub fn aggregate_min<'a>(result: &mut Vec<Vec<Value<'a>>>, payload: &[&[Value<'a>]]) {
+pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
     // println!("aggregate_min");
     if result.is_empty() {
         result.extend(payload.iter().map(|ss| ss.to_vec()));
@@ -66,7 +66,7 @@ pub fn aggregate_min<'a>(result: &mut Vec<Vec<Value<'a>>>, payload: &[&[Value<'a
         for (i, s) in payload.iter().enumerate() {
             for (j, v) in s.iter().enumerate() {
                 if result[i][j] > *v {
-                    result[i][j] = *v;
+                    result[i][j] = v.clone();
                 }
             }
         }
@@ -165,13 +165,13 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                             .or_insert(if col_name.ends_with("id") {
                                 Col::IdCol(vec![])
                             } else {
-                                Col::NumCol(vec![])
+                                Col::DataCol(vec![])
                             });
                     // TODO very ugly code
                     if let Col::IdCol(ref mut v) = col {
                         v.push(*i);
-                    } else if let Col::NumCol(ref mut v) = col {
-                        v.push(*i);
+                    } else if let Col::DataCol(ref mut v) = col {
+                        v.push(Value::Num(*i));
                     } else {
                         panic!("unexpected column type");
                     }
@@ -179,9 +179,9 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                 Field::Str(s) => {
                     let col = table
                         .entry(col_name.to_string())
-                        .or_insert(Col::StrCol(vec![]));
-                    if let Col::StrCol(ref mut v) = col {
-                        v.push(s.to_string());
+                        .or_insert(Col::DataCol(vec![]));
+                    if let Col::DataCol(ref mut v) = col {
+                        v.push(Value::Str(s.to_string()));
                     } else {
                         panic!("expected str col");
                     }
@@ -226,7 +226,7 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Table<Value<'a>>> {
+pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Table<'a, Value>> {
     let mut tables = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -264,26 +264,19 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [At
         let start = Instant::now();
         if i == 0 {
             println!("building flat table on {}", table_name);
-            let mut rows = vec![];
-            for i in 0..cols[0].len() {
-                let mut ids = vec![];
-                let mut data = vec![];
-                for col in cols {
-                    match col {
-                        Col::IdCol(ref v) => {
-                            ids.push(v[i]);
-                        }
-                        Col::StrCol(ref v) => {
-                            data.push(Value::Str(&v[i]));
-                        }
-                        Col::NumCol(ref v) => {
-                            data.push(Value::Num(v[i]));
-                        }
+            let mut ids = vec![];
+            let mut data = vec![];
+            for col in cols {
+                match col {
+                    Col::IdCol(ref v) => {
+                        ids.push(&v[..]);
+                    }
+                    Col::DataCol(ref v) => {
+                        data.push(&v[..]);
                     }
                 }
-                rows.push((ids, data));
             }
-            tables.push(Table::Arr(rows));
+            tables.push(Table::Arr((ids, data)));
         } else {
             let mut trie = Trie::default();
             for i in 0..cols[0].len() {
@@ -294,11 +287,8 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [At
                         Col::IdCol(ref v) => {
                             ids.push(v[i]);
                         }
-                        Col::StrCol(ref v) => {
-                            data.push(Value::Str(&v[i]));
-                        }
-                        Col::NumCol(ref v) => {
-                            data.push(Value::Num(v[i]));
+                        Col::DataCol(ref v) => {
+                            data.push(v[i].clone());
                         }
                     }
                 }
@@ -312,7 +302,7 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [At
     tables
 }
 
-pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Trie<Value<'a>>> {
+pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Attribute]) -> Vec<Trie<Value>> {
     let mut tries = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -357,11 +347,8 @@ pub fn build_tries<'a>(db: &'a DB, plan: &'a [Vec<Attribute>], payload: &'a [Att
                     Col::IdCol(ref v) => {
                         ids.push(v[i]);
                     }
-                    Col::StrCol(ref v) => {
-                        data.push(Value::Str(&v[i]));
-                    }
-                    Col::NumCol(ref v) => {
-                        data.push(Value::Num(v[i]));
+                    Col::DataCol(ref v) => {
+                        data.push(v[i].clone());
                     }
                 }
             }

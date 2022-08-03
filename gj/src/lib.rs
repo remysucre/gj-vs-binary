@@ -5,19 +5,19 @@ pub mod util;
 
 use std::collections::HashMap;
 
+use trie::Value;
+
 // TODO refactor these types into different modules?
 pub enum Col {
     IdCol(Vec<i32>),     // join attributes
-    StrCol(Vec<String>), // text data
-    NumCol(Vec<i32>),    // numeric data
+    DataCol(Vec<Value>),
 }
 
 impl Col {
     pub fn len(&self) -> usize {
         match self {
             Col::IdCol(v) => v.len(),
-            Col::StrCol(v) => v.len(),
-            Col::NumCol(v) => v.len(),
+            Col::DataCol(v) => v.len(),
         }
     }
 

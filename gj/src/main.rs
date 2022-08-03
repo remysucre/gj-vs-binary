@@ -97,6 +97,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         // ("10a", "IMDBQ035"),
         // ("10b", "IMDBQ036"), // EMPTY
         // ("10c", "IMDBQ037"),
+        // BUSHY
         ("11a", "IMDBQ038"),
         ("11b", "IMDBQ039"),
         ("11c", "IMDBQ040"),
@@ -136,6 +137,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         // ("20a", "IMDBQ073"),
         // ("20b", "IMDBQ074"),
         // ("20c", "IMDBQ075"),
+        // BUSHY
         ("21a", "IMDBQ076"),
         ("21b", "IMDBQ077"),
         ("21c", "IMDBQ078"),
@@ -170,6 +172,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         // ("31a", "IMDBQ106"),
         // ("31b", "IMDBQ107"),
         // ("31c", "IMDBQ108"),
+        // BUSHY
         ("32a", "IMDBQ109"), // TRIE SLOW // EMPTY
         ("32b", "IMDBQ110"), // TRIE SLOW
         // BUSHY

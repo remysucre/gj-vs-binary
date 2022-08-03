@@ -27,9 +27,9 @@ where
         let js = &plan[0];
 
         if let Some(j_min) = js.iter().find(|&&j| matches!(relations[j], Table::Arr(_))) {
-            if let Table::Arr(rows) = relations[*j_min] {
-                for (ids, data) in rows {
-                    let id = ids[0];
+            if let Table::Arr((id_cols, data_cols)) = relations[*j_min] {
+
+                for (i, id) in id_cols[0].iter().enumerate() {
                     if let Some(tries) = js
                         .iter()
                         .filter(|j| j != &j_min)
@@ -37,14 +37,16 @@ where
                             relations[j]
                                 .get_map()
                                 .unwrap()
-                                .get(&id)
+                                .get(id)
                                 .map(|trie| (j, trie))
                         })
                         .collect::<Option<Vec<_>>>()
                     {
                         // TODO singleton compression
                         let mut trie_min = Trie::default();
-                        trie_min.insert(&ids[1..], data.to_vec());
+                        let ids:Vec<_> = id_cols[1..].iter().map(|c| c[i]).collect();
+                        let data:Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
+                        trie_min.insert(&ids, data);
 
                         let mut rels: Vec<_> = relations.iter().map(|t| {
                             match t {

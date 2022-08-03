@@ -4,11 +4,11 @@ use rustc_hash::FxHashMap as HashMap;
 
 type Id = i32;
 
-static VEC_CAPACITY: usize = 1;
+// static VEC_CAPACITY: usize = 1;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
-pub enum Value<'a> {
-    Str(&'a str),
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub enum Value {
+    Str(String),
     Num(i32),
 }
 
@@ -18,13 +18,12 @@ pub enum Trie<T> {
     Data(Vec<Vec<T>>),
 }
 
-pub enum Table <T> {
+pub enum Table <'a, T> {
     Trie(Trie<T>),
-    Arr(Vec<(Vec<Id>, Vec<T>)>), // TODO data is always 1 element
-    // Single((Vec<Id>, Vec<Vec<T>>)), // TODO data is always 1 element
+    Arr((Vec<&'a [i32]>, Vec<&'a [T]>))
 }
 
-impl<T> Table<T> {
+impl<'a, T> Table<'a, T> {
     pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
         match self {
             Table::Trie(Trie::Data(data)) => Ok(data),
