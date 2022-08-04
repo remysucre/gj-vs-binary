@@ -22,7 +22,7 @@ $(IMDB): duckdb
 $(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(PREPROCESSOR)
 	cd preprocessor && bash run.sh join-order-benchmark imdb && touch ../$@
 
-test: preprocessed/test.sh $(DATA)
+test: preprocessor/test.sh $(DATA)
 	cd preprocessor && bash test.sh join-order-benchmark imdb
 
 clean_all: clean

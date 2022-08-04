@@ -28,7 +28,7 @@ fn main() {
             let mut joins: Vec<Expr> = vec![];
 
             if let Some(sel) = &q.selection {
-                get_joins(sel, &mut joins, &mut filters);
+                get_joins_and_filters(sel, &mut joins, &mut filters);
             }
 
             let mut from_aliases: HashMap<String, TableWithJoins> = HashMap::new();
@@ -171,7 +171,7 @@ fn get_filter_alias(filter: &Expr) -> String {
 }
 
 // gets all of the joins and filters from the expression
-fn get_joins(e: &Expr, joins: &mut Vec<Expr>, filters: &mut Vec<Expr>) {
+fn get_joins_and_filters(e: &Expr, joins: &mut Vec<Expr>, filters: &mut Vec<Expr>) {
     if let Expr::BinaryOp {
         left: l,
         op: o,
@@ -183,8 +183,8 @@ fn get_joins(e: &Expr, joins: &mut Vec<Expr>, filters: &mut Vec<Expr>) {
                 joins.push(e.clone())
             }
             (e_l, BinaryOperator::And, e_r) => {
-                get_joins(e_l, joins, filters);
-                get_joins(e_r, joins, filters)
+                get_joins_and_filters(e_l, joins, filters);
+                get_joins_and_filters(e_r, joins, filters)
             }
             _ => filters.push(e.clone()),
         }
