@@ -11,6 +11,9 @@ main_database="../data/$2/$2.db"
 for query in `ls $original_queries -I fkindexes.sql -I schema.sql -I README.md`
 do
 
+	echo "CREATE TABLE counts_query AS "
+	cat "$preprocessed_queries/counts/$query"
+
 	# Load the filtered tables from the preprocessed parquet
 	for preprocessed_table in `ls $preprocessed_queries/data/${query%.*}/`
 	do
@@ -24,7 +27,8 @@ do
 
 	# Get the difference between the original and preprocessed query
 	echo ".print 'Testing $query'"
-	echo "SELECT * FROM preprocessed_query;"
+	echo "SELECT * FROM counts_query EXCEPT SELECT * FROM preprocessed_query;"
+	echo "DROP TABLE IF EXISTS counts_query;"
 	echo "DROP TABLE IF EXISTS preprocessed_query;"
 
 done > temp.sql

@@ -40,6 +40,16 @@ fn main() {
             let mut join_aliases: HashMap<String, Vec<String>> = HashMap::new();
             map_join_aliases(&joins, &mut join_aliases);
 
+            if mode == "counts" {
+                println!("SELECT COUNT(*) FROM ");
+                for table in &q.from {
+                    println!("{}, ", table.to_string());
+                }
+                if let Some(sel) = &q.selection {
+                    println!("WHERE {};", sel.to_string());
+                }
+            }
+
             if mode == "filters" {
                 // constructs the filter queries for each table matching by alias
                 for (filter_alias, parsed_filters) in &filter_aliases {
