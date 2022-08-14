@@ -1,0 +1,755 @@
+Query: 1a
+Loading title
+Loading movie_info_idx
+Loading it
+Loading mc
+Loading ct
+building flat table on mc
+building mc takes 0.000001916s
+building t takes 0.6618819s
+building mi_idx takes 0.14733332s
+building it takes 0.000001291s
+building ct takes 0.000000625s
+trie construction takes 0.80925286s
+join takes 16.383ms
+total takes 0.8256445
+[[Str("(A Warner Bros.-First National Picture) (presents)")], [Str("A Clockwork Orange"), Num(1934)]]
+Query: 1b
+Loading movie_info_idx
+Loading it
+Loading mc
+Loading ct
+Loading t
+building flat table on mc
+building mc takes 0.000007166s
+building t takes 0.1521833s
+building mi_idx takes 0.13204908s
+building it takes 0.000001083s
+building ct takes 0.000000958s
+trie construction takes 0.2842701s
+join takes 120.344958ms
+total takes 0.40462264
+[[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2008)]]
+Query: 1c
+Loading movie_info_idx
+Loading t
+Loading mc
+Loading ct
+Loading it
+building flat table on mc
+building mc takes 0.000001541s
+building t takes 0.07407325s
+building mi_idx takes 0.13129254s
+building it takes 0.000001083s
+building ct takes 0.000001s
+trie construction takes 0.20539847s
+join takes 1.675083ms
+total takes 0.207077
+[[Str("(co-production)")], [Str("Intouchables"), Num(2011)]]
+Query: 1d
+Loading t
+Loading mc
+Loading ct
+Loading movie_info_idx
+Loading it
+building flat table on mc
+building mc takes 0.000002375s
+building t takes 0.33142915s
+building mi_idx takes 0.13194934s
+building it takes 0.00000125s
+building ct takes 0.000000541s
+trie construction takes 0.4634177s
+join takes 188.346083ms
+total takes 0.65177184
+[[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2004)]]
+Query: 2a
+Loading movie_keyword
+Loading movie_companies
+Loading title
+Loading cn
+Loading k
+building flat table on mk
+building mk takes 0.000003041s
+building t takes 0.6422527s
+building mc takes 0.45541668s
+building k takes 0.000004083s
+building cn takes 0.00087775s
+trie construction takes 1.0985916s
+join takes 842.877541ms
+total takes 1.9414775
+[[Str("'Doc'")]]
+Query: 2b
+Loading movie_keyword
+Loading movie_companies
+Loading title
+Loading k
+Loading cn
+building flat table on mk
+building mk takes 0.000002083s
+building t takes 0.62430066s
+building mc takes 0.4104559s
+building k takes 0.000001458s
+building cn takes 0.000206041s
+trie construction takes 1.0349923s
+join takes 872.344125ms
+total takes 1.9073436
+[[Str("'Doc'")]]
+Query: 2c
+Loading movie_keyword
+Loading title
+Loading k
+Loading movie_companies
+Loading cn
+building flat table on mk
+building mk takes 0.000005541s
+building t takes 0.62896377s
+building mc takes 0.4138679s
+building k takes 0.000001291s
+building cn takes 0.000000583s
+trie construction takes 1.0428692s
+join takes 865.869541ms
+total takes 1.9087468
+[]
+Query: 2d
+Loading movie_keyword
+Loading movie_companies
+Loading cn
+Loading title
+Loading k
+building flat table on mk
+building mk takes 0.000002875s
+building t takes 0.62683463s
+building mc takes 0.40109506s
+building k takes 0.000001166s
+building cn takes 0.005922958s
+trie construction takes 1.0338962s
+join takes 884.25125ms
+total takes 1.9181548
+[[Str("& Teller")]]
+Query: 3a
+Loading movie_keyword
+Loading mi
+Loading t
+Loading k
+building flat table on mi
+building mi takes 0.000003125s
+building t takes 0.22813867s
+building mk takes 0.41575283s
+building k takes 0.000009208s
+trie construction takes 0.6439326s
+join takes 15.667625ms
+total takes 0.6596076
+[[Str("2 Days in New York")]]
+Query: 3b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi
+building flat table on mi
+building mi takes 0.000002333s
+building t takes 0.07249117s
+building mk takes 0.40517408s
+building k takes 0.0000045s
+trie construction takes 0.47769585s
+join takes 192µs
+total takes 0.47789037
+[[Str("300: Rise of an Empire")]]
+Query: 3c
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi
+building flat table on mi
+building mi takes 0.000005666s
+building t takes 0.40173215s
+building mk takes 0.4290752s
+building k takes 0.000005125s
+trie construction takes 0.8308441s
+join takes 149.259833ms
+total takes 0.9801122
+[[Str("& Teller 2")]]
+Query: 4a
+Loading movie_keyword
+Loading t
+Loading mi_idx
+Loading it
+Loading k
+building flat table on mk
+building mk takes 0.000002375s
+building t takes 0.22954571s
+building mi_idx takes 0.10093262s
+building k takes 0.00000525s
+building it takes 0.000003458s
+trie construction takes 0.33051834s
+join takes 205.663708ms
+total takes 0.53618777
+[[Str("5.1")], [Str("& Teller 2")]]
+Query: 4b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi_idx
+Loading it
+building flat table on mk
+building mk takes 0.000002541s
+building t takes 0.07129596s
+building mi_idx takes 0.001459166s
+building k takes 0.000003208s
+building it takes 0.000000625s
+trie construction takes 0.07278183s
+join takes 50.124583ms
+total takes 0.122913584
+[[Str("9.1")], [Str("Batman: Arkham City")]]
+Query: 4c
+Loading movie_keyword
+Loading mi_idx
+Loading t
+Loading it
+Loading k
+building flat table on mk
+building mk takes 0.000003416s
+building t takes 0.4016624s
+building mi_idx takes 0.15051004s
+building k takes 0.000004541s
+building it takes 0.000002958s
+trie construction takes 0.55221343s
+join takes 475.767708ms
+total takes 1.0279888
+[[Str("2.1")], [Str("& Teller 2")]]
+Query: 5c
+Loading t
+Loading mc
+Loading ct
+Loading mi
+Loading info_type
+building flat table on mi
+building mi takes 0.000002708s
+building t takes 0.4001273s
+building mc takes 0.03148929s
+building it takes 0.000010375s
+building ct takes 0.000002833s
+trie construction takes 0.4316577s
+join takes 96.696666ms
+total takes 0.52836204
+[[Str("11,830,420")]]
+Query: 11a
+Loading movie_keyword
+Loading k
+Loading mc
+Loading ct
+Loading cn
+Loading movie_link
+Loading lt
+Loading t
+building flat table on mk
+building mk takes 0.000006791s
+building t takes 0.18990055s
+building ml takes 0.001944458s
+building mc takes 0.23012742s
+building lt takes 0.000002708s
+building k takes 0.0000005s
+building ct takes 0.000000458s
+building cn takes 0.0065495s
+trie construction takes 0.42856964s
+join takes 127.214875ms
+total takes 0.5557922
+[[Str("Churchill Films")], [Str("followed by")], [Str("Batman Beyond")]]
+Query: 11b
+Loading movie_keyword
+Loading k
+Loading movie_link
+Loading t
+Loading mc
+Loading cn
+Loading lt
+Loading ct
+building flat table on mk
+building mk takes 0.000002041s
+building t takes 0.000005416s
+building ml takes 0.001971791s
+building mc takes 0.22874717s
+building lt takes 0.000002541s
+building k takes 0.000000416s
+building ct takes 0.000000208s
+building cn takes 0.006570583s
+trie construction takes 0.23733091s
+join takes 27.437125ms
+total takes 0.26478
+[[Str("Filmlance International AB")], [Str("follows")], [Str("The Money Man")]]
+Query: 11c
+Loading movie_keyword
+Loading k
+Loading t
+Loading movie_link
+Loading link_type
+Loading mc
+Loading cn
+Loading ct
+building flat table on mk
+building mk takes 0.000002833s
+building t takes 0.57377416s
+building ml takes 0.002112916s
+building mc takes 0.38417184s
+building lt takes 0.0000045s
+building k takes 0.000000583s
+building ct takes 0.000007916s
+building cn takes 0.000013458s
+trie construction takes 0.9601249s
+join takes 216.826125ms
+total takes 1.1769593
+[[Str("20th Century Fox Home Entertainment")], [Str("(1997-2002) (worldwide) (all media)")], [Str("24")]]
+Query: 11d
+Loading movie_keyword
+Loading mc
+Loading k
+Loading cn
+Loading movie_link
+Loading ct
+Loading t
+Loading link_type
+building flat table on mk
+building mk takes 0.00000225s
+building t takes 0.5659424s
+building ml takes 0.001918125s
+building mc takes 0.35443932s
+building lt takes 0.0000085s
+building k takes 0.000000375s
+building ct takes 0.0000005s
+building cn takes 0.048762877s
+trie construction takes 0.97111994s
+join takes 218.406875ms
+total takes 1.1895341
+[[Str("13th Street")], [Str("(1954) (UK) (TV)")], [Str("...denn sie wissen nicht, was sie tun")]]
+Query: 12a
+Loading movie_companies
+Loading cn
+Loading t
+Loading mi_idx
+Loading mi
+Loading it1
+Loading it2
+Loading ct
+building flat table on mi
+building mi takes 0.000002625s
+building t takes 0.082507245s
+building mi_idx takes 0.009602791s
+building mc takes 0.49169093s
+building it2 takes 0.000002166s
+building it1 takes 0.000000333s
+building ct takes 0.00000025s
+building cn takes 0.012644541s
+trie construction takes 0.5964974s
+join takes 15.163958ms
+total takes 0.61166745
+[[Str("10th Grade Reunion Films")], [Str("8.1")], [Str("3:20")]]
+Query: 12b
+Loading movie_info
+Loading movie_info_idx
+Loading it1
+Loading t
+Loading movie_companies
+Loading cn
+Loading ct
+Loading it2
+building flat table on mi
+building mi takes 0.000002125s
+building t takes 0.00039525s
+building mi_idx takes 0.14245184s
+building mc takes 0.56980973s
+building it2 takes 0.000002916s
+building it1 takes 0.000000625s
+building ct takes 0.000000583s
+building cn takes 0.006679875s
+trie construction takes 0.7193979s
+join takes 179.204458ms
+total takes 0.8986139
+[[Str("$10,000")], [Str("Birdemic: Shock and Terror")]]
+Query: 12c
+Loading movie_companies
+Loading cn
+Loading ct
+Loading mi
+Loading mi_idx
+Loading it2
+Loading t
+Loading it1
+building flat table on mi
+building mi takes 0.000003166s
+building t takes 0.24344204s
+building mi_idx takes 0.036798246s
+building mc takes 0.5233625s
+building it2 takes 0.000002833s
+building it1 takes 0.000001166s
+building ct takes 0.000000333s
+building cn takes 0.012891583s
+trie construction takes 0.8165649s
+join takes 41.250833ms
+total takes 0.85782343
+[[Str("\"Oh That Gus!\"")], [Str("7.1")], [Str("$1.11")]]
+Query: 13a
+Loading movie_info
+Loading it2
+Loading movie_companies
+Loading title
+Loading kt
+Loading ct
+Loading movie_info_idx
+Loading it
+Loading cn
+building flat table on mi
+building mi takes 0.000003041s
+building t takes 0.91049296s
+building miidx takes 0.23824692s
+building mc takes 0.60780674s
+building kt takes 0.000002375s
+building it2 takes 0.000000666s
+building it takes 0.000000291s
+building ct takes 0.000000208s
+building cn takes 0.00072725s
+trie construction takes 1.757335s
+join takes 5.498042083s
+total takes 7.25539
+[[Str("Afghanistan:24 June 2012")], [Str("1.0")], [Str("&Me")]]
+Query: 13b
+Loading movie_info
+Loading movie_info_idx
+Loading it
+Loading movie_companies
+Loading ct
+Loading cn
+Loading it2
+Loading t
+Loading kt
+building flat table on mi
+building mi takes 0.000001916s
+building t takes 0.000358875s
+building miidx takes 0.2206992s
+building mc takes 0.48425704s
+building kt takes 0.000005666s
+building it2 takes 0.000000708s
+building it takes 0.00000025s
+building ct takes 0.000000166s
+building cn takes 0.012256333s
+trie construction takes 0.7176223s
+join takes 102.534ms
+total takes 0.8201643
+[[Str("501audio")], [Str("1.8")], [Str("5 Time Champion")]]
+Query: 13c
+Loading movie_info
+Loading t
+Loading kt
+Loading movie_info_idx
+Loading it
+Loading it2
+Loading movie_companies
+Loading cn
+Loading ct
+building flat table on mi
+building mi takes 0.000002958s
+building t takes 0.000048541s
+building miidx takes 0.21750405s
+building mc takes 0.4811917s
+building kt takes 0.000002291s
+building it2 takes 0.000000333s
+building it takes 0.000000333s
+building ct takes 0.000000208s
+building cn takes 0.011869625s
+trie construction takes 0.71066946s
+join takes 101.728625ms
+total takes 0.8124069
+[[Str("DL Sites")], [Str("1.8")], [Str("Champion")]]
+Query: 13d
+Loading movie_info
+Loading it2
+Loading movie_companies
+Loading cn
+Loading title
+Loading kt
+Loading ct
+Loading movie_info_idx
+Loading it
+building flat table on mi
+building mi takes 0.000003041s
+building t takes 0.9628664s
+building miidx takes 0.23260917s
+building mc takes 0.59948474s
+building kt takes 0.00000225s
+building it2 takes 0.0000005s
+building it takes 0.000000208s
+building ct takes 0.000000333s
+building cn takes 0.019297585s
+trie construction takes 1.814333s
+join takes 4.54259925s
+total takes 6.356943
+[[Str("\"O\" Films")], [Str("1.0")], [Str("#54 Meets #47")]]
+Query: 14a
+Loading movie_keyword
+Loading k
+Loading mi_idx
+Loading it2
+Loading mi
+Loading t
+Loading kt
+Loading it1
+building flat table on mi
+building mi takes 0.000002708s
+building t takes 0.09848771s
+building mk takes 0.41887727s
+building mi_idx takes 0.22118013s
+building kt takes 0.00000225s
+building k takes 0.000000666s
+building it2 takes 0.000000416s
+building it1 takes 0.000000208s
+trie construction takes 0.7386165s
+join takes 36.676041ms
+total takes 0.7753026
+[[Str("1.0")], [Str("$lowdown")]]
+Query: 14b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi_idx
+Loading kt
+Loading mi
+Loading it1
+Loading it2
+building flat table on mi
+building mi takes 0.000004583s
+building t takes 0.0000725s
+building mk takes 0.408978s
+building mi_idx takes 0.10690741s
+building kt takes 0.0000025s
+building k takes 0.0000005s
+building it2 takes 0.000000291s
+building it1 takes 0.000000208s
+trie construction takes 0.5160138s
+join takes 4.764708ms
+total takes 0.5207915
+[[Str("6.4")], [Str("Of Dolls and Murder")]]
+Query: 14c
+Loading movie_keyword
+Loading t
+Loading mi
+Loading it1
+Loading kt
+Loading k
+Loading mi_idx
+Loading it2
+building flat table on mi
+building mi takes 0.000007291s
+building t takes 0.2785175s
+building mk takes 0.41579127s
+building mi_idx takes 0.24754117s
+building kt takes 0.000002375s
+building k takes 0.000000291s
+building it2 takes 0.00000025s
+building it1 takes 0.000000791s
+trie construction takes 0.94193053s
+join takes 92.076666ms
+total takes 1.0340197
+[[Str("1.0")], [Str("$lowdown")]]
+Query: 15a
+Loading movie_keyword
+Loading keyword
+Loading t
+Loading aka_title
+Loading cn
+Loading mc
+Loading company_type
+Loading mi
+Loading it1
+building flat table on mi
+building mi takes 0.000001958s
+building t takes 0.3209014s
+building mk takes 0.41066045s
+building mc takes 0.008590375s
+building at takes 0.025384584s
+building k takes 0.010179416s
+building it1 takes 0.00000125s
+building ct takes 0.000000791s
+building cn takes 0.00588875s
+trie construction takes 0.78166795s
+join takes 681.375µs
+total takes 0.78235245
+[[Str("USA:1 June 2007")], [Str("Battlestar Galactica: The Resistance")]]
+Query: 15b
+Loading movie_keyword
+Loading t
+Loading mc
+Loading mi
+Loading cn
+Loading company_type
+Loading it1
+Loading aka_title
+Loading keyword
+building flat table on mi
+building mi takes 0.000002875s
+building t takes 0.15226637s
+building mk takes 0.40822065s
+building mc takes 0.008733791s
+building at takes 0.027238416s
+building k takes 0.010958125s
+building it1 takes 0.000001333s
+building ct takes 0.000001166s
+building cn takes 0.000001166s
+trie construction takes 0.60747117s
+join takes 577.666µs
+total takes 0.60805297
+[[Str("USA:27 April 2007")], [Str("RoboCop vs Terminator")]]
+Query: 15c
+Loading movie_keyword
+Loading keyword
+Loading movie_companies
+Loading aka_title
+Loading mi
+Loading it1
+Loading cn
+Loading t
+Loading company_type
+building flat table on mi
+building mi takes 0.000005916s
+building t takes 0.4024502s
+building mk takes 0.40273315s
+building mc takes 0.5315644s
+building at takes 0.026074415s
+building k takes 0.011067833s
+building it1 takes 0.000001416s
+building ct takes 0.000000791s
+building cn takes 0.005964041s
+trie construction takes 1.3799276s
+join takes 1.833041ms
+total takes 1.3817644
+[[Str("USA:1 April 2003")], [Str("24: Day Six - Debrief")]]
+Query: 15d
+Loading movie_keyword
+Loading movie_companies
+Loading aka_title
+Loading keyword
+Loading company_type
+Loading mi
+Loading cn
+Loading t
+Loading it1
+building flat table on mi
+building mi takes 0.000003916s
+building t takes 0.40621907s
+building mk takes 0.40473557s
+building mc takes 0.5113822s
+building at takes 0.11990237s
+building k takes 0.010952s
+building it1 takes 0.000001541s
+building ct takes 0.000000875s
+building cn takes 0.006890583s
+trie construction takes 1.4601665s
+join takes 6.49325ms
+total takes 1.4666644
+[[Str("(Not So) Instant Photo")], [Str("06/05")]]
+Query: 21a
+Loading movie_keyword
+Loading k
+Loading mi
+Loading movie_link
+Loading lt
+Loading t
+Loading mc
+Loading ct
+Loading cn
+building flat table on mi
+building mi takes 0.0000035s
+building t takes 0.19094732s
+building ml takes 0.002158916s
+building mk takes 0.41743016s
+building mc takes 0.24996537s
+building lt takes 0.000002375s
+building k takes 0.000000333s
+building ct takes 0.000000416s
+building cn takes 0.007467541s
+trie construction takes 0.8680361s
+join takes 11.940625ms
+total takes 0.87999034
+[[Str("Det Danske Filminstitut")], [Str("followed by")], [Str("Der Serienkiller - Klinge des Todes")]]
+Query: 21b
+Loading movie_keyword
+Loading mc
+Loading mi
+Loading movie_link
+Loading lt
+Loading t
+Loading ct
+Loading k
+Loading cn
+building flat table on mi
+building mi takes 0.000005708s
+building t takes 0.23835325s
+building ml takes 0.00206425s
+building mk takes 0.40470853s
+building mc takes 0.23314013s
+building lt takes 0.000001916s
+building k takes 0.000000458s
+building ct takes 0.00000025s
+building cn takes 0.006339916s
+trie construction takes 0.88466394s
+join takes 6.712958ms
+total takes 0.8913812
+[[Str("Filmlance International AB")], [Str("followed by")], [Str("Hämndens pris")]]
+Query: 21c
+Loading movie_keyword
+Loading movie_link
+Loading lt
+Loading t
+Loading mc
+Loading cn
+Loading ct
+Loading k
+Loading mi
+building flat table on mi
+building mi takes 0.000006458s
+building t takes 0.51043844s
+building ml takes 0.002017416s
+building mk takes 0.4050885s
+building mc takes 0.23829621s
+building lt takes 0.000001791s
+building k takes 0.000000416s
+building ct takes 0.000000166s
+building cn takes 0.006688291s
+trie construction takes 1.1625898s
+join takes 125.730166ms
+total takes 1.288327
+[[Str("Churchill Films")], [Str("followed by")], [Str("Batman Beyond")]]
+Query: 32a
+Loading movie_keyword
+Loading title
+Loading movie_link
+Loading title
+Loading link_type
+Loading k
+building flat table on mk
+building mk takes 0.000002291s
+building t1 takes 0.6319194s
+building ml takes 0.004566875s
+building t2 takes 0.639377s
+building lt takes 0.000011s
+building k takes 0.000000208s
+trie construction takes 1.2759078s
+join takes 282.589291ms
+total takes 1.558505
+[]
+Query: 32b
+Loading movie_keyword
+Loading k
+Loading title
+Loading movie_link
+Loading link_type
+Loading title
+building flat table on mk
+building mk takes 0.000008291s
+building t1 takes 0.63555706s
+building ml takes 0.004536208s
+building t2 takes 0.6279838s
+building lt takes 0.000010958s
+building k takes 0.000000416s
+trie construction takes 1.2681291s
+join takes 284.849083ms
+total takes 1.5529852
+[[Str("'Angel': Season 2 Overview")], [Str("alternate language version of")], [Str("12 oz. Mouse")]]
+

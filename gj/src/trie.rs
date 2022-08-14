@@ -1,7 +1,13 @@
-use rustc_hash::FxHashMap as HashMap;
-use std::fmt;
-use std::fmt::{Debug, Display};
+// use rustc_hash::FxHashMap as HashMap;
+use rustc_hash::FxHasher;
+use hashbrown::{HashMap as HBMap, BumpWrapper};
+use bumpalo::Bump;
 
+use std::{fmt, default};
+use std::fmt::{Debug, Display};
+use std::hash::BuildHasherDefault;
+
+type HashMap<'a, K, V>  = HBMap<K, V, BuildHasherDefault<FxHasher>, BumpWrapper<'a>>;
 type Id = i32;
 
 // static VEC_CAPACITY: usize = 1;
@@ -13,17 +19,23 @@ pub enum Value {
 }
 
 #[derive(Debug, Clone)]
-pub enum Trie<T> {
-    Node(HashMap<Id, Self>),
+pub enum Trie<'a, T> {
+    Node(HashMap<'a, Id, Self>),
     Data(Vec<Vec<T>>),
 }
 
-pub enum Table<'a, T> {
-    Trie(Trie<T>),
+impl <'a, T> Trie<'a, T> {
+    pub fn new_in(bump: &'a Bump) -> Self {
+        Trie::Node(HashMap::with_hasher_in(BuildHasherDefault::<FxHasher>::default(), BumpWrapper(bump)))
+    }
+}
+
+pub enum Table<'a, 'b, T> {
+    Trie(Trie<'b, T>),
     Arr((Vec<&'a [i32]>, Vec<&'a [T]>)),
 }
 
-impl<'a, T> Table<'a, T> {
+impl<'a, 'b, T> Table<'a, 'b, T> {
     pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
         match self {
             Table::Trie(Trie::Data(data)) => Ok(data),
@@ -62,14 +74,14 @@ impl Display for NotANode {
 
 impl std::error::Error for NotANode {}
 
-impl<T> Default for Trie<T> {
-    fn default() -> Self {
-        Trie::Node(HashMap::default())
-    }
-}
+// impl<T> Default for Trie<T> {
+//     fn default() -> Self {
+//         Trie::Node(HashMap::default())
+//     }
+// }
 
-impl<T> Trie<T> {
-    pub fn get_map(&self) -> Result<&HashMap<Id, Self>, NotANode> {
+impl<'a, T> Trie<'a, T> {
+    pub fn get_map(&self) -> Result<&HashMap<'a, Id, Self>, NotANode> {
         if let Trie::Node(ref map) = *self {
             Ok(map)
         } else {
@@ -77,7 +89,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get_map_mut(&mut self) -> Result<&mut HashMap<Id, Self>, NotANode> {
+    pub fn get_map_mut(&mut self) -> Result<&mut HashMap<'a, Id, Self>, NotANode> {
         if let Trie::Node(ref mut map) = *self {
             Ok(map)
         } else {
@@ -101,10 +113,10 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
+    pub fn insert(&mut self, arena: &'a Bump, ids: &[Id], data: Vec<T>) {
         let mut trie = self;
         for id in ids {
-            trie = trie.get_map_mut().unwrap().entry(*id).or_default();
+            trie = trie.get_map_mut().unwrap().entry(*id).or_insert_with(|| Trie::new_in(arena));
         }
 
         if !data.is_empty() {

@@ -1,7 +1,9 @@
+use std::hash::Hash;
 use std::path;
 use std::time::Instant;
 use std::{collections::HashMap, error::Error};
 
+use bumpalo::Bump;
 use indexmap::IndexMap;
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
@@ -226,11 +228,12 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-pub fn build_tables<'a>(
+pub fn build_tables<'a, 'b>(
     db: &'a DB,
+    arenas: &'b mut HashMap<String, Bump>,
     plan: &'a [Vec<Attribute>],
     payload: &'a [Attribute],
-) -> Vec<Table<'a, Value>> {
+) -> Vec<Table<'a, 'b, Value>> {
     let mut tables = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -241,6 +244,7 @@ pub fn build_tables<'a>(
             if !db.contains_key(table_name) {
                 table_name = find_shared(table_name);
             }
+            arenas.insert(trie_name.to_string(), Bump::new());
             let col_name = &a.attr_name;
             let col = db[table_name].get(col_name).unwrap();
             columns
@@ -282,7 +286,8 @@ pub fn build_tables<'a>(
             }
             tables.push(Table::Arr((ids, data)));
         } else {
-            let mut trie = Trie::default();
+            // arenas.push(Bump::new());
+            let mut trie = Trie::new_in(arenas.get(table_name).unwrap());
             for i in 0..cols[0].len() {
                 let mut ids = Vec::new();
                 let mut data = Vec::new();
@@ -296,7 +301,7 @@ pub fn build_tables<'a>(
                         }
                     }
                 }
-                trie.insert(&ids, data);
+                trie.insert(arenas.get(table_name).unwrap(), &ids, data);
             }
             tables.push(Table::Trie(trie));
         }
@@ -312,9 +317,10 @@ pub fn build_tables<'a>(
 
 pub fn build_tries<'a>(
     db: &'a DB,
+    arenas: &'a HashMap<String, Bump>,
     plan: &'a [Vec<Attribute>],
     payload: &'a [Attribute],
-) -> Vec<Trie<Value>> {
+) -> Vec<Trie<'a, Value>> {
     let mut tries = Vec::new();
     let mut columns = IndexMap::new();
 
@@ -350,7 +356,7 @@ pub fn build_tries<'a>(
 
     for (table_name, cols) in columns {
         let start = Instant::now();
-        let mut trie = Trie::default();
+        let mut trie = Trie::new_in(&arenas.get(&table_name).unwrap());
         for i in 0..cols[0].len() {
             let mut ids = Vec::new();
             let mut data = Vec::new();
@@ -364,7 +370,7 @@ pub fn build_tries<'a>(
                     }
                 }
             }
-            trie.insert(&ids, data);
+            trie.insert(&arenas.get(&table_name).unwrap(), &ids, data);
         }
         tries.push(trie);
         println!(

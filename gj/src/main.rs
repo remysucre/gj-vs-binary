@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::{time::Instant, collections::HashMap};
 
 use gj::{join::*, util::*, *};
 
@@ -27,7 +27,8 @@ fn main() {
 
         let start = Instant::now();
         // let relations = build_tries(&db, &plan, &payload);
-        let tables = build_tables(&db, &plan, &payload);
+        let mut arenas = HashMap::new();
+        let tables = build_tables(&db, &mut arenas, &plan, &payload);
         println!("trie construction takes {}s", start.elapsed().as_secs_f32());
         // assert!(relations.iter().all(|t| !t.get_map().unwrap().[is_empty()));
 
@@ -175,9 +176,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         // BUSHY
         ("32a", "IMDBQ109"), // TRIE SLOW // EMPTY
         ("32b", "IMDBQ110"), // TRIE SLOW
-                             // BUSHY
-                             // ("33a", "IMDBQ111"), // SLOW
-                             // ("33b", "IMDBQ112"), // SLOW
-                             // ("33c", "IMDBQ113"), // SLOW
+        // BUSHY
+        // ("33a", "IMDBQ111"), // SLOW
+        // ("33b", "IMDBQ112"), // SLOW
+        // ("33c", "IMDBQ113"), // SLOW
     ]
 }

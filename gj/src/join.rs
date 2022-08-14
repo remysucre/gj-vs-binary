@@ -1,3 +1,5 @@
+use bumpalo::Bump;
+
 use crate::trie::*;
 
 use std::fmt::Debug;
@@ -42,10 +44,11 @@ where
                         .collect::<Option<Vec<_>>>()
                     {
                         // TODO singleton compression
-                        let mut trie_min = Trie::default();
+                        let a = Bump::new();
+                        let mut trie_min = Trie::new_in(&a);
                         let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i]).collect();
                         let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
-                        trie_min.insert(&ids, data);
+                        trie_min.insert(&a, &ids, data);
 
                         let mut rels: Vec<_> = relations
                             .iter()
