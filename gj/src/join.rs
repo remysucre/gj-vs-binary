@@ -1,176 +1,109 @@
 use crate::trie::*;
 
-use std::fmt::Debug;
-
-
-pub fn join<F>(relations: &[&Trie], plan: &[Vec<usize>], f: &mut F, tuple: &[Value])
-where F: FnMut(&[&[Value]]),
+pub fn join<F>(relations: &[&Trie], plan: &[Vec<usize>], f: &mut F, tuple: &mut Vec<Value>)
+where F: FnMut(&[Value]),
 {
     if !plan.is_empty() {
-                let js = &plan[0];
-        
-                let j_min = js
-                    .iter()
-                    .copied()
-                    .min_by(|&j1, &j2| intersect_order(relations[j1], relations[j2]))
-                    .unwrap();
+        let js = &plan[0];
 
-                // for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
-                //     if let Some(tries) = js
-                //         .iter()
-                //         .filter(|&j| j != &j_min)
-                //         .map(|&j| {
-                //             relations[j]
-                //                 .get_map()
-                //                 .unwrap()
-                //                 .get(id)
-                //                 .map(|trie| (j, trie))
-                //         })
-                //         .collect::<Option<Vec<_>>>()
-                //     {
-                //         let mut rels = relations.to_vec();
-                //         rels[j_min] = trie_min;
-                //         for (j, trie) in tries {
-                //             rels[j] = trie;
-                //         }
-                //         join(&rels, &plan[1..], payload, f);
-                //     }
-                // }
-            } 
-            // else {
-            //     // TODO refactor payload to point to relation directly
-            //     let relations = relations
-            //         .iter()
-            //         .copied()
-            //         .filter(|trie| !trie.get_data().unwrap().is_empty())
-            //         .collect::<Vec<_>>();
-            //     let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
-            //     let mut tuple = Vec::new();
-            //     select(&rels, f, &mut tuple);
-            // }
+        let j_min = js
+            .iter()
+            .copied()
+            .min_by(|&j1, &j2| intersect_priority(relations[j1], relations[j2]))
+            .unwrap();
+
+        let trie_min = relations[j_min];
+
+        for (id, trie_min) in trie_min.iter() {
+            if let Some(tries) = js
+                .iter()
+                .filter(|&j| j != &j_min)
+                .map(|&j| {
+                    relations[j]
+                        .get(id)
+                        .map(|trie| (j, trie))
+                })
+                .collect::<Option<Vec<_>>>()
+            {
+                let mut rels = relations.to_vec();
+                rels[j_min] = trie_min;
+                for (j, trie) in tries {
+                    rels[j] = trie;
+                }
+                tuple.push(id.clone());
+                join(&rels, &plan[1..], f, tuple);
+                tuple.pop();
+            }
+        }
+    } 
+    else {
+        select(relations, f, tuple);
+    }
 }
 
-// fn select<'a, T, F>(relations: &[&'a Trie<T>], f: &mut F, tuple: &mut Vec<&'a [T]>)
-// where
-//     T: Clone + Debug,
-//     F: FnMut(&[&[T]]),
-// {
-//     if relations.is_empty() {
-//         f(tuple)
-//     } else {
-//         for v in relations[0].get_data().unwrap() {
-//             tuple.push(v);
-//             select(&relations[1..], f, tuple);
-//             tuple.pop();
-//         }
-//     }
-// }
+fn select<F>(relations: &[&Trie], f: &mut F, tuple: &mut Vec<Value>)
+where
+    F: FnMut(&[Value]),
+{
+    if relations.is_empty() {
+        f(tuple)
+    } else {
+        match relations[0] {
+            Trie::Nil => select(&relations[1..], f, tuple),
+            Trie::Sing(v, t) => {
+                tuple.push(v.clone());
+                let mut rel = vec![&**t];
+                rel.extend_from_slice(&relations[1..]);
+                select(&rel, f, tuple);
+                tuple.pop();
+            }
+            Trie::Data(rows) => {
+                for (v, t) in rows {
+                    tuple.push(v.clone());
+                    let mut rel = vec![t];
+                    rel.extend_from_slice(&relations[1..]);
+                    select(&rel, f, tuple);
+                    tuple.pop();
+                }
+            }
+            Trie::Node(_) => panic!("Cannot select from a trie node")
+        }
+    }
+}
 
-// pub fn fj<T, F>(relations: &[&Table<T>], plan: &[Vec<usize>], payload: &[usize], f: &mut F)
-// where
-//     T: Clone + Debug,
-//     F: FnMut(&[&[T]]),
-// {
-//     if !plan.is_empty() {
-//         let js = &plan[0];
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//         if let Some(j_min) = js.iter().find(|&&j| matches!(relations[j], Table::Arr(_))) {
-//             if let Table::Arr((id_cols, data_cols)) = relations[*j_min] {
-//                 for (i, id) in id_cols[0].iter().enumerate() {
-//                     if let Some(tries) = js
-//                         .iter()
-//                         .filter(|j| j != &j_min)
-//                         .map(|&j| {
-//                             relations[j]
-//                                 .get_map()
-//                                 .unwrap()
-//                                 .get(id)
-//                                 .map(|trie| (j, trie))
-//                         })
-//                         .collect::<Option<Vec<_>>>()
-//                     {
-//                         // TODO singleton compression
-//                         let mut trie_min = Trie::default();
-//                         let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i]).collect();
-//                         let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
-//                         trie_min.insert(&ids, data);
+    #[test]
+    fn internal() {
+        let mut r = Trie::default();
+        let mut s = Trie::default();
+        let mut t = Trie::default();
 
-//                         let mut rels: Vec<_> = relations
-//                             .iter()
-//                             .map(|t| match t {
-//                                 Table::Arr(_) => &trie_min,
-//                                 Table::Trie(trie) => trie,
-//                             })
-//                             .collect();
+        let n = 11;
 
-//                         for (j, trie) in tries.iter() {
-//                             rels[*j] = trie;
-//                         }
-//                         join(&rels, &plan[1..], payload, f);
-//                     }
-//                 }
-//             } else {
-//                 unreachable!()
-//             }
-//         } else {
-//             let rels: Vec<_> = relations
-//                 .iter()
-//                 .map(|t| match t {
-//                     Table::Arr(_) => unreachable!(),
-//                     Table::Trie(trie) => trie,
-//                 })
-//                 .collect();
-//             join(&rels, plan, payload, f);
-//         }
-//     } else {
-//         unreachable!()
-//     }
-// }
+        for i in 1..n {
+            let i = Value::Num(i);
+            r.insert(&[Value::Num(0), i.clone()], vec![]);
+            s.insert(&[Value::Num(0), i.clone()], vec![]);
+            t.insert(&[Value::Num(0), i.clone()], vec![]);
 
-// pub fn join<T, F>(relations: &[&Trie<T>], plan: &[Vec<usize>], payload: &[usize], f: &mut F)
-// where
-//     T: Clone + Debug,
-//     F: FnMut(&[&[T]]),
-// {
-//     if !plan.is_empty() {
-//         let js = &plan[0];
+            r.insert(&[i.clone(), Value::Num(0)], vec![]);
+            s.insert(&[i.clone(), Value::Num(0)], vec![]);
+            t.insert(&[i.clone(), Value::Num(0)], vec![]);
+        }
 
-//         let j_min = js
-//             .iter()
-//             .copied()
-//             .min_by_key(|&j| relations[j].get_map().unwrap().len())
-//             .unwrap();
+        r.insert(&[Value::Num(0), Value::Num(0)], vec![]);
+        s.insert(&[Value::Num(0), Value::Num(0)], vec![]);
+        t.insert(&[Value::Num(0), Value::Num(0)], vec![]);
 
-//         for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
-//             if let Some(tries) = js
-//                 .iter()
-//                 .filter(|&j| j != &j_min)
-//                 .map(|&j| {
-//                     relations[j]
-//                         .get_map()
-//                         .unwrap()
-//                         .get(id)
-//                         .map(|trie| (j, trie))
-//                 })
-//                 .collect::<Option<Vec<_>>>()
-//             {
-//                 let mut rels = relations.to_vec();
-//                 rels[j_min] = trie_min;
-//                 for (j, trie) in tries {
-//                     rels[j] = trie;
-//                 }
-//                 join(&rels, &plan[1..], payload, f);
-//             }
-//         }
-//     } else {
-//         // TODO refactor payload to point to relation directly
-//         let relations = relations
-//             .iter()
-//             .copied()
-//             .filter(|trie| !trie.get_data().unwrap().is_empty())
-//             .collect::<Vec<_>>();
-//         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
-//         let mut tuple = Vec::new();
-//         select(&rels, f, &mut tuple);
-//     }
-// }
+        let mut result = vec![];
+
+        let mut tuple = vec![];
+
+        join(&[&r, &s, &t], &[vec![0, 1], vec![1, 2], vec![0, 2]], &mut |t| { result.push(t.to_vec()) }, &mut tuple);
+
+        println!("{:?}", result.len());
+    }
+}
