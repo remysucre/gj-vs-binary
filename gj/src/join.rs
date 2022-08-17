@@ -23,59 +23,27 @@ where
     T: Clone + Debug,
     F: FnMut(&[&[T]]),
 {
-    if !plan.is_empty() {
-        let js = &plan[0];
+    let js = &plan[0];
 
-        if let Some(j_min) = js.iter().find(|&&j| matches!(relations[j], Table::Arr(_))) {
-            if let Table::Arr((id_cols, data_cols)) = relations[*j_min] {
-                for (i, id) in id_cols[0].iter().enumerate() {
-                    if let Some(tries) = js
+    for j_min in js {
+        if let Table::Arr((id_cols, data_cols)) = relations[*j_min] {
+            for i in 0..id_cols[0].len() {
+                let mut trie_min = Trie::default();
+                let ids: Vec<_> = id_cols.iter().map(|c| c[i].as_num()).collect();
+                let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
+                // TODO singleton compression
+                trie_min.insert(&ids, data);
+                let rels: Vec<_> = relations
                         .iter()
-                        .filter(|j| j != &j_min)
-                        .map(|&j| {
-                            relations[j]
-                                .get_map()
-                                .unwrap()
-                                .get(&id.as_num())
-                                .map(|trie| (j, trie))
+                        .map(|t| match t {
+                            Table::Arr(_) => &trie_min,
+                            Table::Trie(trie) => trie,
                         })
-                        .collect::<Option<Vec<_>>>()
-                    {
-                        // TODO singleton compression
-                        let mut trie_min = Trie::default();
-                        let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i].as_num()).collect();
-                        let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
-                        trie_min.insert(&ids, data);
-
-                        let mut rels: Vec<_> = relations
-                            .iter()
-                            .map(|t| match t {
-                                Table::Arr(_) => &trie_min,
-                                Table::Trie(trie) => trie,
-                            })
-                            .collect();
-
-                        for (j, trie) in tries.iter() {
-                            rels[*j] = trie;
-                        }
-                        join_inner(&rels, &plan[1..], payload, f);
-                    }
-                }
-            } else {
-                unreachable!()
+                        .collect();
+                    join_inner(&rels, plan, payload, f);
             }
-        } else {
-            let rels: Vec<_> = relations
-                .iter()
-                .map(|t| match t {
-                    Table::Arr(_) => unreachable!(),
-                    Table::Trie(trie) => trie,
-                })
-                .collect();
-            join_inner(&rels, plan, payload, f);
+            return;
         }
-    } else {
-        unreachable!()
     }
 }
 
@@ -135,86 +103,82 @@ pub struct Tab<'a, T> {
 }
 
 pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
-    if !plan.is_empty() {
-        let js = &plan[0];
+    let js = &plan[0];
 
-        if let Some(j_min) = js
-            .iter()
-            .find(|&&j| matches!(relations[j].table, Table::Arr(_)))
-        {
-            if let Table::Arr((id_cols, data_cols)) = relations[*j_min].table {
-                for (i, id) in id_cols[0].iter().enumerate() {
-                    if let Some(tries) = js
-                        .iter()
-                        .filter(|j| j != &j_min)
-                        .map(|&j| {
-                            relations[j]
-                                .table
-                                .get_map()
-                                .unwrap()
-                                .get(&id.as_num())
-                                .map(|trie| (j, trie))
+    if let Some(j_min) = js
+        .iter()
+        .find(|&&j| matches!(relations[j].table, Table::Arr(_)))
+    {
+        if let Table::Arr((id_cols, data_cols)) = relations[*j_min].table {
+            for (i, id) in id_cols[0].iter().enumerate() {
+                if let Some(tries) = js
+                    .iter()
+                    .filter(|j| j != &j_min)
+                    .map(|&j| {
+                        relations[j]
+                            .table
+                            .get_map()
+                            .unwrap()
+                            .get(&id.as_num())
+                            .map(|trie| (j, trie))
+                    })
+                    .collect::<Option<Vec<_>>>()
+                {
+                    // TODO singleton compression
+                    let mut trie_min = Trie::default();
+                    let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i].as_num()).collect();
+                    let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
+                    trie_min.insert(&ids, data);
+
+                    let mut rels: Vec<_> = relations
+                        .iter_mut()
+                        .map(|t| match t.table {
+                            Table::Arr(_) => Rel {
+                                vars: t.vars,
+                                trie: &trie_min,
+                                rel: t.rel,
+                                ids: t.ids,
+                            },
+                            Table::Trie(trie) => Rel {
+                                vars: t.vars,
+                                trie,
+                                rel: t.rel,
+                                ids: t.ids,
+                            },
                         })
-                        .collect::<Option<Vec<_>>>()
-                    {
-                        // TODO singleton compression
-                        let mut trie_min = Trie::default();
-                        let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i].as_num()).collect();
-                        let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
-                        trie_min.insert(&ids, data);
+                        .collect();
 
-                        let mut rels: Vec<_> = relations
-                            .iter_mut()
-                            .map(|t| match t.table {
-                                Table::Arr(_) => Rel {
-                                    vars: t.vars,
-                                    trie: &trie_min,
-                                    rel: t.rel,
-                                    ids: t.ids,
-                                },
-                                Table::Trie(trie) => Rel {
-                                    vars: t.vars,
-                                    trie,
-                                    rel: t.rel,
-                                    ids: t.ids,
-                                },
-                            })
-                            .collect();
-
-                        rels[*j_min].ids.push(id.as_num());
-                        for (j, trie) in tries.iter() {
-                            rels[*j].trie = trie;
-                            rels[*j].ids.push(id.as_num());
-                        }
-                        let mut rel_refs: Vec<_> = rels.iter_mut().collect();
-                        semijoin_inner(&mut rel_refs, &plan[1..]);
-                        rels[*j_min].ids.pop();
-                        for (j, _) in tries.iter() {
-                            rels[*j].ids.pop();
-                        }
+                    rels[*j_min].ids.push(id.as_num());
+                    for (j, trie) in tries.iter() {
+                        rels[*j].trie = trie;
+                        rels[*j].ids.push(id.as_num());
+                    }
+                    let mut rel_refs: Vec<_> = rels.iter_mut().collect();
+                    semijoin_inner(&mut rel_refs, &plan[1..]);
+                    rels[*j_min].ids.pop();
+                    for (j, _) in tries.iter() {
+                        rels[*j].ids.pop();
                     }
                 }
-            } else {
-                unreachable!()
             }
         } else {
-            let mut rels: Vec<_> = relations
-                .iter_mut()
-                .map(|t| match t.table {
-                    Table::Arr(_) => unreachable!(),
-                    Table::Trie(trie) => Rel {
-                        vars: t.vars,
-                        trie,
-                        rel: t.rel,
-                        ids: t.ids,
-                    },
-                })
-                .collect();
-            let mut rel_refs: Vec<_> = rels.iter_mut().collect();
-            semijoin_inner(&mut rel_refs[..], plan);
+            unreachable!()
         }
     } else {
-        unreachable!()
+        let mut rels: Vec<_> = relations
+            .iter_mut()
+            .map(|t| match t.table {
+                Table::Arr(_) => unreachable!(),
+                Table::Trie(trie) => Rel {
+                    vars: t.vars,
+                    trie,
+                    rel: t.rel,
+                    ids: t.ids,
+                },
+            })
+            .collect();
+        let mut rel_refs: Vec<_> = rels.iter_mut().collect();
+        semijoin_inner(&mut rel_refs[..], plan);
     }
 }
 

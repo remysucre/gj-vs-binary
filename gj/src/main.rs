@@ -51,7 +51,7 @@ fn main() {
 
         println!("join takes {:?}", start.elapsed());
         println!("total takes {:?}", time.elapsed().as_secs_f32());
-        println!("{:?}", result);
+        println!("output {:?}", result);
         clean_db(&mut db);
     }
 }
