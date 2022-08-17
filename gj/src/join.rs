@@ -191,6 +191,7 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
 fn reduce<'a>(relations: &mut [&'a mut Rel<Value>]) {
     for relation in relations {
         for (i, id) in relation.ids.iter().enumerate() {
+            // TODO only materialize needed columns
             let col = relation.rel.entry(relation.vars[i].clone()).or_default();
             col.push(Value::Num(*id));
         }
