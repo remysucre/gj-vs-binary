@@ -35,7 +35,7 @@ fn main() {
 
         let start = Instant::now();
 
-        fj(
+        join(
             &tables.iter().collect::<Vec<_>>(),
             &compiled_plan,
             &compiled_payload,
