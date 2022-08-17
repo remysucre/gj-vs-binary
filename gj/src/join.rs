@@ -138,14 +138,18 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
     if !plan.is_empty() {
         let js = &plan[0];
 
-        if let Some(j_min) = js.iter().find(|&&j| matches!(relations[j].table, Table::Arr(_))) {
+        if let Some(j_min) = js
+            .iter()
+            .find(|&&j| matches!(relations[j].table, Table::Arr(_)))
+        {
             if let Table::Arr((id_cols, data_cols)) = relations[*j_min].table {
                 for (i, id) in id_cols[0].iter().enumerate() {
                     if let Some(tries) = js
                         .iter()
                         .filter(|j| j != &j_min)
                         .map(|&j| {
-                            relations[j].table
+                            relations[j]
+                                .table
                                 .get_map()
                                 .unwrap()
                                 .get(&id.as_num())
@@ -162,15 +166,13 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
                         let mut rels: Vec<_> = relations
                             .iter_mut()
                             .map(|t| match t.table {
-                                Table::Arr(_) => 
-                                Rel {
+                                Table::Arr(_) => Rel {
                                     vars: t.vars,
                                     trie: &trie_min,
                                     rel: t.rel,
                                     ids: t.ids,
                                 },
-                                Table::Trie(trie) => 
-                                Rel {
+                                Table::Trie(trie) => Rel {
                                     vars: t.vars,
                                     trie,
                                     rel: t.rel,
@@ -200,8 +202,7 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
                 .iter_mut()
                 .map(|t| match t.table {
                     Table::Arr(_) => unreachable!(),
-                    Table::Trie(trie) => 
-                    Rel {
+                    Table::Trie(trie) => Rel {
                         vars: t.vars,
                         trie,
                         rel: t.rel,
@@ -224,8 +225,7 @@ pub struct Rel<'a, T> {
     ids: &'a mut Vec<i32>,
 }
 
-fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>])
-{
+fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
     if !plan.is_empty() {
         let js = &plan[0];
 
@@ -240,7 +240,8 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>])
                 .iter()
                 .filter(|&j| j != &j_min)
                 .map(|&j| {
-                    relations[j].trie
+                    relations[j]
+                        .trie
                         .get_map()
                         .unwrap()
                         .get(id)
@@ -248,15 +249,16 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>])
                 })
                 .collect::<Option<Vec<_>>>()
             {
-                let mut rels = relations.iter_mut().map(|r| {
-                    Rel {
+                let mut rels = relations
+                    .iter_mut()
+                    .map(|r| Rel {
                         vars: r.vars,
                         trie: r.trie,
                         rel: r.rel,
                         ids: r.ids,
-                    }
-                }).collect::<Vec<_>>();
-                
+                    })
+                    .collect::<Vec<_>>();
+
                 rels[j_min].trie = trie_min;
                 rels[j_min].ids.push(*id);
                 for (j, trie) in &tries {
@@ -276,15 +278,10 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>])
     }
 }
 
-fn reduce<'a>(relations: &mut [&'a mut Rel<Value>])
-where
-{
+fn reduce<'a>(relations: &mut [&'a mut Rel<Value>]) {
     for relation in relations {
         for (i, id) in relation.ids.iter().enumerate() {
-            let col = relation
-                .rel
-                .entry(relation.vars[i].clone())
-                .or_default();
+            let col = relation.rel.entry(relation.vars[i].clone()).or_default();
             col.push(Value::Num(*id));
         }
         if let Trie::Data(data) = relation.trie {
@@ -292,7 +289,7 @@ where
                 for (i, v) in tuple.iter().enumerate() {
                     let col = relation
                         .rel
-                        .entry(relation.vars[i+relation.ids.len()].clone())
+                        .entry(relation.vars[i + relation.ids.len()].clone())
                         .or_default();
                     col.push(v.clone());
                 }

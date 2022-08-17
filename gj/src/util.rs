@@ -159,16 +159,11 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
-                    let col =
-                        table
-                            .entry(col_name.to_string())
-                            .or_default();
-                        col.push(Value::Num(*i));
+                    let col = table.entry(col_name.to_string()).or_default();
+                    col.push(Value::Num(*i));
                 }
                 Field::Str(s) => {
-                    let col = table
-                        .entry(col_name.to_string())
-                        .or_default();
+                    let col = table.entry(col_name.to_string()).or_default();
                     col.push(Value::Str(s.to_string()));
                 }
                 Field::Null => {
@@ -228,7 +223,8 @@ pub fn build_tables<'a>(
                 table_name = find_shared(table_name);
             }
             let col_name = &a.attr_name;
-            id_cols.entry(trie_name.to_string())
+            id_cols
+                .entry(trie_name.to_string())
                 .or_insert(vec![])
                 .push(&db.get(table_name).unwrap()[col_name]);
         }
@@ -241,7 +237,8 @@ pub fn build_tables<'a>(
             table_name = find_shared(table_name);
         }
         let col_name = &a.attr_name;
-        data_cols.entry(trie_name.to_string())
+        data_cols
+            .entry(trie_name.to_string())
             .or_insert(vec![])
             .push(&db.get(table_name).unwrap()[col_name]);
     }
