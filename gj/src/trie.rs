@@ -12,6 +12,15 @@ pub enum Value {
     Num(i32),
 }
 
+impl Value {
+    pub fn as_num(&self) -> i32 {
+        match self {
+            Value::Num(n) => *n,
+            Value::Str(_) => panic!("Value is not a number"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Trie<T> {
     Node(HashMap<Id, Self>),
@@ -20,7 +29,7 @@ pub enum Trie<T> {
 
 pub enum Table<'a, T> {
     Trie(Trie<T>),
-    Arr((Vec<&'a [i32]>, Vec<&'a [T]>)),
+    Arr((Vec<&'a [Value]>, Vec<&'a [T]>)),
 }
 
 impl<'a, T> Table<'a, T> {

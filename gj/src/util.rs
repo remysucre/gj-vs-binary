@@ -162,29 +162,14 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
                     let col =
                         table
                             .entry(col_name.to_string())
-                            .or_insert(if col_name.ends_with("id") {
-                                Col::IdCol(vec![])
-                            } else {
-                                Col::DataCol(vec![])
-                            });
-                    // TODO very ugly code
-                    if let Col::IdCol(ref mut v) = col {
-                        v.push(*i);
-                    } else if let Col::DataCol(ref mut v) = col {
-                        v.push(Value::Num(*i));
-                    } else {
-                        panic!("unexpected column type");
-                    }
+                            .or_default();
+                        col.push(Value::Num(*i));
                 }
                 Field::Str(s) => {
                     let col = table
                         .entry(col_name.to_string())
-                        .or_insert(Col::DataCol(vec![]));
-                    if let Col::DataCol(ref mut v) = col {
-                        v.push(Value::Str(s.to_string()));
-                    } else {
-                        panic!("expected str col");
-                    }
+                        .or_default();
+                    col.push(Value::Str(s.to_string()));
                 }
                 Field::Null => {
                     unreachable!("Null found when loading DB");
@@ -232,7 +217,8 @@ pub fn build_tables<'a>(
     payload: &'a [Attribute],
 ) -> Vec<Table<'a, Value>> {
     let mut tables = Vec::new();
-    let mut columns = IndexMap::new();
+    let mut id_cols = IndexMap::new();
+    let mut data_cols = IndexMap::new();
 
     for node in plan {
         for a in node {
@@ -242,11 +228,9 @@ pub fn build_tables<'a>(
                 table_name = find_shared(table_name);
             }
             let col_name = &a.attr_name;
-            let col = db[table_name].get(col_name).unwrap();
-            columns
-                .entry(trie_name.to_string())
+            id_cols.entry(trie_name.to_string())
                 .or_insert(vec![])
-                .push(col);
+                .push(&db.get(table_name).unwrap()[col_name]);
         }
     }
 
@@ -257,27 +241,23 @@ pub fn build_tables<'a>(
             table_name = find_shared(table_name);
         }
         let col_name = &a.attr_name;
-        // println!("table {} column {}", table_name, col_name);
-        columns
-            .entry(trie_name.to_string())
+        data_cols.entry(trie_name.to_string())
             .or_insert(vec![])
             .push(&db.get(table_name).unwrap()[col_name]);
     }
 
-    for (i, (table_name, cols)) in columns.iter().enumerate() {
+    for (i, (table_name, cols)) in id_cols.iter().enumerate() {
         let start = Instant::now();
         if i == 0 {
             println!("building flat table on {}", table_name);
             let mut ids = vec![];
             let mut data = vec![];
             for col in cols {
-                match col {
-                    Col::IdCol(ref v) => {
-                        ids.push(&v[..]);
-                    }
-                    Col::DataCol(ref v) => {
-                        data.push(&v[..]);
-                    }
+                ids.push(&col[..])
+            }
+            if let Some(cols) = data_cols.get(table_name) {
+                for col in cols {
+                    data.push(&col[..])
                 }
             }
             tables.push(Table::Arr((ids, data)));
@@ -287,13 +267,11 @@ pub fn build_tables<'a>(
                 let mut ids = Vec::new();
                 let mut data = Vec::new();
                 for col in cols {
-                    match col {
-                        Col::IdCol(ref v) => {
-                            ids.push(v[i]);
-                        }
-                        Col::DataCol(ref v) => {
-                            data.push(v[i].clone());
-                        }
+                    ids.push(col[i].as_num());
+                }
+                if let Some(cols) = data_cols.get(table_name) {
+                    for col in cols {
+                        data.push(col[i].clone());
                     }
                 }
                 trie.insert(&ids, data);
@@ -310,72 +288,72 @@ pub fn build_tables<'a>(
     tables
 }
 
-pub fn build_tries<'a>(
-    db: &'a DB,
-    plan: &'a [Vec<Attribute>],
-    payload: &'a [Attribute],
-) -> Vec<Trie<Value>> {
-    let mut tries = Vec::new();
-    let mut columns = IndexMap::new();
+// pub fn build_tries<'a>(
+//     db: &'a DB,
+//     plan: &'a [Vec<Attribute>],
+//     payload: &'a [Attribute],
+// ) -> Vec<Trie<Value>> {
+//     let mut tries = Vec::new();
+//     let mut columns = IndexMap::new();
 
-    for node in plan {
-        for a in node {
-            let trie_name = a.table_name.as_str();
-            let mut table_name = a.table_name.as_str();
-            if !db.contains_key(table_name) {
-                table_name = find_shared(table_name);
-            }
-            let col_name = &a.attr_name;
-            let col = db[table_name].get(col_name).unwrap();
-            columns
-                .entry(trie_name.to_string())
-                .or_insert(vec![])
-                .push(col);
-        }
-    }
+//     for node in plan {
+//         for a in node {
+//             let trie_name = a.table_name.as_str();
+//             let mut table_name = a.table_name.as_str();
+//             if !db.contains_key(table_name) {
+//                 table_name = find_shared(table_name);
+//             }
+//             let col_name = &a.attr_name;
+//             let col = db[table_name].get(col_name).unwrap();
+//             columns
+//                 .entry(trie_name.to_string())
+//                 .or_insert(vec![])
+//                 .push(col);
+//         }
+//     }
 
-    for a in payload {
-        let trie_name = a.table_name.as_str();
-        let mut table_name = a.table_name.as_str();
-        if !db.contains_key(table_name) {
-            table_name = find_shared(table_name);
-        }
-        let col_name = &a.attr_name;
-        // println!("table {} column {}", table_name, col_name);
-        columns
-            .entry(trie_name.to_string())
-            .or_insert(vec![])
-            .push(&db.get(table_name).unwrap()[col_name]);
-    }
+//     for a in payload {
+//         let trie_name = a.table_name.as_str();
+//         let mut table_name = a.table_name.as_str();
+//         if !db.contains_key(table_name) {
+//             table_name = find_shared(table_name);
+//         }
+//         let col_name = &a.attr_name;
+//         // println!("table {} column {}", table_name, col_name);
+//         columns
+//             .entry(trie_name.to_string())
+//             .or_insert(vec![])
+//             .push(&db.get(table_name).unwrap()[col_name]);
+//     }
 
-    for (table_name, cols) in columns {
-        let start = Instant::now();
-        let mut trie = Trie::default();
-        for i in 0..cols[0].len() {
-            let mut ids = Vec::new();
-            let mut data = Vec::new();
-            for col in &cols {
-                match col {
-                    Col::IdCol(ref v) => {
-                        ids.push(v[i]);
-                    }
-                    Col::DataCol(ref v) => {
-                        data.push(v[i].clone());
-                    }
-                }
-            }
-            trie.insert(&ids, data);
-        }
-        tries.push(trie);
-        println!(
-            "building {} takes {}s",
-            table_name,
-            start.elapsed().as_secs_f32()
-        );
-    }
+//     for (table_name, cols) in columns {
+//         let start = Instant::now();
+//         let mut trie = Trie::default();
+//         for i in 0..cols[0].len() {
+//             let mut ids = Vec::new();
+//             let mut data = Vec::new();
+//             for col in &cols {
+//                 match col {
+//                     Col::IdCol(ref v) => {
+//                         ids.push(v[i]);
+//                     }
+//                     Col::DataCol(ref v) => {
+//                         data.push(v[i].clone());
+//                     }
+//                 }
+//             }
+//             trie.insert(&ids, data);
+//         }
+//         tries.push(trie);
+//         println!(
+//             "building {} takes {}s",
+//             table_name,
+//             start.elapsed().as_secs_f32()
+//         );
+//     }
 
-    tries
-}
+//     tries
+// }
 
 fn type_of(col: &str) -> Type {
     let (physical_type, converted_type) = if col.ends_with("id") || col.ends_with("year") {

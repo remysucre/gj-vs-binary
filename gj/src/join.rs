@@ -1,4 +1,4 @@
-use crate::{trie::*, Relation, Col};
+use crate::{trie::*, Relation};
 
 use std::fmt::Debug;
 
@@ -36,14 +36,14 @@ where
                             relations[j]
                                 .get_map()
                                 .unwrap()
-                                .get(id)
+                                .get(&id.as_num())
                                 .map(|trie| (j, trie))
                         })
                         .collect::<Option<Vec<_>>>()
                     {
                         // TODO singleton compression
                         let mut trie_min = Trie::default();
-                        let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i]).collect();
+                        let ids: Vec<_> = id_cols[1..].iter().map(|c| c[i].as_num()).collect();
                         let data: Vec<_> = data_cols.iter().map(|c| c[i].clone()).collect();
                         trie_min.insert(&ids, data);
 
@@ -194,12 +194,8 @@ where
             let col = relation
                 .rel
                 .entry(relation.vars[i].clone())
-                .or_insert(Col::IdCol(vec![]));
-            if let Col::IdCol(v) = col {
-                v.push(*id);
-            } else {
-                unreachable!()
-            }
+                .or_default();
+            col.push(Value::Num(*id));
         }
         if let Trie::Data(data) = relation.trie {
             for tuple in data {
@@ -207,12 +203,8 @@ where
                     let col = relation
                         .rel
                         .entry(relation.vars[i+relation.ids.len()].clone())
-                        .or_insert(Col::DataCol(vec![]));
-                    if let Col::DataCol(vec) = col {
-                        vec.push(v.clone());
-                    } else {
-                        unreachable!()
-                    }
+                        .or_default();
+                    col.push(v.clone());
                 }
             }
         } else {
