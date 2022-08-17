@@ -120,8 +120,8 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
                         Table::Trie(trie) => Rel { vars: t.vars, trie, rel: t.rel, ids: t.ids },
                     })
                     .collect();
-                let mut rel_refs: Vec<_> = rels.iter_mut().collect();
-                semijoin_inner(&mut rel_refs, plan);
+                let mut rs: Vec<_> = rels.iter_mut().collect();
+                semijoin_inner(&mut rs, plan);
             }
             return;
         }
