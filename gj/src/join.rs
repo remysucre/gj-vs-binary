@@ -96,10 +96,10 @@ where
 }
 
 pub struct Tab<'a, T> {
-    vars: &'a [String],
-    table: &'a Table<'a, T>,
-    rel: &'a mut Relation,
-    ids: &'a mut Vec<i32>,
+    pub vars: &'a [&'a str],
+    pub table: &'a Table<'a, T>,
+    pub rel: &'a mut Relation,
+    pub ids: &'a mut Vec<i32>,
 }
 
 pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
@@ -129,7 +129,7 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
 }
 
 pub struct Rel<'a, T> {
-    vars: &'a [String],
+    vars: &'a [&'a str],
     trie: &'a Trie<T>,
     rel: &'a mut Relation,
     ids: &'a mut Vec<i32>,
@@ -192,7 +192,7 @@ fn reduce<'a>(relations: &mut [&'a mut Rel<Value>]) {
     for relation in relations {
         for (i, id) in relation.ids.iter().enumerate() {
             // TODO only materialize needed columns
-            let col = relation.rel.entry(relation.vars[i].clone()).or_default();
+            let col = relation.rel.entry(relation.vars[i].to_string()).or_default();
             col.push(Value::Num(*id));
         }
         if let Trie::Data(data) = relation.trie {
@@ -200,7 +200,7 @@ fn reduce<'a>(relations: &mut [&'a mut Rel<Value>]) {
                 for (i, v) in tuple.iter().enumerate() {
                     let col = relation
                         .rel
-                        .entry(relation.vars[i + relation.ids.len()].clone())
+                        .entry(relation.vars[i + relation.ids.len()].to_string())
                         .or_default();
                     col.push(v.clone());
                 }

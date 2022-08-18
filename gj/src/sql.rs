@@ -1,6 +1,7 @@
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum JoinType {
     Inner,
     LeftOuter,
@@ -8,43 +9,43 @@ pub enum JoinType {
     FullOuter,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Attribute {
     pub table_name: String,
     pub attr_name: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct Equalizer {
     left_attr: Attribute,
     right_attr: Attribute,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct JoinAttr {
     join_type: JoinType,
     equalizers: Vec<Equalizer>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Hash, PartialEq, Eq)]
 pub struct ScanAttr {
     pub table_name: String,
     pub attributes: Vec<Attribute>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct ProjectAttr {
     columns: Vec<Attribute>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum NodeAttr {
     Join(JoinAttr),
     Scan(ScanAttr),
     Project(ProjectAttr),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct TreeOp {
     pub name: String,
     pub cardinality: u32,
@@ -81,7 +82,7 @@ where
         inorder_traverse_mut(&mut node.children[0], func);
     }
     func(node);
-    if !node.children.is_empty() {
+    if node.children.len() > 1 {
         for child_node in &mut node.children[1..] {
             inorder_traverse_mut(child_node, func);
         }
@@ -243,4 +244,141 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
     inorder_traverse_mut(root, &mut get_plan);
 
     (scan, plan, payload)
+}
+
+pub fn to_final_gj_plan(root: &mut TreeOp) -> (Vec<Vec<Attribute>>, Vec<Attribute>) {
+    let mut plan: Vec<Vec<Attribute>> = vec![];
+    let mut payload: Vec<Attribute> = vec![];
+
+    let mut get_plan = |node: &TreeOp| {
+        match &node.attr {
+            Some(NodeAttr::Join(attr)) => {
+                for equalizer in &attr.equalizers {
+                    let lattr = &equalizer.left_attr;
+                    let rattr = &equalizer.right_attr;
+
+                    let lpos_opt = plan.iter().position(|x| x.contains(lattr));
+                    let rpos_opt = plan.iter().position(|x| x.contains(rattr));
+
+                    match (lpos_opt, rpos_opt) {
+                        (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
+                        (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
+                        (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
+                        (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
+                    }
+                }
+            }
+            Some(NodeAttr::Project(cols)) => {
+                payload.extend(
+                    cols.columns
+                        .iter()
+                        .cloned()
+                        .filter(|a| !a.table_name.is_empty()),
+                );
+            }
+            _ => (),
+        }
+    };
+
+    traverse_left(root, &mut get_plan);
+
+    (plan, payload)
+}
+
+pub fn to_semijoin_plan(root: &TreeOp) -> Vec<Vec<Attribute>> {
+    let mut plan:Vec<Vec<Attribute>> = vec![];
+    let mut build_plan = |node: &TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
+
+                let lpos_opt = plan.iter().position(|x| x.contains(lattr));
+                let rpos_opt = plan.iter().position(|x| x.contains(rattr));
+
+                match (lpos_opt, rpos_opt) {
+                    (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
+                    (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
+                    (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
+                    (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
+                }
+            }
+        }
+    };
+    traverse_left(root, &mut build_plan);
+    plan
+}
+
+fn traverse_left<'a, T>(node: &'a TreeOp, func: &mut T)
+where
+    T: FnMut(&'a TreeOp),
+{
+    if !node.children.is_empty() {
+        traverse_left(&node.children[0], func);
+    }
+    func(node);
+}
+
+pub fn travers_lrm<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
+where
+    T: FnMut(&'a TreeOp, bool),
+{
+    if !node.children.is_empty() {
+        travers_lrm(&node.children[0], func, false);
+    }
+    if node.children.len() > 1 {
+        for child_node in &node.children[1..] {
+            travers_lrm(child_node, func, true);
+        }
+    }
+    func(node, is_right_child);
+}
+
+pub fn traverse_mlr<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
+where
+    T: FnMut(&'a TreeOp, bool),
+{
+    func(node, is_right_child);
+
+    if !node.children.is_empty() {
+        traverse_mlr(&node.children[0], func, false);
+    }
+
+    if node.children.len() > 1 {
+        for child_node in &node.children[1..] {
+            traverse_mlr(child_node, func, true);
+        }
+    }
+}
+
+// pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
+//     let mut to_reduce = vec![];
+
+//     let mut build_plan = |node: &'a TreeOp, is_right_child: bool| {
+//         if let Some(NodeAttr::Join(_)) = &node.attr {
+//             if is_right_child {
+//                 to_reduce.push(node);
+//             }
+//         }
+//     };
+
+//     travers_lrm(root, &mut build_plan, false);
+//     to_reduce
+// }
+
+pub fn required_vars<'a>(root: &'a TreeOp) -> (Vec<&'a Attribute>, IndexMap<&'a TreeOp, usize>) {
+    let mut current_vars = Vec::new();
+    let mut required_vars = IndexMap::new();
+
+    let mut build_plan = |node: &'a TreeOp, is_right_child| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            if is_right_child {
+                required_vars.insert(node, current_vars.len());
+            }
+            current_vars.push(&attr.equalizers[0].left_attr);
+            current_vars.push(&attr.equalizers[0].right_attr);
+        }
+    };
+    traverse_mlr(root, &mut build_plan, false);
+    (current_vars, required_vars)
 }
