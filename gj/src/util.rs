@@ -36,7 +36,7 @@ pub fn sql_to_gj(file_name: &str) -> Result<PlanPack, Box<dyn Error>> {
 
 // FIXME
 pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
-    println!("in sj");
+    println!("START SEMIJOIN");
     let (vars, required) = required_vars(root);
     for node in required.iter().rev() {
         let plan = to_semijoin_plan(node);
@@ -51,8 +51,6 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
         }
 
         let (tables, table_vars) = build_tables(db, &plan, &out_vars);
-
-        println!("table vars: {:?}", table_vars);
 
         let mut new_rels = vec![];
 
@@ -98,8 +96,9 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
             let t = db.get_mut(&t_name).unwrap();
             std::mem::swap(t, &mut new_rels[i]);
         }
+        // new_rels.leak();
     }
-    println!("out sj");
+    println!("END SEMIJOIN");
 }
 
 // compile a plan (a list of multiway joins) into a list of trie indices,
@@ -131,7 +130,6 @@ pub fn compile_plan(
 // take the min of each attribute
 // the result is in the form [[t1.c1, t1.c2, ...], [t2.c1, t2.c2, ...], ...]
 pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
-    // println!("aggregate_min");
     if result.is_empty() {
         result.extend(payload.iter().map(|ss| ss.to_vec()));
     } else if payload.len() == result.len() {
@@ -216,8 +214,6 @@ pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
     let file = File::open(path).unwrap();
     let reader = SerializedFileReader::new(file).unwrap();
 
-    // println!("{:?}", schema);
-
     let rows = reader.get_row_iter(Some(schema)).unwrap();
 
     // NOTE this is awkward. Ideally we want to load column by column,
@@ -298,11 +294,7 @@ pub fn build_tables<'a>(
             if !db.contains_key(table_name) {
                 table_name = find_shared(table_name);
             }
-            println!("{:?}", db.keys());
-            println!("finding {}", table_name);
             let col_name = &a.attr_name;
-            println!("column {}", col_name);
-            println!("{:?}", db.get(table_name).unwrap().keys());
             id_cols
                 .entry(trie_name)
                 .or_insert(IndexMap::new())
@@ -318,8 +310,6 @@ pub fn build_tables<'a>(
         }
         let col_name = &a.attr_name;
         if id_cols.contains_key(trie_name) && !id_cols[trie_name].contains_key(col_name) {
-            println!("table and col {:?}", (table_name, col_name));
-            println!("{:?}", db.get(table_name).unwrap().keys());
             data_cols
                 .entry(trie_name)
                 .or_insert(IndexMap::default())
