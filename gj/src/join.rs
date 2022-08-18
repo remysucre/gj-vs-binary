@@ -34,13 +34,13 @@ where
                 // TODO singleton compression
                 trie_min.insert(&ids, data);
                 let rels: Vec<_> = relations
-                        .iter()
-                        .map(|t| match t {
-                            Table::Arr(_) => &trie_min,
-                            Table::Trie(trie) => trie,
-                        })
-                        .collect();
-                    join_inner(&rels, plan, payload, f);
+                    .iter()
+                    .map(|t| match t {
+                        Table::Arr(_) => &trie_min,
+                        Table::Trie(trie) => trie,
+                    })
+                    .collect();
+                join_inner(&rels, plan, payload, f);
             }
             return;
         }
@@ -116,8 +116,18 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
                 let mut rels: Vec<_> = relations
                     .iter_mut()
                     .map(|t| match t.table {
-                        Table::Arr(_) => Rel { vars: t.vars, trie: &trie_min, rel: t.rel, ids: t.ids},
-                        Table::Trie(trie) => Rel { vars: t.vars, trie, rel: t.rel, ids: t.ids },
+                        Table::Arr(_) => Rel {
+                            vars: t.vars,
+                            trie: &trie_min,
+                            rel: t.rel,
+                            ids: t.ids,
+                        },
+                        Table::Trie(trie) => Rel {
+                            vars: t.vars,
+                            trie,
+                            rel: t.rel,
+                            ids: t.ids,
+                        },
                     })
                     .collect();
                 let mut rs: Vec<_> = rels.iter_mut().collect();
@@ -192,7 +202,10 @@ fn reduce<'a>(relations: &mut [&'a mut Rel<Value>]) {
     for relation in relations {
         for (i, id) in relation.ids.iter().enumerate() {
             // TODO only materialize needed columns
-            let col = relation.rel.entry(relation.vars[i].to_string()).or_default();
+            let col = relation
+                .rel
+                .entry(relation.vars[i].to_string())
+                .or_default();
             col.push(Value::Num(*id));
         }
         if let Trie::Data(data) = relation.trie {

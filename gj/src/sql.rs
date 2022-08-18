@@ -246,7 +246,7 @@ pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec
 }
 
 pub fn to_semijoin_plan(root: &TreeOp) -> Vec<Vec<Attribute>> {
-    let mut plan:Vec<Vec<Attribute>> = vec![];
+    let mut plan: Vec<Vec<Attribute>> = vec![];
     let mut build_plan = |node: &TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {

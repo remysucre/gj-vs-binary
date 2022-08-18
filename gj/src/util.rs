@@ -13,7 +13,7 @@ use parquet::{
 use std::sync::Arc;
 use std::{fs, fs::File};
 
-use crate::join::{Tab, semijoin};
+use crate::join::{semijoin, Tab};
 use crate::trie::Table;
 use crate::{
     sql::*,
@@ -35,7 +35,7 @@ pub fn sql_to_gj(file_name: &str) -> Result<PlanPack, Box<dyn Error>> {
 }
 
 // FIXME
-pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp) {
+pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
     println!("in sj");
     let (vars, required) = required_vars(root);
     for node in required.iter().rev() {
@@ -43,6 +43,10 @@ pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp) {
 
         let mut out_vars = vec![];
         for &v in &vars {
+            out_vars.push(v.clone());
+        }
+
+        for v in payload {
             out_vars.push(v.clone());
         }
 
@@ -56,14 +60,21 @@ pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp) {
             new_rels.push(Relation::default());
         }
 
-        let mut t_with_new_rels: Vec<_> = tables.into_iter().enumerate().map(|(i, t)| {
-            (&table_vars[i].1, t, Vec::<i32>::new())
-        }).collect();
+        let mut t_with_new_rels: Vec<_> = tables
+            .into_iter()
+            .enumerate()
+            .map(|(i, t)| (&table_vars[i].1, t, Vec::<i32>::new()))
+            .collect();
 
         let mut tabs = vec![];
 
         for ((v, t, ids), rel) in t_with_new_rels.iter_mut().zip(new_rels.iter_mut()) {
-            tabs.push(Tab { vars: v, table: t, rel, ids });
+            tabs.push(Tab {
+                vars: v,
+                table: t,
+                rel,
+                ids,
+            });
         }
 
         let mut ts = tabs.iter_mut().collect::<Vec<_>>();
@@ -71,7 +82,7 @@ pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp) {
         let (compiled_plan, _) = compile_plan(&plan, &[]);
 
         semijoin(&mut ts, &compiled_plan);
-        
+
         let mut tns = vec![];
 
         for (t_name, _c_names) in &table_vars {
@@ -79,7 +90,6 @@ pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp) {
         }
 
         for (i, t_name) in tns.iter().enumerate() {
-
             let mut t_name = t_name.to_string();
             if !db.contains_key(&t_name) {
                 t_name = find_shared(&t_name).to_string();
@@ -278,8 +288,8 @@ pub fn build_tables<'a>(
 ) -> (Vec<Table<'a, Value>>, Vec<Schema<'a>>) {
     let mut tables = Vec::new();
     let mut vars = Vec::new();
-    let mut id_cols = IndexMap::new();
-    let mut data_cols = IndexMap::new();
+    let mut id_cols: IndexMap<&str, indexmap::IndexMap<&std::string::String, &std::vec::Vec<trie::Value>>> = IndexMap::new();
+    let mut data_cols: IndexMap<&str, indexmap::IndexMap<&std::string::String, &std::vec::Vec<trie::Value>>> = IndexMap::new();
 
     for node in plan {
         for a in node {
@@ -295,8 +305,8 @@ pub fn build_tables<'a>(
             println!("{:?}", db.get(table_name).unwrap().keys());
             id_cols
                 .entry(trie_name)
-                .or_insert(vec![])
-                .push((col_name, &db.get(table_name).unwrap()[col_name]));
+                .or_insert(IndexMap::new())
+                .insert(col_name, &db.get(table_name).unwrap()[col_name]);
         }
     }
 
@@ -307,11 +317,13 @@ pub fn build_tables<'a>(
             table_name = find_shared(table_name);
         }
         let col_name = &a.attr_name;
-        if id_cols.contains_key(trie_name) {
+        if id_cols.contains_key(trie_name) && !id_cols[trie_name].contains_key(col_name) {
+            println!("table and col {:?}", (table_name, col_name));
+            println!("{:?}", db.get(table_name).unwrap().keys());
             data_cols
                 .entry(trie_name)
-                .or_insert(vec![])
-                .push((col_name, &db.get(table_name).unwrap()[col_name]));
+                .or_insert(IndexMap::default())
+                .insert(col_name, &db.get(table_name).unwrap()[col_name]);
         }
     }
 
@@ -349,7 +361,7 @@ pub fn build_tables<'a>(
                 }
             }
 
-            for i in 0..cols[0].1.len() {
+            for i in 0..cols[0].len() {
                 let mut ids = Vec::new();
                 let mut data = Vec::new();
                 for (_col_name, col) in cols {

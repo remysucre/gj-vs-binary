@@ -7,22 +7,23 @@ fn main() {
 
     for (q, number) in queries() {
         print!("running query {} ", q);
-        
+
         let plan_profile = format!("../logs/plan-profiles/{}.json", number);
         let (_, plan, payload, root) = sql_to_gj(&plan_profile).unwrap();
-        
+
         let scan_profile = format!("../logs/scan-profiles/{}.json", q);
         let (scan, _, _, _) = sql_to_gj(&scan_profile).unwrap();
 
-        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
         println!("plan: {:#?}", plan);
         println!("payload: {:#?}", payload);
+
+        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
         load_db_mut(&mut db, q, &scan);
 
         let time = Instant::now();
 
-        semijoin_reduce(&mut db, &root);
+        semijoin_reduce(&mut db, &root, &payload);
 
         let (tables, _table_vars) = build_tables(&db, &plan, &payload);
         let mut result = vec![];
@@ -197,11 +198,11 @@ fn queries() -> Vec<(&'static str, &'static str)> {
 
     if bushy {
         queries.extend_from_slice(&[
-            ("33a", "IMDBQ111"), // SLOW
+            // ("33a", "IMDBQ111"), // SLOW
             // ("33b", "IMDBQ112"), // SLOW
-            // ("33c", "IMDBQ113"), // SLOW    
+            // ("33c", "IMDBQ113"), // SLOW
         ])
     }
-    
+
     queries
 }
