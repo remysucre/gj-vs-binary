@@ -282,6 +282,28 @@ pub fn to_final_gj_plan(root: &mut TreeOp) -> (Vec<Vec<Attribute>>, Vec<Attribut
 
     traverse_left(root, &mut get_plan);
 
+    let mut add_bushy = |node: &mut TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
+    
+                let lpos_opt = plan.iter().position(|x| x.contains(lattr));
+                let rpos_opt = plan.iter().position(|x| x.contains(rattr));
+    
+                match (lpos_opt, rpos_opt) {
+                    (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
+                    (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
+                    (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
+                    _ => (),
+                    // (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
+                }
+            }
+        }
+    };
+
+    inorder_traverse_mut(root, &mut add_bushy);
+
     (plan, payload)
 }
 
