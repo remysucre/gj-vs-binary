@@ -1,45 +1,30 @@
 use std::time::Instant;
 
-use gj::{join::*, util::*, *, sql::to_final_gj_plan};
+use gj::{join::*, util::*, *};
 
 fn main() {
-    // a db maps each table name to a table;
-    // a table maps each column name to a column (vector of values)
     let mut db = DB::new();
 
     for (q, number) in queries() {
-        print!("{} ", q);
-        // due to an issue in duckdb's profiler, for each query we need to parse two different profiles
-        // one providing the scans and the other the join order
+        print!("running query {} ", q);
+        
         let plan_profile = format!("../logs/plan-profiles/{}.json", number);
-        let (_, plan, payload, mut root) = sql_to_gj(&plan_profile).unwrap();
+        let (_, plan, payload, root) = sql_to_gj(&plan_profile).unwrap();
+        
         let scan_profile = format!("../logs/scan-profiles/{}.json", q);
         let (scan, _, _, _) = sql_to_gj(&scan_profile).unwrap();
-        // println!("{:#?}", (&scan, &plan, &payload));
 
-        // the compiled plan and payload refer to each table by index
-        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-        // println!("{:#?}", (&compiled_plan, &compiled_payload));
+        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
+        println!("plan: {:#?}", plan);
+        println!("payload: {:#?}", payload);
 
-        // load the parquet file into memory
         load_db_mut(&mut db, q, &scan);
 
         let time = Instant::now();
 
-        let _start = Instant::now();
-        // let relations = build_tries(&db, &plan, &payload);
-        semijoin_reduce(&mut db, &root, &payload);
-
-        // let (plan, payload) = to_final_gj_plan(&mut root);
-        println!("plan: {:#?}", plan);
-        println!("payload: {:#?}", payload);
-
-        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
+        semijoin_reduce(&mut db, &root);
 
         let (tables, _table_vars) = build_tables(&db, &plan, &payload);
-        // println!("trie construction takes {}s", start.elapsed().as_secs_f32());
-        // assert!(relations.iter().all(|t| !t.get_map().unwrap().[is_empty()));
-
         let mut result = vec![];
 
         let start = Instant::now();
@@ -50,13 +35,6 @@ fn main() {
             &compiled_payload,
             &mut |t| aggregate_min(&mut result, t),
         );
-
-        // join(
-        //     &relations.iter().collect::<Vec<_>>(),
-        //     &compiled_plan,
-        //     &compiled_payload,
-        //     &mut |t| aggregate_min(&mut result, t),
-        // );
 
         println!("join takes {:?}", start.elapsed());
         println!("total takes {:?}", time.elapsed().as_secs_f32());
@@ -219,7 +197,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
 
     if bushy {
         queries.extend_from_slice(&[
-            // ("33a", "IMDBQ111"), // SLOW
+            ("33a", "IMDBQ111"), // SLOW
             // ("33b", "IMDBQ112"), // SLOW
             // ("33c", "IMDBQ113"), // SLOW    
         ])
