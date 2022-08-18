@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use gj::{join::*, util::*, *};
+use gj::{join::*, util::*, *, sql::to_final_gj_plan};
 
 fn main() {
     // a db maps each table name to a table;
@@ -12,13 +12,13 @@ fn main() {
         // due to an issue in duckdb's profiler, for each query we need to parse two different profiles
         // one providing the scans and the other the join order
         let plan_profile = format!("../logs/plan-profiles/{}.json", number);
-        let (_, plan, payload) = sql_to_gj(&plan_profile).unwrap();
+        let (_, _plan, payload, mut root) = sql_to_gj(&plan_profile).unwrap();
         let scan_profile = format!("../logs/scan-profiles/{}.json", q);
-        let (scan, _, _) = sql_to_gj(&scan_profile).unwrap();
+        let (scan, _, _, _) = sql_to_gj(&scan_profile).unwrap();
         // println!("{:#?}", (&scan, &plan, &payload));
 
         // the compiled plan and payload refer to each table by index
-        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
+        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
         // println!("{:#?}", (&compiled_plan, &compiled_payload));
 
         // load the parquet file into memory
@@ -26,10 +26,16 @@ fn main() {
 
         let time = Instant::now();
 
-        let start = Instant::now();
+        let _start = Instant::now();
         // let relations = build_tries(&db, &plan, &payload);
+        semijoin_reduce(&mut db, &root, &payload);
+
+        let (plan, payload) = to_final_gj_plan(&mut root);
+
+        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
+
         let (tables, _table_vars) = build_tables(&db, &plan, &payload);
-        println!("trie construction takes {}s", start.elapsed().as_secs_f32());
+        // println!("trie construction takes {}s", start.elapsed().as_secs_f32());
         // assert!(relations.iter().all(|t| !t.get_map().unwrap().[is_empty()));
 
         let mut result = vec![];

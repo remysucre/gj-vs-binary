@@ -25,13 +25,14 @@ use crate::{
 pub type Plan = Vec<Vec<Attribute>>;
 pub type Payload = Vec<Attribute>;
 
-pub fn sql_to_gj(file_name: &str) -> Result<(Vec<ScanAttr>, Plan, Payload), Box<dyn Error>> {
+pub fn sql_to_gj(file_name: &str) -> Result<(Vec<ScanAttr>, Plan, Payload, TreeOp), Box<dyn Error>> {
     let sql = fs::read_to_string(path::Path::new(file_name))?;
     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
     parse_tree_extra_info(&mut root);
     let (_vars, _required) = required_vars(&root);
     // println!("bushy plan: {:#?}", (vars, required.values()));
-    Ok(to_gj_plan(&mut root))
+    let (scans, plan, payload) = to_gj_plan(&mut root);
+    Ok((scans, plan, payload, root))
 }
 
 pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp, payload: &[Attribute]) {
@@ -83,7 +84,13 @@ pub fn semijoin_reduce(db: &mut DB ,root: &TreeOp, payload: &[Attribute]) {
         }
 
         for (i, t_name) in tns.iter().enumerate() {
-            let t = db.get_mut(t_name).unwrap();
+
+            let mut t_name = t_name.to_string();
+            if !db.contains_key(&t_name) {
+                t_name = find_shared(&t_name).to_string();
+            }
+
+            let t = db.get_mut(&t_name).unwrap();
             std::mem::swap(t, &mut new_rels[i]);
         }
     }

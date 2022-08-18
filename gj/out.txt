@@ -4,15 +4,17 @@ Loading movie_info_idx
 Loading it
 Loading mc
 Loading ct
+building flat table on t
+building t takes 0.000003916s
+building mi_idx takes 0.21188612s
 building flat table on mc
-building mc takes 0.000003791s
-building t takes 0.6752799s
-building mi_idx takes 0.13739434s
-building it takes 0.000001166s
-building ct takes 0.000000916s
-trie construction takes 0.8127576s
-join takes 14.949333ms
-total takes 0.82772017
+building mc takes 0.000032708s
+building t takes 0.100665s
+building mi_idx takes 0.07843321s
+building it takes 0.000000708s
+building ct takes 0.00000125s
+join takes 12.648166ms
+total takes 1.4340289
 output [[Str("(A Warner Bros.-First National Picture) (presents)")], [Str("A Clockwork Orange"), Num(1934)]]
 1b Query: 1b
 Loading movie_info_idx
@@ -20,15 +22,17 @@ Loading it
 Loading mc
 Loading ct
 Loading t
+building flat table on t
+building t takes 0.000014333s
+building mi_idx takes 0.20053792s
 building flat table on mc
-building mc takes 0.000019708s
-building t takes 0.16174458s
-building mi_idx takes 0.13139875s
-building it takes 0.000001958s
-building ct takes 0.000000791s
-trie construction takes 0.29322463s
-join takes 394.74925ms
-total takes 0.6879887
+building mc takes 0.0000145s
+building t takes 0.02097104s
+building mi_idx takes 0.015304s
+building it takes 0.000001041s
+building ct takes 0.000002541s
+join takes 359.223708ms
+total takes 0.9329038
 output [[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2008)]]
 1c Query: 1c
 Loading movie_info_idx
@@ -36,15 +40,17 @@ Loading t
 Loading mc
 Loading ct
 Loading it
+building flat table on t
+building t takes 0.000003041s
+building mi_idx takes 0.20282504s
 building flat table on mc
-building mc takes 0.000002916s
-building t takes 0.081795506s
-building mi_idx takes 0.12959984s
-building it takes 0.000000875s
-building ct takes 0.000000583s
-trie construction takes 0.21143988s
-join takes 5.142458ms
-total takes 0.21658836
+building mc takes 0.000012291s
+building t takes 0.007066458s
+building mi_idx takes 0.004590541s
+building it takes 0.000001s
+building ct takes 0.000000875s
+join takes 4.501583ms
+total takes 0.41964427
 output [[Str("(co-production)")], [Str("Intouchables"), Num(2011)]]
 1d Query: 1d
 Loading t
@@ -52,15 +58,17 @@ Loading mc
 Loading ct
 Loading movie_info_idx
 Loading it
+building flat table on t
+building t takes 0.000004541s
+building mi_idx takes 0.20464249s
 building flat table on mc
-building mc takes 0.000005333s
-building t takes 0.33750206s
-building mi_idx takes 0.13173307s
-building it takes 0.000002s
-building ct takes 0.000001125s
-trie construction takes 0.46930254s
-join takes 429.635666ms
-total takes 0.8989591
+building mc takes 0.000020625s
+building t takes 0.040793s
+building mi_idx takes 0.030170877s
+building it takes 0.000000875s
+building ct takes 0.000003s
+join takes 409.934125ms
+total takes 1.2626446
 output [[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2004)]]
 2a Query: 2a
 Loading movie_keyword
@@ -69,14 +77,13 @@ Loading title
 Loading cn
 Loading k
 building flat table on mk
-building mk takes 0.000004041s
-building t takes 0.6501067s
-building mc takes 0.40490714s
-building k takes 0.000000666s
-building cn takes 0.000727583s
-trie construction takes 1.0557947s
-join takes 1.105317416s
-total takes 2.1611304
+building mk takes 0.000007833s
+building t takes 0.6679337s
+building mc takes 0.40914816s
+building k takes 0.000000791s
+building cn takes 0.000830625s
+join takes 1.104219875s
+total takes 2.1822095
 output [[Str("'Doc'")]]
 2b Query: 2b
 Loading movie_keyword
@@ -85,14 +92,13 @@ Loading title
 Loading k
 Loading cn
 building flat table on mk
-building mk takes 0.000003958s
-building t takes 0.662355s
-building mc takes 0.4101793s
-building k takes 0.000001083s
-building cn takes 0.000305791s
-trie construction takes 1.0729153s
-join takes 1.098924416s
-total takes 2.1718695
+building mk takes 0.000009958s
+building t takes 0.6692282s
+building mc takes 0.41951036s
+building k takes 0.000001125s
+building cn takes 0.000166708s
+join takes 1.103584416s
+total takes 2.1926014
 output [[Str("'Doc'")]]
 2c Query: 2c
 Loading movie_keyword
@@ -101,14 +107,13 @@ Loading k
 Loading movie_companies
 Loading cn
 building flat table on mk
-building mk takes 0.00000675s
-building t takes 0.67313653s
-building mc takes 0.41368735s
-building k takes 0.000001041s
-building cn takes 0.000001416s
-trie construction takes 1.0869312s
-join takes 1.096686791s
-total takes 2.1836581
+building mk takes 0.000009833s
+building t takes 0.6634151s
+building mc takes 0.4027823s
+building k takes 0.000000958s
+building cn takes 0.000000833s
+join takes 1.100213833s
+total takes 2.1665184
 output []
 2d Query: 2d
 Loading movie_keyword
@@ -117,56 +122,61 @@ Loading cn
 Loading title
 Loading k
 building flat table on mk
-building mk takes 0.00001025s
-building t takes 0.6699934s
-building mc takes 0.406189s
-building k takes 0.000001291s
-building cn takes 0.00679825s
-trie construction takes 1.0830847s
-join takes 1.119803583s
-total takes 2.202931
+building mk takes 0.000009291s
+building t takes 0.6588573s
+building mc takes 0.406887s
+building k takes 0.000002916s
+building cn takes 0.004995166s
+join takes 1.120189583s
+total takes 2.191043
 output [[Str("& Teller")]]
 3a Query: 3a
 Loading movie_keyword
 Loading mi
 Loading t
 Loading k
+building flat table on mk
+building mk takes 0.000010166s
+building t takes 0.24116574s
 building flat table on mi
-building mi takes 0.000005875s
-building t takes 0.25201842s
-building mk takes 0.3948488s
-building k takes 0.000003166s
-trie construction takes 0.6469377s
-join takes 30.479208ms
-total takes 0.6774404
+building mi takes 0.000027083s
+building t takes 0.19670875s
+building mk takes 0.10619838s
+building k takes 0.000003333s
+join takes 23.126625ms
+total takes 2.2166512
 output [[Str("2 Days in New York")]]
 3b Query: 3b
 Loading movie_keyword
 Loading k
 Loading t
 Loading mi
+building flat table on mk
+building mk takes 0.00001025s
+building t takes 0.07867425s
 building flat table on mi
-building mi takes 0.000008625s
-building t takes 0.0939107s
-building mk takes 0.4448923s
-building k takes 0.000003208s
-trie construction takes 0.53891003s
-join takes 540.708µs
-total takes 0.5394602
+building mi takes 0.000016625s
+building t takes 0.046144083s
+building mk takes 0.023868876s
+building k takes 0.000002875s
+join takes 300.666µs
+total takes 1.2585278
 output [[Str("300: Rise of an Empire")]]
 3c Query: 3c
 Loading movie_keyword
 Loading k
 Loading t
 Loading mi
+building flat table on mk
+building mk takes 0.000021083s
+building t takes 0.4260869s
 building flat table on mi
-building mi takes 0.00002025s
-building t takes 0.4271121s
-building mk takes 0.3987007s
-building k takes 0.000006875s
-trie construction takes 0.82591623s
-join takes 203.373ms
-total takes 1.0293176
+building mi takes 0.000028875s
+building t takes 0.44550484s
+building mk takes 0.23779991s
+building k takes 0.000003083s
+join takes 147.713458ms
+total takes 3.7065756
 output [[Str("& Teller 2")]]
 4a Query: 4a
 Loading movie_keyword
@@ -175,14 +185,13 @@ Loading mi_idx
 Loading it
 Loading k
 building flat table on mk
-building mk takes 0.00001125s
-building t takes 0.237991s
-building mi_idx takes 0.110288285s
-building k takes 0.00000525s
+building mk takes 0.000007916s
+building t takes 0.2421645s
+building mi_idx takes 0.110088915s
+building k takes 0.000004458s
 building it takes 0.000001083s
-trie construction takes 0.3483568s
-join takes 784.838625ms
-total takes 1.1332117
+join takes 788.771291ms
+total takes 1.1411239
 output [[Str("5.1")], [Str("& Teller 2")]]
 4b Query: 4b
 Loading movie_keyword
@@ -191,14 +200,13 @@ Loading t
 Loading mi_idx
 Loading it
 building flat table on mk
-building mk takes 0.00000375s
-building t takes 0.07793508s
-building mi_idx takes 0.001552041s
+building mk takes 0.000004875s
+building t takes 0.07772521s
+building mi_idx takes 0.001797875s
 building k takes 0.000002875s
-building it takes 0.000001083s
-trie construction takes 0.07953717s
-join takes 700.801416ms
-total takes 0.7803543
+building it takes 0.000000958s
+join takes 706.458916ms
+total takes 0.7860637
 output [[Str("9.1")], [Str("Batman: Arkham City")]]
 4c Query: 4c
 Loading movie_keyword
@@ -207,14 +215,13 @@ Loading t
 Loading it
 Loading k
 building flat table on mk
-building mk takes 0.00000625s
-building t takes 0.4314955s
-building mi_idx takes 0.16426508s
-building k takes 0.000004916s
+building mk takes 0.000008916s
+building t takes 0.42002004s
+building mi_idx takes 0.16286112s
+building k takes 0.000009416s
 building it takes 0.000000791s
-trie construction takes 0.5958355s
-join takes 918.046166ms
-total takes 1.5139068
+join takes 918.835ms
+total takes 1.5018239
 output [[Str("2.1")], [Str("& Teller 2")]]
 5c Query: 5c
 Loading t
@@ -223,14 +230,13 @@ Loading ct
 Loading mi
 Loading info_type
 building flat table on mi
-building mi takes 0.000006041s
-building t takes 0.42864713s
-building mc takes 0.032276586s
-building it takes 0.000012791s
-building ct takes 0.000002625s
-trie construction takes 0.46101508s
-join takes 197.99725ms
-total takes 0.65903276
+building mi takes 0.000005625s
+building t takes 0.4294537s
+building mc takes 0.031865083s
+building it takes 0.000009541s
+building ct takes 0.000001041s
+join takes 199.530791ms
+total takes 0.6609498
 output [[Str("11,830,420")]]
 11a Query: 11a
 Loading movie_keyword
@@ -241,19 +247,21 @@ Loading cn
 Loading movie_link
 Loading lt
 Loading t
+building flat table on t
+building t takes 0.000018041s
+building ml takes 0.00315775s
 building flat table on mk
-building mk takes 0.000013s
-building t takes 0.21170288s
-building ml takes 0.002039708s
-building mc takes 0.26888475s
-building lt takes 0.000002583s
-building k takes 0.000000291s
+building mk takes 0.000014875s
+building t takes 0.000399875s
+building ml takes 0.000261208s
+building mc takes 0.26252365s
+building lt takes 0.000003666s
+building k takes 0.000000333s
 building ct takes 0.000000166s
-building cn takes 0.0074145s
-trie construction takes 0.4901615s
-join takes 806.790208ms
-total takes 1.296981
-output [[Str("Churchill Films")], [Str("followed by")], [Str("Batman Beyond")]]
+building cn takes 0.007386416s
+join takes 678.2195ms
+total takes 1.1833473
+output [[Str("Churchill Films")], [Str("followed by")], [Str("Der Serienkiller - Klinge des Todes")]]
 11b Query: 11b
 Loading movie_keyword
 Loading k
@@ -263,18 +271,20 @@ Loading mc
 Loading cn
 Loading lt
 Loading ct
+building flat table on t
+building t takes 0.0000045s
+building ml takes 0.003090916s
 building flat table on mk
-building mk takes 0.0000055s
-building t takes 0.000007s
-building ml takes 0.001799916s
-building mc takes 0.2507975s
-building lt takes 0.00000275s
-building k takes 0.000000291s
-building ct takes 0.000000333s
-building cn takes 0.006842333s
-trie construction takes 0.2595252s
-join takes 672.801375ms
-total takes 0.9323549
+building mk takes 0.000004041s
+building t takes 0.000000333s
+building ml takes 0.000000208s
+building mc takes 0.25115025s
+building lt takes 0.000002791s
+building k takes 0.000000583s
+building ct takes 0.00000025s
+building cn takes 0.007018458s
+join takes 667.50975ms
+total takes 0.929181
 output [[Str("Filmlance International AB")], [Str("follows")], [Str("The Money Man")]]
 11c Query: 11c
 Loading movie_keyword
@@ -285,18 +295,20 @@ Loading link_type
 Loading mc
 Loading cn
 Loading ct
+building flat table on t
+building t takes 0.000004708s
+building ml takes 0.00310375s
 building flat table on mk
-building mk takes 0.000008416s
-building t takes 0.6017269s
-building ml takes 0.002040791s
-building mc takes 0.3691744s
-building lt takes 0.000007333s
-building k takes 0.000000458s
+building mk takes 0.00002225s
+building t takes 0.001068333s
+building ml takes 0.000598083s
+building mc takes 0.35939997s
+building lt takes 0.000003583s
+building k takes 0.0000005s
 building ct takes 0.000000416s
-building cn takes 0.0000215s
-trie construction takes 0.9734335s
-join takes 903.299625ms
-total takes 1.8767604
+building cn takes 0.000019958s
+join takes 695.428375ms
+total takes 1.6458946
 output [[Str("20th Century Fox Home Entertainment")], [Str("(1997-2002) (worldwide) (all media)")], [Str("24")]]
 11d Query: 11d
 Loading movie_keyword
@@ -307,18 +319,20 @@ Loading movie_link
 Loading ct
 Loading t
 Loading link_type
+building flat table on t
+building t takes 0.000006666s
+building ml takes 0.003170625s
 building flat table on mk
-building mk takes 0.000005958s
-building t takes 0.6908922s
-building ml takes 0.002226958s
-building mc takes 0.41047293s
-building lt takes 0.000007458s
-building k takes 0.000000541s
-building ct takes 0.00000025s
-building cn takes 0.040367376s
-trie construction takes 1.1444324s
-join takes 902.219583ms
-total takes 2.0475037
+building mk takes 0.000020541s
+building t takes 0.001003166s
+building ml takes 0.000594666s
+building mc takes 0.3598508s
+building lt takes 0.000003041s
+building k takes 0.000000458s
+building ct takes 0.000000458s
+building cn takes 0.037613332s
+join takes 696.1575ms
+total takes 1.6879873
 output [[Str("13th Street")], [Str("(1954) (UK) (TV)")], [Str("...denn sie wissen nicht, was sie tun")]]
 12a Query: 12a
 Loading movie_companies
@@ -329,18 +343,20 @@ Loading mi
 Loading it1
 Loading it2
 Loading ct
+building flat table on t
+building t takes 0.0000075s
+building mi_idx takes 0.006652416s
 building flat table on mi
-building mi takes 0.00000475s
-building t takes 0.09112775s
-building mi_idx takes 0.009371s
-building mc takes 0.52436274s
-building it2 takes 0.000001625s
-building it1 takes 0.000000333s
-building ct takes 0.000000208s
-building cn takes 0.013011375s
-trie construction takes 0.63798636s
-join takes 57.271791ms
-total takes 0.69527656
+building mi takes 0.000014833s
+building t takes 0.001434583s
+building mi_idx takes 0.001708375s
+building mc takes 0.5144419s
+building it2 takes 0.0000015s
+building it1 takes 0.000000291s
+building ct takes 0.00000025s
+building cn takes 0.013778791s
+join takes 44.225625ms
+total takes 0.70978814
 output [[Str("10th Grade Reunion Films")], [Str("8.1")], [Str("3:20")]]
 12b Query: 12b
 Loading movie_info
@@ -351,18 +367,20 @@ Loading movie_companies
 Loading cn
 Loading ct
 Loading it2
+building flat table on t
+building t takes 0.000005416s
+building mi_idx takes 0.21818833s
 building flat table on mi
-building mi takes 0.000007375s
-building t takes 0.000445166s
-building mi_idx takes 0.14481425s
-building mc takes 0.6233079s
-building it2 takes 0.000001791s
+building mi takes 0.000021375s
+building t takes 0.000152041s
+building mi_idx takes 0.000084875s
+building mc takes 0.5262329s
+building it2 takes 0.000001833s
 building it1 takes 0.000000291s
-building ct takes 0.000000375s
-building cn takes 0.005463083s
-trie construction takes 0.7741314s
-join takes 4.087856541s
-total takes 4.8624096
+building ct takes 0.000000333s
+building cn takes 0.005474833s
+join takes 4.103886708s
+total takes 4.932252
 output [[Str("$10,000")], [Str("Birdemic: Shock and Terror")]]
 12c Query: 12c
 Loading movie_companies
@@ -373,18 +391,20 @@ Loading mi_idx
 Loading it2
 Loading t
 Loading it1
+building flat table on t
+building t takes 0.000005791s
+building mi_idx takes 0.03018175s
 building flat table on mi
-building mi takes 0.000006083s
-building t takes 0.29993543s
-building mi_idx takes 0.042820584s
-building mc takes 0.53028333s
-building it2 takes 0.00000225s
-building it1 takes 0.000000208s
-building ct takes 0.00000025s
-building cn takes 0.013377125s
-trie construction takes 0.8865482s
-join takes 84.440916ms
-total takes 0.97101253
+building mi takes 0.00002175s
+building t takes 0.012004333s
+building mi_idx takes 0.014038541s
+building mc takes 0.5325742s
+building it2 takes 0.000003583s
+building it1 takes 0.000000166s
+building ct takes 0.000000208s
+building cn takes 0.013552125s
+join takes 69.429041ms
+total takes 1.0220695
 output [[Str("\"Oh That Gus!\"")], [Str("7.1")], [Str("$1.11")]]
 13a Query: 13a
 Loading movie_info
@@ -396,19 +416,21 @@ Loading ct
 Loading movie_info_idx
 Loading it
 Loading cn
+building flat table on t
+building t takes 0.000006s
+building miidx takes 0.25615758s
 building flat table on mi
-building mi takes 0.000005333s
-building t takes 0.8832009s
-building miidx takes 0.27868044s
-building mc takes 0.7489608s
-building kt takes 0.000003166s
-building it2 takes 0.000000458s
-building it takes 0.000000291s
-building ct takes 0.000000291s
-building cn takes 0.000892291s
-trie construction takes 1.9128485s
-join takes 7.187286375s
-total takes 9.100562
+building mi takes 0.000774125s
+building t takes 0.12462683s
+building miidx takes 0.12847325s
+building mc takes 0.6223841s
+building kt takes 0.000005583s
+building it2 takes 0.000000416s
+building it takes 0.000000375s
+building ct takes 0.00000025s
+building cn takes 0.000767583s
+join takes 6.110882458s
+total takes 8.428372
 output [[Str("Afghanistan:24 June 2012")], [Str("1.0")], [Str("&Me")]]
 13b Query: 13b
 Loading movie_info
@@ -420,19 +442,21 @@ Loading cn
 Loading it2
 Loading t
 Loading kt
+building flat table on t
+building t takes 0.0000045s
+building miidx takes 0.24852237s
 building flat table on mi
-building mi takes 0.000006125s
-building t takes 0.00041075s
-building miidx takes 0.25191835s
-building mc takes 0.5023019s
-building kt takes 0.000002458s
-building it2 takes 0.000000625s
-building it takes 0.000000291s
-building ct takes 0.000000208s
-building cn takes 0.013482041s
-trie construction takes 0.7682269s
-join takes 2.203760875s
-total takes 2.9720132
+building mi takes 0.000026541s
+building t takes 0.000073s
+building miidx takes 0.000057041s
+building mc takes 0.49679905s
+building kt takes 0.000001958s
+building it2 takes 0.000000375s
+building it takes 0.00000025s
+building ct takes 0.00000025s
+building cn takes 0.012997791s
+join takes 2.305916166s
+total takes 3.2405176
 output [[Str("501audio")], [Str("1.8")], [Str("5 Time Champion")]]
 13c Query: 13c
 Loading movie_info
@@ -444,19 +468,21 @@ Loading it2
 Loading movie_companies
 Loading cn
 Loading ct
+building flat table on t
+building t takes 0.000005583s
+building miidx takes 0.24828047s
 building flat table on mi
-building mi takes 0.000006s
-building t takes 0.000055708s
-building miidx takes 0.25127238s
-building mc takes 0.50862247s
-building kt takes 0.000002291s
-building it2 takes 0.000000166s
-building it takes 0.000000125s
-building ct takes 0.000000125s
-building cn takes 0.013376791s
-trie construction takes 0.77343667s
-join takes 2.212892875s
-total takes 2.9863517
+building mi takes 0.000021708s
+building t takes 0.000028583s
+building miidx takes 0.00001225s
+building mc takes 0.5112024s
+building kt takes 0.000001833s
+building it2 takes 0.000000375s
+building it takes 0.000000208s
+building ct takes 0.00000025s
+building cn takes 0.013228333s
+join takes 2.197174875s
+total takes 3.1433194
 output [[Str("DL Sites")], [Str("1.8")], [Str("Champion")]]
 13d Query: 13d
 Loading movie_info
@@ -468,19 +494,21 @@ Loading kt
 Loading ct
 Loading movie_info_idx
 Loading it
+building flat table on t
+building t takes 0.000006041s
+building miidx takes 0.24439974s
 building flat table on mi
-building mi takes 0.000006083s
-building t takes 0.8181947s
-building miidx takes 0.27880636s
-building mc takes 0.53605074s
-building kt takes 0.000001875s
-building it2 takes 0.000000333s
-building it takes 0.000000333s
-building ct takes 0.000000333s
-building cn takes 0.014298958s
-trie construction takes 1.64874s
-join takes 5.909803041s
-total takes 7.5585704
+building mi takes 0.000019375s
+building t takes 0.12354066s
+building miidx takes 0.11681829s
+building mc takes 0.49782923s
+building kt takes 0.000001833s
+building it2 takes 0.00000025s
+building it takes 0.000000291s
+building ct takes 0.000000208s
+building cn takes 0.013306541s
+join takes 4.761502666s
+total takes 6.9435368
 output [[Str("\"O\" Films")], [Str("1.0")], [Str("#54 Meets #47")]]
 14a Query: 14a
 Loading movie_keyword
@@ -491,18 +519,21 @@ Loading mi
 Loading t
 Loading kt
 Loading it1
+building flat table on mk
+building mk takes 0.000005291s
+building t takes 0.075328544s
+building mi_idx takes 0.23468141s
 building flat table on mi
-building mi takes 0.000005625s
-building t takes 0.099069s
-building mk takes 0.46641213s
-building mi_idx takes 0.28486916s
-building kt takes 0.000001541s
-building k takes 0.000000375s
-building it2 takes 0.000000291s
-building it1 takes 0.000000166s
-trie construction takes 0.850587s
-join takes 150.165708ms
-total takes 1.0007689
+building mi takes 0.000021375s
+building t takes 0.027585084s
+building mk takes 0.013643208s
+building mi_idx takes 0.026983377s
+building kt takes 0.000001875s
+building k takes 0.0000005s
+building it2 takes 0.000000208s
+building it1 takes 0.000000375s
+join takes 115.44475ms
+total takes 1.7785399
 output [[Str("1.0")], [Str("$lowdown")]]
 14b Query: 14b
 Loading movie_keyword
@@ -513,18 +544,21 @@ Loading kt
 Loading mi
 Loading it1
 Loading it2
+building flat table on mk
+building mk takes 0.00000525s
+building t takes 0.000069625s
+building mi_idx takes 0.06524642s
 building flat table on mi
-building mi takes 0.000004s
-building t takes 0.000094416s
-building mk takes 0.40185043s
-building mi_idx takes 0.0823787s
-building kt takes 0.000002s
-building k takes 0.000000333s
-building it2 takes 0.000000291s
-building it1 takes 0.000000208s
-trie construction takes 0.48437893s
-join takes 105.037291ms
-total takes 0.5894348
+building mi takes 0.000022416s
+building t takes 0.000038458s
+building mk takes 0.000021541s
+building mi_idx takes 0.000033125s
+building kt takes 0.000000375s
+building k takes 0.000000208s
+building it2 takes 0.000000208s
+building it1 takes 0.00000025s
+join takes 103.976166ms
+total takes 1.115249
 output [[Str("6.4")], [Str("Of Dolls and Murder")]]
 14c Query: 14c
 Loading movie_keyword
@@ -535,18 +569,21 @@ Loading kt
 Loading k
 Loading mi_idx
 Loading it2
+building flat table on mk
+building mk takes 0.00000575s
+building t takes 0.26639625s
+building mi_idx takes 0.24601145s
 building flat table on mi
-building mi takes 0.000004375s
-building t takes 0.3513606s
-building mk takes 0.46317708s
-building mi_idx takes 0.28172156s
-building kt takes 0.000001708s
-building k takes 0.000000666s
-building it2 takes 0.000000166s
-building it1 takes 0.000000333s
-trie construction takes 1.0966836s
-join takes 207.294041ms
-total takes 1.3040028
+building mi takes 0.000023166s
+building t takes 0.13823467s
+building mk takes 0.067557625s
+building mi_idx takes 0.13574283s
+building kt takes 0.000002333s
+building k takes 0.0000005s
+building it2 takes 0.000000333s
+building it1 takes 0.000000208s
+join takes 142.577333ms
+total takes 2.9414053
 output [[Str("1.0")], [Str("$lowdown")]]
 15a Query: 15a
 Loading movie_keyword
@@ -558,19 +595,21 @@ Loading mc
 Loading company_type
 Loading mi
 Loading it1
+building flat table on mk
+building mk takes 0.000004291s
+building t takes 0.3501367s
 building flat table on mi
-building mi takes 0.000004416s
-building t takes 0.33893132s
-building mk takes 0.40125367s
-building mc takes 0.008716708s
-building at takes 0.023835458s
-building k takes 0.008045625s
-building it1 takes 0.0000015s
-building ct takes 0.000001083s
-building cn takes 0.005206125s
-trie construction takes 0.7861134s
-join takes 1.048333ms
-total takes 0.78717065
+building mi takes 0.000360708s
+building t takes 0.31336245s
+building mk takes 0.16728242s
+building mc takes 0.008801791s
+building at takes 0.024441624s
+building k takes 0.008954875s
+building it1 takes 0.000001208s
+building ct takes 0.000001958s
+building cn takes 0.005196625s
+join takes 818.125µs
+total takes 2.9501715
 output [[Str("USA:1 June 2007")], [Str("Battlestar Galactica: The Resistance")]]
 15b Query: 15b
 Loading movie_keyword
@@ -582,19 +621,21 @@ Loading company_type
 Loading it1
 Loading aka_title
 Loading keyword
+building flat table on mk
+building mk takes 0.000013208s
+building t takes 0.16209462s
 building flat table on mi
-building mi takes 0.000007833s
-building t takes 0.1583625s
-building mk takes 0.4036792s
-building mc takes 0.009433708s
-building at takes 0.02463654s
-building k takes 0.007987916s
-building it1 takes 0.000001375s
+building mi takes 0.000016833s
+building t takes 0.17841159s
+building mk takes 0.09500742s
+building mc takes 0.008771458s
+building at takes 0.025558459s
+building k takes 0.010219458s
+building it1 takes 0.000001166s
 building ct takes 0.000001125s
-building cn takes 0.000001625s
-trie construction takes 0.60423803s
-join takes 922.458µs
-total takes 0.60517067
+building cn takes 0.000001916s
+join takes 662.291µs
+total takes 1.9917231
 output [[Str("USA:27 April 2007")], [Str("RoboCop vs Terminator")]]
 15c Query: 15c
 Loading movie_keyword
@@ -606,19 +647,21 @@ Loading it1
 Loading cn
 Loading t
 Loading company_type
+building flat table on mk
+building mk takes 0.000007416s
+building t takes 0.43817237s
 building flat table on mi
-building mi takes 0.0000075s
-building t takes 0.45184767s
-building mk takes 0.43596658s
-building mc takes 0.5146677s
-building at takes 0.023864085s
-building k takes 0.008176s
-building it1 takes 0.000001625s
-building ct takes 0.00000525s
-building cn takes 0.005313458s
-trie construction takes 1.4400039s
-join takes 1.799625ms
-total takes 1.4418148
+building mi takes 0.00002775s
+building t takes 0.4481775s
+building mk takes 0.24778226s
+building mc takes 0.5663706s
+building at takes 0.02536025s
+building k takes 0.008672041s
+building it1 takes 0.000001666s
+building ct takes 0.0000015s
+building cn takes 0.005926041s
+join takes 1.656708ms
+total takes 4.226905
 output [[Str("USA:1 April 2003")], [Str("24: Day Six - Debrief")]]
 15d Query: 15d
 Loading movie_keyword
@@ -630,19 +673,21 @@ Loading mi
 Loading cn
 Loading t
 Loading it1
+building flat table on mk
+building mk takes 0.0000065s
+building t takes 0.45301738s
 building flat table on mi
-building mi takes 0.000009458s
-building t takes 0.456428s
-building mk takes 0.42973655s
-building mc takes 0.66527647s
-building at takes 0.14070909s
-building k takes 0.008128166s
-building it1 takes 0.0000015s
-building ct takes 0.000002041s
-building cn takes 0.005496083s
-trie construction takes 1.7059941s
-join takes 7.856458ms
-total takes 1.713861
+building mi takes 0.000376958s
+building t takes 0.4475712s
+building mk takes 0.25172958s
+building mc takes 0.5461596s
+building at takes 0.15000463s
+building k takes 0.00936075s
+building it1 takes 0.000001458s
+building ct takes 0.000001291s
+building cn takes 0.005664458s
+join takes 5.864041ms
+total takes 4.37616
 output [[Str("(Not So) Instant Photo")], [Str("06/05")]]
 21a Query: 21a
 Loading movie_keyword
@@ -654,19 +699,25 @@ Loading t
 Loading mc
 Loading ct
 Loading cn
+building flat table on t
+building t takes 0.0000115s
+building ml takes 0.003135625s
+building flat table on mk
+building mk takes 0.000024708s
+building t takes 0.000472333s
+building ml takes 0.000258875s
 building flat table on mi
-building mi takes 0.000012916s
-building t takes 0.20786816s
-building ml takes 0.0019115s
-building mk takes 0.43296254s
-building mc takes 0.2598487s
-building lt takes 0.00000525s
-building k takes 0.00000025s
-building ct takes 0.00000025s
-building cn takes 0.007270833s
-trie construction takes 0.910141s
-join takes 29.68775ms
-total takes 0.9398427
+building mi takes 0.000027041s
+building t takes 0.002099166s
+building ml takes 0.000656416s
+building mk takes 0.000896s
+building mc takes 0.25708342s
+building lt takes 0.000002125s
+building k takes 0.000000583s
+building ct takes 0.000000333s
+building cn takes 0.007353083s
+join takes 18.42ms
+total takes 1.4004822
 output [[Str("Det Danske Filminstitut")], [Str("followed by")], [Str("Der Serienkiller - Klinge des Todes")]]
 21b Query: 21b
 Loading movie_keyword
@@ -678,20 +729,26 @@ Loading t
 Loading ct
 Loading k
 Loading cn
+building flat table on t
+building t takes 0.000011583s
+building ml takes 0.003129958s
+building flat table on mk
+building mk takes 0.000020083s
+building t takes 0.000438458s
+building ml takes 0.000254s
 building flat table on mi
-building mi takes 0.000005125s
-building t takes 0.27762493s
-building ml takes 0.002038041s
-building mk takes 0.43236962s
-building mc takes 0.28986093s
-building lt takes 0.000008125s
-building k takes 0.00000025s
+building mi takes 0.000036s
+building t takes 0.001515416s
+building ml takes 0.000538625s
+building mk takes 0.000717375s
+building mc takes 0.26164958s
+building lt takes 0.000002625s
+building k takes 0.000000333s
 building ct takes 0.00000025s
-building cn takes 0.007422916s
-trie construction takes 1.0094548s
-join takes 19.845166ms
-total takes 1.0293095
-output [[Str("Filmlance International AB")], [Str("followed by")], [Str("Hämndens pris")]]
+building cn takes 0.006807916s
+join takes 12.755166ms
+total takes 1.4256494
+output [[Str("Filmlance International AB")], [Str("follows")], [Str("Hämndens pris")]]
 21c Query: 21c
 Loading movie_keyword
 Loading movie_link
@@ -702,20 +759,26 @@ Loading cn
 Loading ct
 Loading k
 Loading mi
+building flat table on t
+building t takes 0.000020041s
+building ml takes 0.003151125s
+building flat table on mk
+building mk takes 0.000031458s
+building t takes 0.001176916s
+building ml takes 0.000595458s
 building flat table on mi
-building mi takes 0.000011291s
-building t takes 0.518196s
-building ml takes 0.002043s
-building mk takes 0.44688788s
-building mc takes 0.28526923s
-building lt takes 0.000003666s
-building k takes 0.000000375s
-building ct takes 0.00000025s
-building cn takes 0.00764675s
-trie construction takes 1.2619671s
-join takes 229.670708ms
-total takes 1.4916581
-output [[Str("Churchill Films")], [Str("followed by")], [Str("Batman Beyond")]]
+building mi takes 0.000038375s
+building t takes 0.003216666s
+building ml takes 0.001143708s
+building mk takes 0.001553541s
+building mc takes 0.2618231s
+building lt takes 0.000002625s
+building k takes 0.000000333s
+building ct takes 0.000000208s
+building cn takes 0.007467583s
+join takes 106.5045ms
+total takes 1.7467809
+output [[Str("Churchill Films")], [Str("followed by")], [Str("Der Serienkiller - Klinge des Todes")]]
 32a Query: 32a
 Loading movie_keyword
 Loading title
@@ -723,16 +786,18 @@ Loading movie_link
 Loading title
 Loading link_type
 Loading k
+building flat table on t1
+building t1 takes 0.000010041s
+building ml takes 0.004198125s
+building t2 takes 0.73192555s
 building flat table on mk
-building mk takes 0.000005708s
-building t1 takes 0.67746776s
-building ml takes 0.0035395s
-building t2 takes 0.7035229s
-building lt takes 0.0000185s
-building k takes 0.000000291s
-trie construction takes 1.3850001s
-join takes 968.622791ms
-total takes 2.353646
+building mk takes 0.000039166s
+building t1 takes 0.004684708s
+building ml takes 0.001821833s
+building lt takes 0.00000425s
+building k takes 0.000000666s
+join takes 686.841333ms
+total takes 2.999912
 output []
 32b Query: 32b
 Loading movie_keyword
@@ -741,14 +806,16 @@ Loading title
 Loading movie_link
 Loading link_type
 Loading title
+building flat table on t1
+building t1 takes 0.000028958s
+building ml takes 0.003742666s
+building t2 takes 0.7036985s
 building flat table on mk
-building mk takes 0.000020958s
-building t1 takes 0.6903607s
-building ml takes 0.003969458s
-building t2 takes 0.7199691s
-building lt takes 0.000011375s
-building k takes 0.000000583s
-trie construction takes 1.4147882s
-join takes 976.003666ms
-total takes 2.3908198
-output [[Str("'Angel': Season 2 Overview")], [Str("alternate language version of")], [Str("12 oz. Mouse")]]
+building mk takes 0.000029458s
+building t1 takes 0.0049935s
+building ml takes 0.001754375s
+building lt takes 0.000003291s
+building k takes 0.000000833s
+join takes 685.462166ms
+total takes 2.9549115
+output [[Str("alternate language version of")], [Str("A Man Called Hawk")]]
