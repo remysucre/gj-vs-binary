@@ -24,12 +24,14 @@ fn main() {
 
         // println!("compiled plan {:#?} ", compiled_plan);
         // println!("compiled payload {:#?} ", compiled_payload);
-
-        let db = load_db(q, &scan);
-
+        
+        let mut db = load_db(q, &scan);
+        
         let time = Instant::now();
 
-        // semijoin_reduce(&mut db, &plan_tree, &payload);
+        semijoin_reduce(&mut db, &plan_tree);
+
+        println!("semijoin takes {:?}", time.elapsed().as_secs_f32());
 
         let tables = build_tables(&db, &plan);
         let mut result = vec![];
@@ -51,7 +53,7 @@ fn main() {
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    let bushy = false;
+    let bushy = true;
     let linear = true;
 
     let mut queries = vec![];

@@ -13,79 +13,63 @@ use parquet::{
 use std::fs::File;
 use std::sync::Arc;
 
-use crate::trie::{Table, Tb};
 use crate::{
+    join::semijoin,
+    trie::{Table, Tb},
+};
+use crate::{
+    join::Tab,
     sql::*,
     trie::{Trie, Value},
     *,
 };
 
-// FIXME
-// pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[&Attribute]) {
-//     println!("START SEMIJOIN");
-//     let (vars, required) = required_vars(root);
-//     for node in required.iter().rev() {
-//         let plan = to_semijoin_plan(node);
+pub fn semijoin_reduce(db: &mut DB, root: &TreeOp) {
+    println!("START SEMIJOIN");
 
-//         let mut out_vars = vec![];
-//         for &v in &vars {
-//             out_vars.push(v);
-//         }
+    for node in &to_reduce(root) {
+        let plan = to_semijoin_plan(node);
+        let tables = build_tables(db, &plan);
+        println!("{:#?}", plan);
 
-//         for v in payload {
-//             out_vars.push(v);
-//         }
+        let mut t_with_new_rels: Vec<_> = tables
+            .into_iter()
+            .map(|t| (t, Relation::default(), Vec::<i32>::new()))
+            .collect();
 
-//         let (tables, table_vars) = build_tables(db, &plan, &out_vars);
+        let mut tabs: Vec<_> = t_with_new_rels
+            .iter_mut()
+            .map(|(table, rel, ids)| Tab {
+                schema: &table.schema,
+                table,
+                rel,
+                ids,
+            })
+            .collect();
 
-//         let mut new_rels = vec![];
+        let compiled_plan = compile_plan(&plan, &[]).0;
 
-//         for _ in &tables {
-//             new_rels.push(Relation::default());
-//         }
+        semijoin(&mut tabs, &compiled_plan);
 
-//         let mut t_with_new_rels: Vec<_> = tables
-//             .into_iter()
-//             .enumerate()
-//             .map(|(i, t)| (&table_vars[i].1, t, Vec::<i32>::new()))
-//             .collect();
+        let rel_names: Vec<_> = t_with_new_rels
+            .into_iter()
+            .map(|(t, rel, _)| {
+                let mut t_name = t.schema.0.to_string();
+                if !db.contains_key(&t_name) {
+                    t_name = find_shared(&t_name).to_string();
+                }
+                (rel, t_name)
+            })
+            .collect();
 
-//         let mut tabs = vec![];
-
-//         for ((v, t, ids), rel) in t_with_new_rels.iter_mut().zip(new_rels.iter_mut()) {
-//             tabs.push(Tab {
-//                 vars: v,
-//                 table: t,
-//                 rel,
-//                 ids,
-//             });
-//         }
-
-//         let mut ts = tabs.iter_mut().collect::<Vec<_>>();
-
-//         let (compiled_plan, _) = compile_plan(&plan, &[]);
-
-//         semijoin(&mut ts, &compiled_plan);
-
-//         let mut tns = vec![];
-
-//         for (t_name, _c_names) in &table_vars {
-//             tns.push(t_name.to_string());
-//         }
-
-//         for (i, t_name) in tns.iter().enumerate() {
-//             let mut t_name = t_name.to_string();
-//             if !db.contains_key(&t_name) {
-//                 t_name = find_shared(&t_name).to_string();
-//             }
-
-//             let t = db.get_mut(&t_name).unwrap();
-//             std::mem::swap(t, &mut new_rels[i]);
-//         }
-//         // new_rels.leak();
-//     }
-//     println!("END SEMIJOIN");
-// }
+        for (mut rel, t_name) in rel_names {
+            let t = db.get_mut(&t_name).unwrap();
+            std::mem::swap(t, &mut rel);
+            // new_rels.leak();
+        }
+    }
+    println!("END SEMIJOIN");
+}
 
 pub fn compile_plan(
     plan: &[Vec<&Attribute>],

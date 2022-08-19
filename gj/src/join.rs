@@ -90,13 +90,13 @@ where
 }
 
 pub struct Tab<'a, T> {
-    pub vars: &'a [&'a str],
+    pub schema: &'a Schema<'a>,
     pub table: &'a Table<'a, T>,
     pub rel: &'a mut Relation,
     pub ids: &'a mut Vec<i32>,
 }
 
-pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
+pub fn semijoin(relations: &mut [Tab<Value>], plan: &[Vec<usize>]) {
     let js = &plan[0];
 
     for j_min in js {
@@ -111,21 +111,20 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
                     .iter_mut()
                     .map(|t| match &t.table.data {
                         Tb::Arr(_) => Rel {
-                            vars: t.vars,
+                            vars: &t.schema.1,
                             trie: &trie_min,
                             rel: t.rel,
                             ids: t.ids,
                         },
                         Tb::Trie(trie) => Rel {
-                            vars: t.vars,
+                            vars: &t.schema.1,
                             trie,
                             rel: t.rel,
                             ids: t.ids,
                         },
                     })
                     .collect();
-                let mut rs: Vec<_> = rels.iter_mut().collect();
-                semijoin_inner(&mut rs, plan);
+                semijoin_inner(&mut rels, plan);
             }
             return;
         }
@@ -139,7 +138,7 @@ pub struct Rel<'a, T> {
     ids: &'a mut Vec<i32>,
 }
 
-fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
+fn semijoin_inner(relations: &mut [Rel<Value>], plan: &[Vec<usize>]) {
     if !plan.is_empty() {
         let js = &plan[0];
 
@@ -163,22 +162,17 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
                 })
                 .collect::<Option<Vec<_>>>()
             {
-                let mut rels = relations
-                    .iter_mut()
-                    .map(|r| &mut (**r))
-                    .collect::<Vec<_>>();
-
-                rels[j_min].trie = trie_min;
-                rels[j_min].ids.push(*id);
+                relations[j_min].trie = trie_min;
+                relations[j_min].ids.push(*id);
                 for (j, trie) in &tries {
-                    rels[*j].trie = trie;
-                    rels[*j].ids.push(*id);
+                    relations[*j].trie = trie;
+                    relations[*j].ids.push(*id);
                 }
 
-                semijoin_inner(&mut rels[..], &plan[1..]);
-                rels[j_min].ids.pop();
+                semijoin_inner(relations, &plan[1..]);
+                relations[j_min].ids.pop();
                 for (j, _) in &tries {
-                    rels[*j].ids.pop();
+                    relations[*j].ids.pop();
                 }
             }
         }
@@ -187,7 +181,7 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
     }
 }
 
-fn reduce<'a>(relations: &mut [&'a mut Rel<Value>]) {
+fn reduce(relations: &mut [Rel<Value>]) {
     for relation in relations {
         for (i, id) in relation.ids.iter().enumerate() {
             // TODO only materialize needed columns

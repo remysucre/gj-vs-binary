@@ -272,28 +272,28 @@ pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
         }
     };
 
-    // traverse_lr(root, &mut get_plan);
-    inorder_traverse(root, &mut get_plan);
+    traverse_lr(root, &mut get_plan);
+    // inorder_traverse(root, &mut get_plan);
 
     plan
 }
 
-// fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
-// where
-//     T: FnMut(&'a TreeOp),
-// {
-//     if !node.children.is_empty() {
-//         traverse_lr(&node.children[0], func);
-//     }
+fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
+where
+    T: FnMut(&'a TreeOp),
+{
+    if !node.children.is_empty() {
+        traverse_lr(&node.children[0], func);
+    }
 
-//     func(node);
+    func(node);
 
-//     if !node.children.is_empty() {
-//         for child_node in &node.children[1..] {
-//             preorder_traverse(child_node, func);
-//         }
-//     }
-// }
+    if !node.children.is_empty() {
+        for child_node in &node.children[1..] {
+            preorder_traverse(child_node, func);
+        }
+    }
+}
 
 fn preorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
 where
@@ -354,6 +354,34 @@ where
             traverse_mlr(child_node, func, true);
         }
     }
+}
+
+fn traverse_lrm<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
+where
+    T: FnMut(&'a TreeOp, bool),
+{
+    if !node.children.is_empty() {
+        traverse_lrm(&node.children[0], func, false);
+    }
+    func(node, is_right_child);
+    if !node.children.is_empty() {
+        for child_node in &node.children[1..] {
+            traverse_lrm(child_node, func, true);
+        }
+    }
+}
+
+pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
+    let mut reduce = vec![];
+    let mut collect_reduce = |node: &'a TreeOp, is_right_child: bool| {
+        if let Some(NodeAttr::Join(_attr)) = &node.attr {
+            if is_right_child {
+                reduce.push(node);
+            }
+        }
+    };
+    traverse_lrm(root, &mut collect_reduce, true);
+    reduce
 }
 
 pub fn required_vars<'a>(root: &'a TreeOp) -> (Vec<&'a Attribute>, Vec<&'a TreeOp>) {
