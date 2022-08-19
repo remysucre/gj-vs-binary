@@ -165,12 +165,7 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
             {
                 let mut rels = relations
                     .iter_mut()
-                    .map(|r| Rel {
-                        vars: r.vars,
-                        trie: r.trie,
-                        rel: r.rel,
-                        ids: r.ids,
-                    })
+                    .map(|r| &mut (**r))
                     .collect::<Vec<_>>();
 
                 rels[j_min].trie = trie_min;
@@ -179,8 +174,8 @@ fn semijoin_inner(relations: &mut [&mut Rel<Value>], plan: &[Vec<usize>]) {
                     rels[*j].trie = trie;
                     rels[*j].ids.push(*id);
                 }
-                let mut rs: Vec<_> = rels.iter_mut().collect();
-                semijoin_inner(&mut rs[..], &plan[1..]);
+
+                semijoin_inner(&mut rels[..], &plan[1..]);
                 rels[j_min].ids.pop();
                 for (j, _) in &tries {
                     rels[*j].ids.pop();
