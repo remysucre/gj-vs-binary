@@ -296,69 +296,76 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table
         }
     }
 
-    for (i, (table_name, cols)) in id_cols.iter().enumerate() {
+    let start = Instant::now();
+
+    let (table_name, cols) = id_cols.first().unwrap();
+    println!("building flat table on {}", table_name);
+
+    let mut ids = vec![];
+    let mut data = vec![];
+    let mut vs = vec![];
+
+    for (&col_name, col) in cols {
+        vs.push(col_name.as_str());
+        ids.push(&col[..])
+    }
+
+    if let Some(cols) = data_cols.get(table_name) {
+        for (col_name, col) in cols {
+            vs.push(col_name);
+            data.push(&col[..])
+        }
+    }
+
+    tables.push(Table {
+        schema: (table_name, vs),
+        data: Tb::Arr((ids, data)),
+    });
+
+    println!(
+        "building {} takes {}s",
+        table_name,
+        start.elapsed().as_secs_f32()
+    );
+
+    for (table_name, cols) in id_cols.iter().skip(1) {
         let start = Instant::now();
-        if i == 0 {
-            println!("building flat table on {}", table_name);
+        println!("building trie on {}", table_name);
 
-            let mut ids = vec![];
-            let mut data = vec![];
-            let mut vs = vec![];
+        let mut trie = Trie::default();
+        let mut vs = vec![];
 
-            for (&col_name, col) in cols {
-                vs.push(col_name.as_str());
-                ids.push(&col[..])
-            }
+        for (&col_name, _col) in cols {
+            vs.push(col_name.as_str());
+        }
 
-            if let Some(cols) = data_cols.get(table_name) {
-                for (col_name, col) in cols {
-                    vs.push(col_name);
-                    data.push(&col[..])
-                }
-            }
-
-            tables.push(Table {
-                schema: (table_name, vs),
-                data: Tb::Arr((ids, data)),
-            });
-        } else {
-            println!("building trie on {}", table_name);
-
-            let mut trie = Trie::default();
-            let mut vs = vec![];
-
+        if let Some(cols) = data_cols.get(table_name) {
             for (&col_name, _col) in cols {
                 vs.push(col_name.as_str());
             }
+        }
+
+        for i in 0..cols[0].len() {
+            let mut ids = Vec::new();
+            let mut data = Vec::new();
+
+            for (_col_name, col) in cols {
+                ids.push(col[i].as_num());
+            }
 
             if let Some(cols) = data_cols.get(table_name) {
-                for (&col_name, _col) in cols {
-                    vs.push(col_name.as_str());
-                }
-            }
-
-            for i in 0..cols[0].len() {
-                let mut ids = Vec::new();
-                let mut data = Vec::new();
-
                 for (_col_name, col) in cols {
-                    ids.push(col[i].as_num());
+                    data.push(col[i].clone());
                 }
-
-                if let Some(cols) = data_cols.get(table_name) {
-                    for (_col_name, col) in cols {
-                        data.push(col[i].clone());
-                    }
-                }
-
-                trie.insert(&ids, data);
             }
 
-            tables.push(Table {
-                schema: (table_name, vs),
-                data: Tb::Trie(trie),
-            });
+            trie.insert(&ids, data);
         }
+
+        tables.push(Table {
+            schema: (table_name, vs),
+            data: Tb::Trie(trie),
+        });
 
         println!(
             "building {} takes {}s",

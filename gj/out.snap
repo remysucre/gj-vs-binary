@@ -1,6 +1,6 @@
 output [[Str("(A Warner Bros.-First National Picture) (presents)")], [Str("A Clockwork Orange"), Num(1934)]]
 output [[Str("(Set Decoration Rentals) (uncredited)")], [Str("Disaster Movie"), Num(2008)]]
-output [[Str("(co-production)")], [Num(2011), Str("Intouchables")]]
+output [[Str("(co-production)")], [Str("Intouchables"), Num(2011)]]
 output [[Str("(Set Decoration Rentals) (uncredited)")], [Num(2004), Str("Disaster Movie")]]
 output [[Str("'Doc'")]]
 output [[Str("'Doc'")]]
