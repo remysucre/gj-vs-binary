@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use std::path;
 use std::time::Instant;
-use std::{collections::HashMap, error::Error};
 
 use indexmap::IndexMap;
 use parquet::{
@@ -10,96 +10,82 @@ use parquet::{
     schema::types::Type,
 };
 
+use std::fs::File;
 use std::sync::Arc;
-use std::{fs, fs::File};
 
-use crate::join::{semijoin, Tab};
-use crate::trie::Table;
+use crate::trie::{Table, Tb};
 use crate::{
     sql::*,
     trie::{Trie, Value},
     *,
 };
 
-pub type Plan = Vec<Vec<Attribute>>;
-pub type Payload = Vec<Attribute>;
-
-pub type PlanPack = (Vec<ScanAttr>, Plan, Payload, TreeOp);
-
-// pub fn sql_to_gj(file_name: &str) -> Result<PlanPack, Box<dyn Error>> {
-//     let sql = fs::read_to_string(path::Path::new(file_name))?;
-//     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
-//     parse_tree_extra_info(&mut root);
-//     let (scans, plan, payload) = to_gj_plan(&mut root);
-//     Ok((scans, plan, payload, root))
-// }
-
 // FIXME
-pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[&Attribute]) {
-    println!("START SEMIJOIN");
-    let (vars, required) = required_vars(root);
-    for node in required.iter().rev() {
-        let plan = to_semijoin_plan(node);
+// pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[&Attribute]) {
+//     println!("START SEMIJOIN");
+//     let (vars, required) = required_vars(root);
+//     for node in required.iter().rev() {
+//         let plan = to_semijoin_plan(node);
 
-        let mut out_vars = vec![];
-        for &v in &vars {
-            out_vars.push(v);
-        }
+//         let mut out_vars = vec![];
+//         for &v in &vars {
+//             out_vars.push(v);
+//         }
 
-        for v in payload {
-            out_vars.push(v);
-        }
+//         for v in payload {
+//             out_vars.push(v);
+//         }
 
-        let (tables, table_vars) = build_tables(db, &plan, &out_vars);
+//         let (tables, table_vars) = build_tables(db, &plan, &out_vars);
 
-        let mut new_rels = vec![];
+//         let mut new_rels = vec![];
 
-        for _ in &tables {
-            new_rels.push(Relation::default());
-        }
+//         for _ in &tables {
+//             new_rels.push(Relation::default());
+//         }
 
-        let mut t_with_new_rels: Vec<_> = tables
-            .into_iter()
-            .enumerate()
-            .map(|(i, t)| (&table_vars[i].1, t, Vec::<i32>::new()))
-            .collect();
+//         let mut t_with_new_rels: Vec<_> = tables
+//             .into_iter()
+//             .enumerate()
+//             .map(|(i, t)| (&table_vars[i].1, t, Vec::<i32>::new()))
+//             .collect();
 
-        let mut tabs = vec![];
+//         let mut tabs = vec![];
 
-        for ((v, t, ids), rel) in t_with_new_rels.iter_mut().zip(new_rels.iter_mut()) {
-            tabs.push(Tab {
-                vars: v,
-                table: t,
-                rel,
-                ids,
-            });
-        }
+//         for ((v, t, ids), rel) in t_with_new_rels.iter_mut().zip(new_rels.iter_mut()) {
+//             tabs.push(Tab {
+//                 vars: v,
+//                 table: t,
+//                 rel,
+//                 ids,
+//             });
+//         }
 
-        let mut ts = tabs.iter_mut().collect::<Vec<_>>();
+//         let mut ts = tabs.iter_mut().collect::<Vec<_>>();
 
-        let (compiled_plan, _) = compile_plan(&plan, &[]);
+//         let (compiled_plan, _) = compile_plan(&plan, &[]);
 
-        semijoin(&mut ts, &compiled_plan);
+//         semijoin(&mut ts, &compiled_plan);
 
-        let mut tns = vec![];
+//         let mut tns = vec![];
 
-        for (t_name, _c_names) in &table_vars {
-            tns.push(t_name.to_string());
-        }
+//         for (t_name, _c_names) in &table_vars {
+//             tns.push(t_name.to_string());
+//         }
 
-        for (i, t_name) in tns.iter().enumerate() {
-            let mut t_name = t_name.to_string();
-            if !db.contains_key(&t_name) {
-                t_name = find_shared(&t_name).to_string();
-            }
+//         for (i, t_name) in tns.iter().enumerate() {
+//             let mut t_name = t_name.to_string();
+//             if !db.contains_key(&t_name) {
+//                 t_name = find_shared(&t_name).to_string();
+//             }
 
-            let t = db.get_mut(&t_name).unwrap();
-            std::mem::swap(t, &mut new_rels[i]);
-        }
-        // new_rels.leak();
-    }
-    println!("END SEMIJOIN");
-}
+//             let t = db.get_mut(&t_name).unwrap();
+//             std::mem::swap(t, &mut new_rels[i]);
+//         }
+//         // new_rels.leak();
+//     }
+//     println!("END SEMIJOIN");
+// }
 
 pub fn compile_plan(
     plan: &[Vec<&Attribute>],
@@ -116,7 +102,9 @@ pub fn compile_plan(
             let id = table_ids.entry(a.table_name.clone()).or_insert(l);
             node_ids.push(*id);
 
-            if payload.iter().any(|b| a.table_name == b.table_name) && !compiled_payload.contains(id) {
+            if payload.iter().any(|b| a.table_name == b.table_name)
+                && !compiled_payload.contains(id)
+            {
                 compiled_payload.push(*id);
             }
         }
@@ -172,16 +160,13 @@ pub fn clean_db(db: &mut DB) {
     db.retain(|t, _| is_shared(t));
 }
 
-pub fn load_db_mut(db: &mut DB, q: &str, scan: &[&ScanAttr]) {
+pub fn load_db(q: &str, scan: &[&ScanAttr]) -> DB {
     println!("Query: {}", q);
+    let mut db = DB::new();
     for attr in scan {
         let table_name = &attr.table_name;
         let cols = &attr.attributes;
         println!("Loading {}", table_name);
-        // if !is_shared(table_name) {
-        // TODO figure out how to handle nulls when loading lazily
-        db.remove(table_name);
-        // }
         let table = db.entry(table_name.to_string()).or_default();
         let mut col_types = vec![];
 
@@ -205,6 +190,7 @@ pub fn load_db_mut(db: &mut DB, q: &str, scan: &[&ScanAttr]) {
         };
         from_parquet(table, &file_name, table_schema);
     }
+    db
 }
 
 pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
@@ -272,46 +258,41 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-type Schema<'a> = (&'a str, Vec<&'a str>);
-
-// FIXME
-pub fn build_tables<'a>(
-    db: &'a DB,
-    plan: &'a [Vec<&'a Attribute>],
-    payload: &'a [&'a Attribute],
-) -> (Vec<Table<'a, Value>>, Vec<Schema<'a>>) {
+pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table<'a, Value>> {
     let mut tables = Vec::new();
-    let mut vars = Vec::new();
-    let mut id_cols: IndexMap<&str, indexmap::IndexMap<&std::string::String, &std::vec::Vec<trie::Value>>> = IndexMap::new();
-    let mut data_cols: IndexMap<&str, indexmap::IndexMap<&std::string::String, &std::vec::Vec<trie::Value>>> = IndexMap::new();
+    let mut id_cols = IndexMap::new();
+    let mut data_cols = IndexMap::new();
 
     for node in plan {
         for a in node {
             let trie_name = a.table_name.as_str();
             let mut table_name = a.table_name.as_str();
+
             if !db.contains_key(table_name) {
                 table_name = find_shared(table_name);
             }
-            let col_name = &a.attr_name;
+
             id_cols
                 .entry(trie_name)
                 .or_insert(IndexMap::new())
-                .insert(col_name, &db.get(table_name).unwrap()[col_name]);
+                .insert(&a.attr_name, &db.get(table_name).unwrap()[&a.attr_name]);
         }
     }
 
-    for a in payload {
-        let trie_name = a.table_name.as_str();
-        let mut table_name = a.table_name.as_str();
+    for (&trie_name, cols) in &id_cols {
+        let mut table_name = trie_name;
+
         if !db.contains_key(table_name) {
             table_name = find_shared(table_name);
         }
-        let col_name = &a.attr_name;
-        if id_cols.contains_key(trie_name) && !id_cols[trie_name].contains_key(col_name) {
-            data_cols
-                .entry(trie_name)
-                .or_insert(IndexMap::default())
-                .insert(col_name, &db.get(table_name).unwrap()[col_name]);
+
+        for (attr, data_col) in &db[table_name] {
+            if !cols.contains_key(attr) {
+                data_cols
+                    .entry(trie_name)
+                    .or_insert(IndexMap::new())
+                    .insert(attr, data_col);
+            }
         }
     }
 
@@ -319,60 +300,73 @@ pub fn build_tables<'a>(
         let start = Instant::now();
         if i == 0 {
             println!("building flat table on {}", table_name);
+
             let mut ids = vec![];
             let mut data = vec![];
             let mut vs = vec![];
-            for (col_name, col) in cols {
-                vs.push((*col_name).as_str());
+
+            for (&col_name, col) in cols {
+                vs.push(col_name.as_str());
                 ids.push(&col[..])
             }
+
             if let Some(cols) = data_cols.get(table_name) {
                 for (col_name, col) in cols {
                     vs.push(col_name);
                     data.push(&col[..])
                 }
             }
-            tables.push(Table::Arr((ids, data)));
-            vars.push((*table_name, vs));
+
+            tables.push(Table {
+                schema: (table_name, vs),
+                data: Tb::Arr((ids, data)),
+            });
         } else {
             println!("building trie on {}", table_name);
+
             let mut trie = Trie::default();
             let mut vs = vec![];
 
-            for (col_name, _col) in cols {
-                vs.push((*col_name).as_str());
+            for (&col_name, _col) in cols {
+                vs.push(col_name.as_str());
             }
 
             if let Some(cols) = data_cols.get(table_name) {
-                for (col_name, _col) in cols {
-                    vs.push(*col_name);
+                for (&col_name, _col) in cols {
+                    vs.push(col_name.as_str());
                 }
             }
 
             for i in 0..cols[0].len() {
                 let mut ids = Vec::new();
                 let mut data = Vec::new();
+
                 for (_col_name, col) in cols {
                     ids.push(col[i].as_num());
                 }
+
                 if let Some(cols) = data_cols.get(table_name) {
                     for (_col_name, col) in cols {
                         data.push(col[i].clone());
                     }
                 }
+
                 trie.insert(&ids, data);
             }
-            tables.push(Table::Trie(trie));
-            vars.push((*table_name, vs));
+
+            tables.push(Table {
+                schema: (table_name, vs),
+                data: Tb::Trie(trie),
+            });
         }
+
         println!(
             "building {} takes {}s",
             table_name,
             start.elapsed().as_secs_f32()
         );
     }
-
-    (tables, vars)
+    tables
 }
 
 fn type_of(col: &str) -> Type {

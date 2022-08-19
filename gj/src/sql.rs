@@ -1,4 +1,4 @@
-use std::{error::Error, path, fs};
+use std::{error::Error, fs, path};
 
 use serde::{Deserialize, Serialize};
 
@@ -74,7 +74,6 @@ pub struct TreeOp {
 //     }
 //     func(node);
 // }
-
 
 fn inorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
 where
@@ -243,11 +242,7 @@ pub fn get_payload<'a>(root: &'a TreeOp) -> Vec<&'a Attribute> {
 
     let mut collect_vars = |node: &'a TreeOp| {
         if let Some(NodeAttr::Project(cols)) = &node.attr {
-            payload.extend(
-                cols.columns
-                    .iter()
-                    .filter(|a| !a.table_name.is_empty())
-            );
+            payload.extend(cols.columns.iter().filter(|a| !a.table_name.is_empty()));
         }
     };
 
@@ -283,22 +278,22 @@ pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
     plan
 }
 
-fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
-where 
-    T: FnMut(&'a TreeOp),
-{
-    if !node.children.is_empty() {
-        traverse_lr(&node.children[0], func);
-    }
+// fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
+// where
+//     T: FnMut(&'a TreeOp),
+// {
+//     if !node.children.is_empty() {
+//         traverse_lr(&node.children[0], func);
+//     }
 
-    func(node);
+//     func(node);
 
-    if !node.children.is_empty() {
-        for child_node in &node.children[1..] {
-            preorder_traverse(child_node, func);
-        }
-    }
-}
+//     if !node.children.is_empty() {
+//         for child_node in &node.children[1..] {
+//             preorder_traverse(child_node, func);
+//         }
+//     }
+// }
 
 fn preorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
 where

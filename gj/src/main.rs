@@ -1,10 +1,12 @@
 use std::time::Instant;
 
-use gj::{join::*, util::*, *, sql::{get_join_tree, to_gj_plan, get_scans, get_payload}};
+use gj::{
+    join::*,
+    sql::{get_join_tree, get_payload, get_scans, to_gj_plan},
+    util::*,
+};
 
 fn main() {
-    let mut db = DB::new();
-
     for (q, id) in queries() {
         println!("running query {} ", q);
 
@@ -19,17 +21,17 @@ fn main() {
         // println!("plan {:#?}", plan);
 
         let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-        
+
         // println!("compiled plan {:#?} ", compiled_plan);
         // println!("compiled payload {:#?} ", compiled_payload);
 
-        load_db_mut(&mut db, q, &scan);
+        let db = load_db(q, &scan);
 
         let time = Instant::now();
 
         // semijoin_reduce(&mut db, &plan_tree, &payload);
 
-        let (tables, _table_vars) = build_tables(&db, &plan, &payload);
+        let tables = build_tables(&db, &plan);
         let mut result = vec![];
 
         let start = Instant::now();
@@ -44,7 +46,6 @@ fn main() {
         println!("join takes {:?}", start.elapsed());
         println!("total takes {:?}", time.elapsed().as_secs_f32());
         println!("output {:?}", result);
-        clean_db(&mut db);
     }
 }
 
@@ -98,7 +99,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("9d", "IMDBQ034"), // SLOW
             ("10a", "IMDBQ035"),
             ("10b", "IMDBQ036"), // EMPTY
-            ("10c", "IMDBQ037"),    
+            ("10c", "IMDBQ037"),
         ])
     }
 
@@ -154,7 +155,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
         queries.extend_from_slice(&[
             ("21a", "IMDBQ076"),
             ("21b", "IMDBQ077"),
-            ("21c", "IMDBQ078"),    
+            ("21c", "IMDBQ078"),
         ])
     }
 
@@ -189,14 +190,14 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("30c", "IMDBQ105"),
             ("31a", "IMDBQ106"),
             ("31b", "IMDBQ107"),
-            ("31c", "IMDBQ108"),    
+            ("31c", "IMDBQ108"),
         ])
     }
 
     if linear {
         queries.extend_from_slice(&[
             ("32a", "IMDBQ109"), // TRIE SLOW // EMPTY
-            ("32b", "IMDBQ110"), // TRIE SLOW    
+            ("32b", "IMDBQ110"), // TRIE SLOW
         ])
     }
 

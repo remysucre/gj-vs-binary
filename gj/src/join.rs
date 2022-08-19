@@ -26,7 +26,7 @@ where
     let js = &plan[0];
 
     for j_min in js {
-        if let Table::Arr((id_cols, data_cols)) = relations[*j_min] {
+        if let Tb::Arr((id_cols, data_cols)) = &relations[*j_min].data {
             for i in 0..id_cols[0].len() {
                 let mut trie_min = Trie::default();
                 let ids: Vec<_> = id_cols.iter().map(|c| c[i].as_num()).collect();
@@ -35,9 +35,9 @@ where
                 trie_min.insert(&ids, data);
                 let rels: Vec<_> = relations
                     .iter()
-                    .map(|t| match t {
-                        Table::Arr(_) => &trie_min,
-                        Table::Trie(trie) => trie,
+                    .map(|t| match &t.data {
+                        Tb::Arr(_) => &trie_min,
+                        Tb::Trie(trie) => trie,
                     })
                     .collect();
                 join_inner(&rels, plan, payload, f);
@@ -83,12 +83,6 @@ where
             }
         }
     } else {
-        // TODO refactor payload to point to relation directly
-        // let relations = relations
-        //     .iter()
-        //     .copied()
-        //     .filter(|trie| !trie.get_data().unwrap().is_empty())
-        //     .collect::<Vec<_>>();
         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
         let mut tuple = Vec::new();
         select(&rels, f, &mut tuple);
@@ -106,7 +100,7 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
     let js = &plan[0];
 
     for j_min in js {
-        if let Table::Arr((id_cols, data_cols)) = relations[*j_min].table {
+        if let Tb::Arr((id_cols, data_cols)) = &relations[*j_min].table.data {
             for i in 0..id_cols[0].len() {
                 let mut trie_min = Trie::default();
                 let ids: Vec<_> = id_cols.iter().map(|c| c[i].as_num()).collect();
@@ -115,14 +109,14 @@ pub fn semijoin(relations: &mut [&mut Tab<Value>], plan: &[Vec<usize>]) {
                 trie_min.insert(&ids, data);
                 let mut rels: Vec<_> = relations
                     .iter_mut()
-                    .map(|t| match t.table {
-                        Table::Arr(_) => Rel {
+                    .map(|t| match &t.table.data {
+                        Tb::Arr(_) => Rel {
                             vars: t.vars,
                             trie: &trie_min,
                             rel: t.rel,
                             ids: t.ids,
                         },
-                        Table::Trie(trie) => Rel {
+                        Tb::Trie(trie) => Rel {
                             vars: t.vars,
                             trie,
                             rel: t.rel,

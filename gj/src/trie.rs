@@ -27,23 +27,30 @@ pub enum Trie<T> {
     Data(Vec<Vec<T>>),
 }
 
-pub enum Table<'a, T> {
+pub type Schema<'a> = (&'a str, Vec<&'a str>);
+
+pub struct Table<'a, T> {
+    pub schema: Schema<'a>,
+    pub data: Tb<'a, T>,
+}
+
+pub enum Tb<'a, T> {
     Trie(Trie<T>),
     Arr((Vec<&'a [Value]>, Vec<&'a [T]>)),
 }
 
 impl<'a, T> Table<'a, T> {
     pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
-        match self {
-            Table::Trie(Trie::Data(data)) => Ok(data),
+        match &self.data {
+            Tb::Trie(Trie::Data(data)) => Ok(data),
             // Table::Single((_, data)) => Ok(&data),
             _ => Err(NotAData),
         }
     }
 
     pub fn get_map(&self) -> Result<&HashMap<Id, Trie<T>>, NotANode> {
-        match self {
-            Table::Trie(Trie::Node(map)) => Ok(map),
+        match &self.data {
+            Tb::Trie(Trie::Node(map)) => Ok(map),
             _ => Err(NotANode),
         }
     }
