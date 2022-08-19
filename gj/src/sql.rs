@@ -1,3 +1,5 @@
+use std::{error::Error, path, fs};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
@@ -73,6 +75,22 @@ pub struct TreeOp {
 //     func(node);
 // }
 
+
+fn inorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
+where
+    T: FnMut(&'a TreeOp),
+{
+    if !node.children.is_empty() {
+        inorder_traverse(&node.children[0], func);
+    }
+    func(node);
+    if !node.children.is_empty() {
+        for child_node in &node.children[1..] {
+            inorder_traverse(child_node, func);
+        }
+    }
+}
+
 fn inorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
 where
     T: FnMut(&mut TreeOp),
@@ -86,6 +104,13 @@ where
             inorder_traverse_mut(child_node, func);
         }
     }
+}
+
+pub fn get_join_tree(file_name: &str) -> Result<TreeOp, Box<dyn Error>> {
+    let sql = fs::read_to_string(path::Path::new(file_name))?;
+    let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
+    parse_tree_extra_info(&mut root);
+    Ok(root)
 }
 
 // fill in the attributes for scans, projections and joins
@@ -200,50 +225,62 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
     inorder_traverse_mut(root, &mut parse_func);
 }
 
-// convert a binary join tree to a gj plan, by traversing the tree in postorder
-// for linear plans this will traverse the plan bottom-up
-pub fn to_gj_plan(root: &mut TreeOp) -> (Vec<ScanAttr>, Vec<Vec<Attribute>>, Vec<Attribute>) {
-    let mut scan: Vec<ScanAttr> = vec![];
-    let mut plan: Vec<Vec<Attribute>> = vec![];
-    let mut payload: Vec<Attribute> = vec![];
+pub fn get_scans<'a>(root: &'a TreeOp) -> Vec<&'a ScanAttr> {
+    let mut scan = vec![];
 
-    let mut get_plan = |node: & TreeOp| {
-        match &node.attr {
-            Some(NodeAttr::Join(attr)) => {
-                for equalizer in &attr.equalizers {
-                    let lattr = &equalizer.left_attr;
-                    let rattr = &equalizer.right_attr;
-
-                    let lpos_opt = plan.iter().position(|x| x.contains(lattr));
-                    let rpos_opt = plan.iter().position(|x| x.contains(rattr));
-
-                    match (lpos_opt, rpos_opt) {
-                        (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
-                        (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
-                        (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
-                        (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
-                    }
-                }
-            }
-            Some(NodeAttr::Project(cols)) => {
-                payload.extend(
-                    cols.columns
-                        .iter()
-                        .cloned()
-                        .filter(|a| !a.table_name.is_empty()),
-                );
-            }
-            Some(NodeAttr::Scan(attr)) => {
-                scan.push(attr.clone());
-            }
-            _ => (),
+    let mut collect_vars = |node: &'a TreeOp| {
+        if let Some(NodeAttr::Scan(attr)) = &node.attr {
+            scan.push(attr);
         }
     };
 
-    traverse_lr(root, &mut get_plan);
-    // inorder_traverse_mut(root, &mut get_plan);
+    preorder_traverse(root, &mut collect_vars);
+    scan
+}
 
-    (scan, plan, payload)
+pub fn get_payload<'a>(root: &'a TreeOp) -> Vec<&'a Attribute> {
+    let mut payload = vec![];
+
+    let mut collect_vars = |node: &'a TreeOp| {
+        if let Some(NodeAttr::Project(cols)) = &node.attr {
+            payload.extend(
+                cols.columns
+                    .iter()
+                    .filter(|a| !a.table_name.is_empty())
+            );
+        }
+    };
+
+    preorder_traverse(root, &mut collect_vars);
+    payload
+}
+
+pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
+    let mut plan: Vec<Vec<&'a Attribute>> = vec![];
+
+    let mut get_plan = |node: &'a TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
+
+                let lpos_opt = plan.iter().position(|x| x.contains(&lattr));
+                let rpos_opt = plan.iter().position(|x| x.contains(&rattr));
+
+                match (lpos_opt, rpos_opt) {
+                    (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
+                    (Some(lpos), None) => plan[lpos].push(rattr),
+                    (None, Some(rpos)) => plan[rpos].push(lattr),
+                    (None, None) => plan.push(vec![lattr, rattr]),
+                }
+            }
+        }
+    };
+
+    // traverse_lr(root, &mut get_plan);
+    inorder_traverse(root, &mut get_plan);
+
+    plan
 }
 
 fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
@@ -273,22 +310,22 @@ where
     }
 }
 
-pub fn to_semijoin_plan(root: &TreeOp) -> Vec<Vec<Attribute>> {
-    let mut plan: Vec<Vec<Attribute>> = vec![];
-    let mut build_plan = |node: &TreeOp| {
+pub fn to_semijoin_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
+    let mut plan: Vec<Vec<&'a Attribute>> = vec![];
+    let mut build_plan = |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {
                 let lattr = &equalizer.left_attr;
                 let rattr = &equalizer.right_attr;
 
-                let lpos_opt = plan.iter().position(|x| x.contains(lattr));
-                let rpos_opt = plan.iter().position(|x| x.contains(rattr));
+                let lpos_opt = plan.iter().position(|x| x.contains(&lattr));
+                let rpos_opt = plan.iter().position(|x| x.contains(&rattr));
 
                 match (lpos_opt, rpos_opt) {
                     (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
-                    (Some(lpos), None) => plan[lpos].push(rattr.to_owned()),
-                    (None, Some(rpos)) => plan[rpos].push(lattr.to_owned()),
-                    (None, None) => plan.push(vec![lattr.to_owned(), rattr.to_owned()]),
+                    (Some(lpos), None) => plan[lpos].push(rattr),
+                    (None, Some(rpos)) => plan[rpos].push(lattr),
+                    (None, None) => plan.push(vec![lattr, rattr]),
                 }
             }
         }

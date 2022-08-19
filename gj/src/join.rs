@@ -84,11 +84,11 @@ where
         }
     } else {
         // TODO refactor payload to point to relation directly
-        let relations = relations
-            .iter()
-            .copied()
-            .filter(|trie| !trie.get_data().unwrap().is_empty())
-            .collect::<Vec<_>>();
+        // let relations = relations
+        //     .iter()
+        //     .copied()
+        //     .filter(|trie| !trie.get_data().unwrap().is_empty())
+        //     .collect::<Vec<_>>();
         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
         let mut tuple = Vec::new();
         select(&rels, f, &mut tuple);

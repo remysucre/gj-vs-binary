@@ -26,16 +26,16 @@ pub type Payload = Vec<Attribute>;
 
 pub type PlanPack = (Vec<ScanAttr>, Plan, Payload, TreeOp);
 
-pub fn sql_to_gj(file_name: &str) -> Result<PlanPack, Box<dyn Error>> {
-    let sql = fs::read_to_string(path::Path::new(file_name))?;
-    let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
-    parse_tree_extra_info(&mut root);
-    let (scans, plan, payload) = to_gj_plan(&mut root);
-    Ok((scans, plan, payload, root))
-}
+// pub fn sql_to_gj(file_name: &str) -> Result<PlanPack, Box<dyn Error>> {
+//     let sql = fs::read_to_string(path::Path::new(file_name))?;
+//     let mut root: TreeOp = serde_json::from_str(sql.as_str())?;
+//     parse_tree_extra_info(&mut root);
+//     let (scans, plan, payload) = to_gj_plan(&mut root);
+//     Ok((scans, plan, payload, root))
+// }
 
 // FIXME
-pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
+pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[&Attribute]) {
     println!("START SEMIJOIN");
     let (vars, required) = required_vars(root);
     for node in required.iter().rev() {
@@ -43,11 +43,11 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
 
         let mut out_vars = vec![];
         for &v in &vars {
-            out_vars.push(v.clone());
+            out_vars.push(v);
         }
 
         for v in payload {
-            out_vars.push(v.clone());
+            out_vars.push(v);
         }
 
         let (tables, table_vars) = build_tables(db, &plan, &out_vars);
@@ -101,25 +101,23 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp, payload: &[Attribute]) {
     println!("END SEMIJOIN");
 }
 
-// compile a plan (a list of multiway joins) into a list of trie indices,
-// where the trie with index i is stored at position i by load_db.
 pub fn compile_plan(
-    plan: &[Vec<Attribute>],
-    payload: &[Attribute],
+    plan: &[Vec<&Attribute>],
+    payload: &[&Attribute],
 ) -> (Vec<Vec<usize>>, Vec<usize>) {
     let mut compiled_plan = Vec::new();
     let mut compiled_payload = Vec::new();
     let mut table_ids = HashMap::new();
+
     for node in plan {
         let mut node_ids = Vec::new();
         for a in node {
             let l = table_ids.len();
             let id = table_ids.entry(a.table_name.clone()).or_insert(l);
             node_ids.push(*id);
-            if let Some(pos) = payload.iter().position(|b| a.table_name == b.table_name) {
-                if !compiled_payload.contains(&pos) {
-                    compiled_payload.push(pos);
-                }
+
+            if payload.iter().any(|b| a.table_name == b.table_name) && !compiled_payload.contains(id) {
+                compiled_payload.push(*id);
             }
         }
         compiled_plan.push(node_ids);
@@ -174,7 +172,7 @@ pub fn clean_db(db: &mut DB) {
     db.retain(|t, _| is_shared(t));
 }
 
-pub fn load_db_mut(db: &mut DB, q: &str, scan: &[ScanAttr]) {
+pub fn load_db_mut(db: &mut DB, q: &str, scan: &[&ScanAttr]) {
     println!("Query: {}", q);
     for attr in scan {
         let table_name = &attr.table_name;
@@ -279,8 +277,8 @@ type Schema<'a> = (&'a str, Vec<&'a str>);
 // FIXME
 pub fn build_tables<'a>(
     db: &'a DB,
-    plan: &'a [Vec<Attribute>],
-    payload: &'a [Attribute],
+    plan: &'a [Vec<&'a Attribute>],
+    payload: &'a [&'a Attribute],
 ) -> (Vec<Table<'a, Value>>, Vec<Schema<'a>>) {
     let mut tables = Vec::new();
     let mut vars = Vec::new();
