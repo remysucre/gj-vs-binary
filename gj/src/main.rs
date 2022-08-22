@@ -90,10 +90,10 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             // ("6f", "IMDBQ023"),
             // ("7a", "IMDBQ024"),
             // ("7b", "IMDBQ025"),
-            // ("7c", "IMDBQ026"), // SJ error
+            ("7c", "IMDBQ026"), 
             // ("8a", "IMDBQ027"),
             // ("8b", "IMDBQ028"),
-            ("8c", "IMDBQ029"), // SLOW
+            // ("8c", "IMDBQ029"), // SLOW
             // ("8d", "IMDBQ030"), // SLOW
             // ("9a", "IMDBQ031"),
             // ("9b", "IMDBQ032"),
@@ -130,16 +130,16 @@ fn queries() -> Vec<(&'static str, &'static str)> {
 
     if bushy {
         queries.extend_from_slice(&[
-            // ("16a", "IMDBQ056"), // SJ error
-            // ("16b", "IMDBQ057"), // SJ error
-            // ("16c", "IMDBQ058"), // SJ error
-            // ("16d", "IMDBQ059"), // SJ error
-            // ("17a", "IMDBQ060"), // SJ error
-            // ("17b", "IMDBQ061"), // SJ error
-            // ("17c", "IMDBQ062"), // SJ error
-            // ("17d", "IMDBQ063"), // SJ error
-            // ("17e", "IMDBQ064"), // SJ error
-            // ("17f", "IMDBQ065"), // SJ error
+            // ("16a", "IMDBQ056"), 
+            // ("16b", "IMDBQ057"), 
+            // ("16c", "IMDBQ058"), 
+            // ("16d", "IMDBQ059"), 
+            // ("17a", "IMDBQ060"), 
+            // ("17b", "IMDBQ061"), 
+            // ("17c", "IMDBQ062"), 
+            // ("17d", "IMDBQ063"), 
+            // ("17e", "IMDBQ064"), 
+            // ("17f", "IMDBQ065"), 
             // ("18a", "IMDBQ066"),
             // ("18b", "IMDBQ067"),
             // ("18c", "IMDBQ068"),
