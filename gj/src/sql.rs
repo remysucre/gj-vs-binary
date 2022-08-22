@@ -272,7 +272,8 @@ pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
         }
     };
 
-    traverse_lr(root, &mut get_plan);
+    traverse_left(root, &mut get_plan);
+    // traverse_lr(root, &mut get_plan);
     // inorder_traverse(root, &mut get_plan);
 
     plan
@@ -339,36 +340,22 @@ where
     func(node);
 }
 
-fn traverse_mlr<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
-where
-    T: FnMut(&'a TreeOp, bool),
-{
-    func(node, is_right_child);
-
-    if !node.children.is_empty() {
-        traverse_mlr(&node.children[0], func, false);
-    }
-
-    if !node.children.is_empty() {
-        for child_node in &node.children[1..] {
-            traverse_mlr(child_node, func, true);
-        }
-    }
-}
-
 fn traverse_lrm<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
 where
     T: FnMut(&'a TreeOp, bool),
 {
-    if !node.children.is_empty() {
-        traverse_lrm(&node.children[0], func, false);
-    }
-    func(node, is_right_child);
-    if !node.children.is_empty() {
-        for child_node in &node.children[1..] {
-            traverse_lrm(child_node, func, true);
+    match node.children.len() {
+        1 => traverse_lrm(&node.children[0], func, is_right_child),
+        x if x > 1 => {
+            traverse_lrm(&node.children[0], func, false);
+            for child_node in &node.children[1..] {
+                traverse_lrm(child_node, func, true);
+            }
         }
+        _ => {},
     }
+
+    func(node, is_right_child);
 }
 
 pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
@@ -382,21 +369,4 @@ pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
     };
     traverse_lrm(root, &mut collect_reduce, true);
     reduce
-}
-
-pub fn required_vars<'a>(root: &'a TreeOp) -> (Vec<&'a Attribute>, Vec<&'a TreeOp>) {
-    let mut current_vars = Vec::new();
-    let mut to_reduce = Vec::new();
-
-    let mut build_plan = |node: &'a TreeOp, is_right_child| {
-        if let Some(NodeAttr::Join(attr)) = &node.attr {
-            if is_right_child {
-                to_reduce.push(node);
-            }
-            current_vars.push(&attr.equalizers[0].left_attr);
-            current_vars.push(&attr.equalizers[0].right_attr);
-        }
-    };
-    traverse_mlr(root, &mut build_plan, false);
-    (current_vars, to_reduce)
 }
