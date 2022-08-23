@@ -24,7 +24,7 @@ fn main() {
 
         println!("compiled plan {:#?} ", compiled_plan);
         println!("compiled payload {:#?} ", compiled_payload);
-        
+
         let mut db = load_db(q, &scan);
 
         let time = Instant::now();
@@ -56,9 +56,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     let bushy = false;
     let linear = true;
 
-    let queries = vec![
-         ("32b", "IMDBQ110"),
-    ];
+    let queries = vec![("32b", "IMDBQ110")];
 
     /*
     let mut queries = vec![];
@@ -95,7 +93,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("6f", "IMDBQ023"),
             ("7a", "IMDBQ024"),
             ("7b", "IMDBQ025"),
-            ("7c", "IMDBQ026"), 
+            ("7c", "IMDBQ026"),
             ("8a", "IMDBQ027"),
             ("8b", "IMDBQ028"),
             ("8c", "IMDBQ029"), // SLOW
@@ -135,16 +133,16 @@ fn queries() -> Vec<(&'static str, &'static str)> {
 
     if bushy {
         queries.extend_from_slice(&[
-            ("16a", "IMDBQ056"), 
-            ("16b", "IMDBQ057"), 
-            ("16c", "IMDBQ058"), 
-            ("16d", "IMDBQ059"), 
-            ("17a", "IMDBQ060"), 
-            ("17b", "IMDBQ061"), 
-            ("17c", "IMDBQ062"), 
-            ("17d", "IMDBQ063"), 
-            ("17e", "IMDBQ064"), 
-            ("17f", "IMDBQ065"), 
+            ("16a", "IMDBQ056"),
+            ("16b", "IMDBQ057"),
+            ("16c", "IMDBQ058"),
+            ("16d", "IMDBQ059"),
+            ("17a", "IMDBQ060"),
+            ("17b", "IMDBQ061"),
+            ("17c", "IMDBQ062"),
+            ("17d", "IMDBQ063"),
+            ("17e", "IMDBQ064"),
+            ("17f", "IMDBQ065"),
             ("18a", "IMDBQ066"),
             ("18b", "IMDBQ067"),
             ("18c", "IMDBQ068"),

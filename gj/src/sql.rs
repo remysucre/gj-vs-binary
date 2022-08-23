@@ -352,7 +352,7 @@ where
                 traverse_lrm(child_node, func, true);
             }
         }
-        _ => {},
+        _ => {}
     }
 
     func(node, is_right_child);

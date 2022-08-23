@@ -123,7 +123,11 @@ impl<T> Trie<T> {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();
         }
 
-        trie = trie.get_map_mut().unwrap().entry(ids[ids.len() - 1]).or_insert_with(|| Trie::Data(vec![]));
+        trie = trie
+            .get_map_mut()
+            .unwrap()
+            .entry(ids[ids.len() - 1])
+            .or_insert_with(|| Trie::Data(vec![]));
 
         if !data.is_empty() {
             trie.get_data_mut().unwrap().push(data);

@@ -162,12 +162,15 @@ fn semijoin_inner(relations: &mut [Rel<Value>], plan: &[Vec<usize>]) {
                 })
                 .collect::<Option<Vec<_>>>()
             {
-                let mut rels: Vec<_> = relations.iter_mut().map(|r| Rel {
-                    vars: r.vars,
-                    trie: r.trie,
-                    rel: r.rel,
-                    ids: r.ids,
-                }).collect();
+                let mut rels: Vec<_> = relations
+                    .iter_mut()
+                    .map(|r| Rel {
+                        vars: r.vars,
+                        trie: r.trie,
+                        rel: r.rel,
+                        ids: r.ids,
+                    })
+                    .collect();
 
                 rels[j_min].trie = trie_min;
                 rels[j_min].ids.push(*id);
@@ -211,7 +214,7 @@ fn reduce(relations: &mut [Rel<Value>]) {
                             .or_default();
                         col.push(Value::Num(*id));
                     }
-                    
+
                     for (i, v) in tuple.iter().enumerate() {
                         let col = relation
                             .rel
