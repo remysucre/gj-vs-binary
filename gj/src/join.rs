@@ -191,22 +191,34 @@ fn semijoin_inner(relations: &mut [Rel<Value>], plan: &[Vec<usize>]) {
 fn reduce(relations: &mut [Rel<Value>]) {
     // println!("reduce");
     for relation in relations {
-        for (i, id) in relation.ids.iter().enumerate() {
-            // TODO only materialize needed columns
-            let col = relation
-                .rel
-                .entry(relation.vars[i].to_string())
-                .or_default();
-            col.push(Value::Num(*id));
-        }
         if let Trie::Data(data) = relation.trie {
-            for tuple in data {
-                for (i, v) in tuple.iter().enumerate() {
+            if data.is_empty() {
+                for (i, id) in relation.ids.iter().enumerate() {
+                    // TODO only materialize needed columns
                     let col = relation
                         .rel
-                        .entry(relation.vars[i + relation.ids.len()].to_string())
+                        .entry(relation.vars[i].to_string())
                         .or_default();
-                    col.push(v.clone());
+                    col.push(Value::Num(*id));
+                }
+            } else {
+                for tuple in data {
+                    for (i, id) in relation.ids.iter().enumerate() {
+                        // TODO only materialize needed columns
+                        let col = relation
+                            .rel
+                            .entry(relation.vars[i].to_string())
+                            .or_default();
+                        col.push(Value::Num(*id));
+                    }
+                    
+                    for (i, v) in tuple.iter().enumerate() {
+                        let col = relation
+                            .rel
+                            .entry(relation.vars[i + relation.ids.len()].to_string())
+                            .or_default();
+                        col.push(v.clone());
+                    }
                 }
             }
         } else {

@@ -290,8 +290,8 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table
 
     let start = Instant::now();
 
-    let (table_name, cols) = id_cols.first().unwrap();
-    println!("building flat table on {}", table_name);
+    let (trie_name, cols) = id_cols.first().unwrap();
+    println!("building flat table on {}", trie_name);
 
     let mut ids = vec![];
     let mut data = vec![];
@@ -302,7 +302,7 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table
         ids.push(&col[..])
     }
 
-    if let Some(cols) = data_cols.get(table_name) {
+    if let Some(cols) = data_cols.get(trie_name) {
         for (col_name, col) in cols {
             vs.push(col_name);
             data.push(&col[..])
@@ -310,13 +310,13 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table
     }
 
     tables.push(Table {
-        schema: (table_name, vs),
+        schema: (trie_name, vs),
         data: Tb::Arr((ids, data)),
     });
 
     println!(
         "building {} takes {}s",
-        table_name,
+        trie_name,
         start.elapsed().as_secs_f32()
     );
 
