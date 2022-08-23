@@ -24,55 +24,84 @@ use crate::{
     *,
 };
 
+fn sjr(db: &mut DB, node: &TreeOp) {
+    let plan = to_semijoin_plan(node);
+    let tables = build_tables(db, &plan);
+
+    let mut t_with_new_rels: Vec<_> = tables
+        .into_iter()
+        .map(|t| (t, Relation::default(), Vec::<i32>::new()))
+        .collect();
+
+    let mut tabs: Vec<_> = t_with_new_rels
+        .iter_mut()
+        .map(|(table, rel, ids)| Tab {
+            schema: &table.schema,
+            table,
+            rel,
+            ids,
+        })
+        .collect();
+
+    let compiled_plan = compile_plan(&plan, &[]).0;
+    println!("COMPILED {:#?}", compiled_plan);
+
+    semijoin(&mut tabs, &compiled_plan);
+    println!("DONE SJ");
+
+    let rel_names: Vec<_> = t_with_new_rels
+        .into_iter()
+        .map(|(t, rel, _)| {
+            let mut t_name = t.schema.0.to_string();
+            if !db.contains_key(&t_name) {
+                t_name = find_shared(&t_name).to_string();
+            }
+            (rel, t_name)
+        })
+        .collect();
+
+    for (rel, t_name) in rel_names {
+        // println!("TNAME {}", t_name);
+        // println!("{:#?}", rel.keys());
+        // let t = db.get_mut(&t_name).unwrap();
+        // *t = rel;
+        db.insert(t_name, rel);
+        // std::mem::swap(t, &mut rel);
+        // new_rels.leak();
+    }
+}
+
+pub fn aggr(db: &DB, payload: &[&Attribute]) {
+    print!("output: ");
+    for a in payload {
+        let mut t_name = a.table_name.as_str();
+        if !db.contains_key(t_name) {
+            t_name = find_shared(t_name);
+        }
+
+        let col = db.get(t_name).unwrap().get(&a.attr_name).unwrap();
+        print!("{:?}", col.iter().min_by(|x, y| {
+            match (x, y) {
+                (Value::Num(x), Value::Num(y)) => x.cmp(y),
+                (Value::Str(x), Value::Str(y)) => x.cmp(y),
+                _ => panic!("unsupported type"),
+            }
+        }).unwrap());
+    }
+    println!();
+}
+
 pub fn semijoin_reduce(db: &mut DB, root: &TreeOp) {
     println!("START SEMIJOIN");
 
-    for node in &to_reduce(root) {
-        let plan = to_semijoin_plan(node);
-        let tables = build_tables(db, &plan);
-        println!("{:#?}", plan);
-        for t in &tables {
-            println!("{:#?}", t.schema);
-        }
+    for node in to_reduce(root) {
+        sjr(db, node);
+    }
 
-        let mut t_with_new_rels: Vec<_> = tables
-            .into_iter()
-            .map(|t| (t, Relation::default(), Vec::<i32>::new()))
-            .collect();
+    println!("FIRST SEMIJOIN DONE");
 
-        let mut tabs: Vec<_> = t_with_new_rels
-            .iter_mut()
-            .map(|(table, rel, ids)| Tab {
-                schema: &table.schema,
-                table,
-                rel,
-                ids,
-            })
-            .collect();
-
-        let compiled_plan = compile_plan(&plan, &[]).0;
-        println!("COMPILED {:#?}", compiled_plan);
-
-        semijoin(&mut tabs, &compiled_plan);
-
-        let rel_names: Vec<_> = t_with_new_rels
-            .into_iter()
-            .map(|(t, rel, _)| {
-                let mut t_name = t.schema.0.to_string();
-                if !db.contains_key(&t_name) {
-                    t_name = find_shared(&t_name).to_string();
-                }
-                (rel, t_name)
-            })
-            .collect();
-
-        for (mut rel, t_name) in rel_names {
-            println!("TNAME {}", t_name);
-            println!("{:#?}", rel.keys());
-            let t = db.get_mut(&t_name).unwrap();
-            std::mem::swap(t, &mut rel);
-            // new_rels.leak();
-        }
+    for node in to_reduce(root).iter().rev().skip(1) {
+        sjr(db, node);
     }
     println!("END SEMIJOIN");
 }
@@ -261,9 +290,9 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table
             if !db.contains_key(table_name) {
                 table_name = find_shared(table_name);
             }
-            println!("TABLE {}", table_name);
+            // println!("TABLE {}", table_name);
 
-            println!("Attribute {}", &a.attr_name);
+            // println!("Attribute {}", &a.attr_name);
             id_cols
                 .entry(trie_name)
                 .or_insert(IndexMap::new())

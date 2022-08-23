@@ -192,7 +192,6 @@ fn semijoin_inner(relations: &mut [Rel<Value>], plan: &[Vec<usize>]) {
 }
 
 fn reduce(relations: &mut [Rel<Value>]) {
-    // println!("reduce");
     for relation in relations {
         if let Trie::Data(data) = relation.trie {
             if data.is_empty() {

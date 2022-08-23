@@ -367,7 +367,7 @@ pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
             }
         }
     };
-    traverse_lrm(root, &mut collect_reduce, false);
+    traverse_lrm(root, &mut collect_reduce, true);
     // traverse_lrm(root, &mut collect_reduce, false);
     reduce
 }

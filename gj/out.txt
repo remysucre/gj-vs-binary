@@ -1,87 +1,543 @@
-running query 32b 
-payload [
-    Attribute {
-        table_name: "lt",
-        attr_name: "link",
-    },
-    Attribute {
-        table_name: "t1",
-        attr_name: "title",
-    },
-    Attribute {
-        table_name: "t2",
-        attr_name: "title",
-    },
-]
-plan [
-    [
-        Attribute {
-            table_name: "mk",
-            attr_name: "movie_id",
-        },
-        Attribute {
-            table_name: "t1",
-            attr_name: "id",
-        },
-        Attribute {
-            table_name: "ml",
-            attr_name: "movie_id",
-        },
-    ],
-    [
-        Attribute {
-            table_name: "ml",
-            attr_name: "linked_movie_id",
-        },
-        Attribute {
-            table_name: "t2",
-            attr_name: "id",
-        },
-    ],
-    [
-        Attribute {
-            table_name: "ml",
-            attr_name: "link_type_id",
-        },
-        Attribute {
-            table_name: "lt",
-            attr_name: "id",
-        },
-    ],
-    [
-        Attribute {
-            table_name: "mk",
-            attr_name: "keyword_id",
-        },
-        Attribute {
-            table_name: "k",
-            attr_name: "id",
-        },
-    ],
-]
-compiled plan [
-    [
-        0,
-        1,
-        2,
-    ],
-    [
-        2,
-        3,
-    ],
-    [
-        2,
-        4,
-    ],
-    [
-        0,
-        5,
-    ],
-] 
-compiled payload [
-    1,
-    3,
-    4,
-] 
-Query: 32b
+running query 1a 
+Query: 1a
+Loading title
+Loading movie_info_idx
+Loading it
+Loading mc
+Loading ct
+START SEMIJOIN
+building flat table on t
+building t takes 0.000002458s
+building trie on mi_idx
+building mi_idx takes 0.18429805s
+building flat table on mc
+building mc takes 0.00002825s
+building trie on t
+building t takes 0.10211045s
+building trie on mi_idx
+building mi_idx takes 0.13195696s
+building trie on it
+building it takes 0.0000025s
+building trie on ct
+building ct takes 0.000003458s
+building flat table on t
+building t takes 0.000029375s
+building trie on mi_idx
+building mi_idx takes 0.000031041s
+END SEMIJOIN
+semijoin takes 1.7873335
+output: Str("(A Warner Bros.-First National Picture) (presents)")Str("A Clockwork Orange")Num(1934)
+total takes 1.7873454
+running query 1b 
+Query: 1b
+Loading movie_info_idx
+Loading it
+Loading mc
+Loading ct
+Loading t
+START SEMIJOIN
+building flat table on t
+building t takes 0.000007125s
+building trie on mi_idx
+building mi_idx takes 0.1728423s
+building flat table on mc
+building mc takes 0.000022791s
+building trie on t
+building t takes 0.019920085s
+building trie on mi_idx
+building mi_idx takes 0.027983166s
+building trie on it
+building it takes 0.000002875s
+building trie on ct
+building ct takes 0.000003208s
+building flat table on t
+building t takes 0.000019583s
+building trie on mi_idx
+building mi_idx takes 0.000003125s
+END SEMIJOIN
+semijoin takes 1.0890027
+output: Str("(Set Decoration Rentals) (uncredited)")Str("Disaster Movie")Num(2008)
+total takes 1.0890118
+running query 1c 
+Query: 1c
+Loading movie_info_idx
+Loading t
+Loading mc
+Loading ct
+Loading it
+START SEMIJOIN
+building flat table on t
+building t takes 0.000002583s
+building trie on mi_idx
+building mi_idx takes 0.17301022s
+building flat table on mc
+building mc takes 0.0000195s
+building trie on t
+building t takes 0.006859208s
+building trie on mi_idx
+building mi_idx takes 0.00957175s
+building trie on it
+building it takes 0.000003291s
+building trie on ct
+building ct takes 0.000003625s
+building flat table on t
+building t takes 0.000024708s
+building trie on mi_idx
+building mi_idx takes 0.000003375s
+END SEMIJOIN
+semijoin takes 0.487316
+output: Str("(co-production)")Str("Intouchables")Num(2011)
+total takes 0.4873273
+running query 1d 
+Query: 1d
+Loading t
+Loading mc
+Loading ct
+Loading movie_info_idx
+Loading it
+START SEMIJOIN
+building flat table on t
+building t takes 0.00000275s
+building trie on mi_idx
+building mi_idx takes 0.17709666s
+building flat table on mc
+building mc takes 0.000017s
+building trie on t
+building t takes 0.042720754s
+building trie on mi_idx
+building mi_idx takes 0.053199083s
+building trie on it
+building it takes 0.000002875s
+building trie on ct
+building ct takes 0.000003666s
+building flat table on t
+building t takes 0.000023833s
+building trie on mi_idx
+building mi_idx takes 0.000003416s
+END SEMIJOIN
+semijoin takes 1.4842899
+output: Str("(Set Decoration Rentals) (uncredited)")Str("Disaster Movie")Num(2004)
+total takes 1.4842974
+running query 2a 
+Query: 2a
 Loading movie_keyword
+Loading movie_companies
+Loading title
+Loading cn
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000005458s
+building trie on t
+building t takes 0.6956829s
+building trie on mc
+building mc takes 0.4032226s
+building trie on k
+building k takes 0.000002666s
+building trie on cn
+building cn takes 0.000766916s
+END SEMIJOIN
+semijoin takes 3.4048562
+output: Str("'Doc'")
+total takes 3.404909
+running query 2b 
+Query: 2b
+Loading movie_keyword
+Loading movie_companies
+Loading title
+Loading k
+Loading cn
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000005916s
+building trie on t
+building t takes 0.6901094s
+building trie on mc
+building mc takes 0.40651807s
+building trie on k
+building k takes 0.000009s
+building trie on cn
+building cn takes 0.000378583s
+END SEMIJOIN
+semijoin takes 3.4054725
+output: Str("'Doc'")
+total takes 3.405509
+running query 2d 
+Query: 2d
+Loading movie_keyword
+Loading movie_companies
+Loading cn
+Loading title
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000004375s
+building trie on t
+building t takes 0.69283473s
+building trie on mc
+building mc takes 0.40281463s
+building trie on k
+building k takes 0.000003625s
+building trie on cn
+building cn takes 0.005381333s
+END SEMIJOIN
+semijoin takes 3.4332664
+output: Str("& Teller")
+total takes 3.4335783
+running query 3a 
+Query: 3a
+Loading movie_keyword
+Loading mi
+Loading t
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000002416s
+building trie on t
+building t takes 0.26274s
+building flat table on mi
+building mi takes 0.00002225s
+building trie on t
+building t takes 0.16186295s
+building trie on mk
+building mk takes 0.10242021s
+building trie on k
+building k takes 0.000009916s
+building flat table on mk
+building mk takes 0.000019625s
+building trie on t
+building t takes 0.001205208s
+END SEMIJOIN
+semijoin takes 2.2951858
+output: Str("2 Days in New York")
+total takes 2.2954762
+running query 3b 
+Query: 3b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000002708s
+building trie on t
+building t takes 0.082831286s
+building flat table on mi
+building mi takes 0.000033541s
+building trie on t
+building t takes 0.037293207s
+building trie on mk
+building mk takes 0.023545915s
+building trie on k
+building k takes 0.000009416s
+building flat table on mk
+building mk takes 0.000025708s
+building trie on t
+building t takes 0.00009075s
+END SEMIJOIN
+semijoin takes 1.1862503
+output: Str("300: Rise of an Empire")
+total takes 1.1862817
+running query 3c 
+Query: 3c
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000005541s
+building trie on t
+building t takes 0.4524774s
+building flat table on mi
+building mi takes 0.000032s
+building trie on t
+building t takes 0.36995578s
+building trie on mk
+building mk takes 0.23413216s
+building trie on k
+building k takes 0.000008208s
+building flat table on mk
+building mk takes 0.0000325s
+building trie on t
+building t takes 0.028036708s
+END SEMIJOIN
+semijoin takes 4.258021
+output: Str("& Teller 2")
+total takes 4.2805557
+running query 4a 
+Query: 4a
+Loading movie_keyword
+Loading t
+Loading mi_idx
+Loading it
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000002833s
+building trie on t
+building t takes 0.2516447s
+building trie on mi_idx
+building mi_idx takes 0.11722121s
+building trie on k
+building k takes 0.000006791s
+building trie on it
+building it takes 0.000003291s
+END SEMIJOIN
+semijoin takes 1.7705038
+output: Str("5.1")Str("& Teller 2")
+total takes 1.7705257
+running query 4b 
+Query: 4b
+Loading movie_keyword
+Loading k
+Loading t
+Loading mi_idx
+Loading it
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.0000025s
+building trie on t
+building t takes 0.08577883s
+building trie on mi_idx
+building mi_idx takes 0.001641125s
+building trie on k
+building k takes 0.000004666s
+building trie on it
+building it takes 0.000003041s
+END SEMIJOIN
+semijoin takes 0.94177735
+output: Str("9.1")Str("Batman: Arkham City")
+total takes 0.9417929
+running query 4c 
+Query: 4c
+Loading movie_keyword
+Loading mi_idx
+Loading t
+Loading it
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.00000425s
+building trie on t
+building t takes 0.4547857s
+building trie on mi_idx
+building mi_idx takes 0.17267041s
+building trie on k
+building k takes 0.000011208s
+building trie on it
+building it takes 0.000007958s
+END SEMIJOIN
+semijoin takes 2.544434
+output: Str("2.1")Str("& Teller 2")
+total takes 2.5445056
+running query 5c 
+Query: 5c
+Loading t
+Loading mc
+Loading ct
+Loading mi
+Loading info_type
+START SEMIJOIN
+building flat table on mi
+building mi takes 0.000008083s
+building trie on t
+building t takes 0.44495592s
+building trie on mc
+building mc takes 0.03282254s
+building trie on it
+building it takes 0.000017416s
+building trie on ct
+building ct takes 0.000004916s
+END SEMIJOIN
+semijoin takes 1.4014508
+output: Str("11,830,420")
+total takes 1.4014695
+running query 6a 
+Query: 6a
+Loading cast_info
+Loading n
+Loading t
+Loading movie_keyword
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000003875s
+building trie on t
+building t takes 0.081273206s
+building trie on k
+building k takes 0.000003416s
+building flat table on ci
+building ci takes 0.000024666s
+building trie on n
+building n takes 0.000003625s
+building trie on t
+building t takes 0.000004958s
+building trie on mk
+building mk takes 0.000003083s
+building flat table on mk
+building mk takes 0.000027916s
+building trie on t
+building t takes 0.0000065s
+building trie on k
+building k takes 0.00000375s
+END SEMIJOIN
+semijoin takes 6.4216647
+output: Str("marvel-cinematic-universe")Str("Downey Jr., Robert")Str("Iron Man 3")
+total takes 6.4216723
+running query 6b 
+Query: 6b
+Loading cast_info
+Loading t
+Loading n
+Loading movie_keyword
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000004375s
+building trie on t
+building t takes 0.000068666s
+building trie on k
+building k takes 0.000004583s
+building flat table on ci
+building ci takes 0.000019625s
+building trie on n
+building n takes 0.000004291s
+building trie on t
+building t takes 0.000009416s
+building trie on mk
+building mk takes 0.00000675s
+building flat table on mk
+building mk takes 0.000032s
+building trie on t
+building t takes 0.000007125s
+building trie on k
+building k takes 0.0000075s
+END SEMIJOIN
+semijoin takes 6.0895877
+output: Str("based-on-comic")Str("Downey Jr., Robert")Str("The Avengers 2")
+total takes 6.089599
+running query 6c 
+Query: 6c
+Loading cast_info
+Loading movie_keyword
+Loading t
+Loading k
+Loading n
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000003833s
+building trie on t
+building t takes 0.000071416s
+building trie on k
+building k takes 0.000003083s
+building flat table on ci
+building ci takes 0.00002025s
+building trie on n
+building n takes 0.000004166s
+building trie on t
+building t takes 0.0000035s
+building trie on mk
+building mk takes 0.000003458s
+building flat table on mk
+building mk takes 0.000034125s
+building trie on t
+building t takes 0.000004833s
+building trie on k
+building k takes 0.000003375s
+END SEMIJOIN
+semijoin takes 6.379429
+output: Str("marvel-cinematic-universe")Str("Downey Jr., Robert")Str("The Avengers 2")
+total takes 6.3794384
+running query 6d 
+Query: 6d
+Loading cast_info
+Loading movie_keyword
+Loading k
+Loading t
+Loading n
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000004166s
+building trie on t
+building t takes 0.3631459s
+building trie on k
+building k takes 0.000011166s
+building flat table on ci
+building ci takes 0.000023125s
+building trie on n
+building n takes 0.000004416s
+building trie on t
+building t takes 0.002021291s
+building trie on mk
+building mk takes 0.001528208s
+building flat table on mk
+building mk takes 0.000032875s
+building trie on t
+building t takes 0.000018916s
+building trie on k
+building k takes 0.001969958s
+END SEMIJOIN
+semijoin takes 7.3689957
+output: Str("based-on-comic")Str("Downey Jr., Robert")Str("2008 MTV Movie Awards")
+total takes 7.3701286
+running query 6e 
+Query: 6e
+Loading cast_info
+Loading n
+Loading movie_keyword
+Loading k
+Loading t
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000004958s
+building trie on t
+building t takes 0.3573433s
+building trie on k
+building k takes 0.000010083s
+building flat table on ci
+building ci takes 0.000026708s
+building trie on n
+building n takes 0.000004166s
+building trie on t
+building t takes 0.000006416s
+building trie on mk
+building mk takes 0.000004333s
+building flat table on mk
+building mk takes 0.00003275s
+building trie on t
+building t takes 0.000005916s
+building trie on k
+building k takes 0.000009041s
+END SEMIJOIN
+semijoin takes 7.405411
+output: Str("marvel-cinematic-universe")Str("Downey Jr., Robert")Str("Iron Man 3")
+total takes 7.4054236
+running query 6f 
+Query: 6f
+Loading cast_info
+Loading t
+Loading name
+Loading movie_keyword
+Loading k
+START SEMIJOIN
+building flat table on mk
+building mk takes 0.000006791s
+building trie on t
+building t takes 0.37333393s
+building trie on k
+building k takes 0.000007375s
+building flat table on ci
+building ci takes 0.000023208s
+building trie on n
+building n takes 1.2181132s
+building trie on t
+building t takes 0.002649625s
+building trie on mk
+building mk takes 0.001596541s
+building flat table on mk
+building mk takes 0.000029375s
+building trie on t
+building t takes 0.119028285s
+building trie on k
+building k takes 0.001573s

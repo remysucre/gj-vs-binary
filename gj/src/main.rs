@@ -17,13 +17,13 @@ fn main() {
         let plan = to_gj_plan(&plan_tree);
         let payload = get_payload(&plan_tree);
 
-        println!("payload {:#?}", payload);
-        println!("plan {:#?}", plan);
+        // println!("payload {:#?}", payload);
+        // println!("plan {:#?}", plan);
 
         let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
-        println!("compiled plan {:#?} ", compiled_plan);
-        println!("compiled payload {:#?} ", compiled_payload);
+        // println!("compiled plan {:#?} ", compiled_plan);
+        // println!("compiled payload {:#?} ", compiled_payload);
 
         let mut db = load_db(q, &scan);
 
@@ -33,21 +33,24 @@ fn main() {
 
         println!("semijoin takes {:?}", time.elapsed().as_secs_f32());
 
-        let tables = build_tables(&db, &plan);
-        let mut result = vec![];
+        aggr(&db, &payload);
 
-        let start = Instant::now();
+        // let tables = build_tables(&db, &plan);
+        // let mut result = vec![];
 
-        join(
-            &tables.iter().collect::<Vec<_>>(),
-            &compiled_plan,
-            &compiled_payload,
-            &mut |t| aggregate_min(&mut result, t),
-        );
+        // let start = Instant::now();
 
-        println!("join takes {:?}", start.elapsed());
+        // join(
+        //     &tables.iter().collect::<Vec<_>>(),
+        //     &compiled_plan,
+        //     &compiled_payload,
+        //     &mut |t| aggregate_min(&mut result, t),
+        // );
+
+        // println!("output {:?}", result);
+        // println!("join takes {:?}", start.elapsed());
+        
         println!("total takes {:?}", time.elapsed().as_secs_f32());
-        println!("output {:?}", result);
     }
 }
 
@@ -58,7 +61,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
 
     // let queries = vec![("32b", "IMDBQ110")];
 
-    // /*
+    let queries = vec![("6f", "IMDBQ023")];
+    
+    /*
     let mut queries = vec![];
 
     if linear {
