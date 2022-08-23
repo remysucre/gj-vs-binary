@@ -177,9 +177,9 @@ fn semijoin_inner(relations: &mut [Rel<Value>], plan: &[Vec<usize>]) {
                 }
 
                 semijoin_inner(&mut rels, &plan[1..]);
-                relations[j_min].ids.pop();
+                rels[j_min].ids.pop();
                 for (j, _) in &tries {
-                    relations[*j].ids.pop();
+                    rels[*j].ids.pop();
                 }
             }
         }
@@ -189,6 +189,7 @@ fn semijoin_inner(relations: &mut [Rel<Value>], plan: &[Vec<usize>]) {
 }
 
 fn reduce(relations: &mut [Rel<Value>]) {
+    // println!("reduce");
     for relation in relations {
         for (i, id) in relation.ids.iter().enumerate() {
             // TODO only materialize needed columns

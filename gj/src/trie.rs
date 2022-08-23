@@ -119,14 +119,14 @@ impl<T> Trie<T> {
 
     pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
         let mut trie = self;
-        for id in ids {
+        for id in &ids[..ids.len() - 1] {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();
         }
 
+        trie = trie.get_map_mut().unwrap().entry(ids[ids.len() - 1]).or_insert_with(|| Trie::Data(vec![]));
+
         if !data.is_empty() {
-            *trie = Trie::Data(vec![data]);
-        } else {
-            *trie = Trie::Data(vec![]);
+            trie.get_data_mut().unwrap().push(data);
         }
     }
 }

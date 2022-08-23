@@ -31,6 +31,9 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp) {
         let plan = to_semijoin_plan(node);
         let tables = build_tables(db, &plan);
         println!("{:#?}", plan);
+        for t in &tables {
+            println!("{:#?}", t.schema);
+        }
 
         let mut t_with_new_rels: Vec<_> = tables
             .into_iter()
@@ -48,6 +51,7 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp) {
             .collect();
 
         let compiled_plan = compile_plan(&plan, &[]).0;
+        println!("COMPILED {:#?}", compiled_plan);
 
         semijoin(&mut tabs, &compiled_plan);
 
@@ -63,6 +67,8 @@ pub fn semijoin_reduce(db: &mut DB, root: &TreeOp) {
             .collect();
 
         for (mut rel, t_name) in rel_names {
+            println!("TNAME {}", t_name);
+            println!("{:#?}", rel.keys());
             let t = db.get_mut(&t_name).unwrap();
             std::mem::swap(t, &mut rel);
             // new_rels.leak();
@@ -255,7 +261,9 @@ pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table
             if !db.contains_key(table_name) {
                 table_name = find_shared(table_name);
             }
+            println!("TABLE {}", table_name);
 
+            println!("Attribute {}", &a.attr_name);
             id_cols
                 .entry(trie_name)
                 .or_insert(IndexMap::new())

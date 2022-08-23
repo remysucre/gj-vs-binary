@@ -17,13 +17,13 @@ fn main() {
         let plan = to_gj_plan(&plan_tree);
         let payload = get_payload(&plan_tree);
 
-        // println!("payload {:#?}", payload);
-        // println!("plan {:#?}", plan);
+        println!("payload {:#?}", payload);
+        println!("plan {:#?}", plan);
 
         let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
-        // println!("compiled plan {:#?} ", compiled_plan);
-        // println!("compiled payload {:#?} ", compiled_payload);
+        println!("compiled plan {:#?} ", compiled_plan);
+        println!("compiled payload {:#?} ", compiled_payload);
         
         let mut db = load_db(q, &scan);
         
@@ -32,6 +32,8 @@ fn main() {
         semijoin_reduce(&mut db, &plan_tree);
 
         println!("semijoin takes {:?}", time.elapsed().as_secs_f32());
+
+        // println!("{:#?}", db.get("movie_info").unwrap());
 
         let tables = build_tables(&db, &plan);
         let mut result = vec![];
@@ -56,32 +58,36 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     let bushy = true;
     let linear = true;
 
-    let mut queries = vec![];
+    let mut queries = vec![
+        // ("6b", "IMDBQ019"),
+        ("18a", "IMDBQ066"),
+    ];
+    // let mut queries = vec![];
 
     // if linear {
     //     queries.extend_from_slice(&[
-    //         ("1a", "IMDBQ001"),
-    //         ("1b", "IMDBQ002"),
-    //         ("1c", "IMDBQ003"),
-    //         ("1d", "IMDBQ004"),
-    //         ("2a", "IMDBQ005"),
-    //         ("2b", "IMDBQ006"),
-    //         ("2c", "IMDBQ007"), // EMPTY
-    //         ("2d", "IMDBQ008"),
-    //         ("3a", "IMDBQ009"),
-    //         ("3b", "IMDBQ010"),
-    //         ("3c", "IMDBQ011"),
-    //         ("4a", "IMDBQ012"),
-    //         ("4b", "IMDBQ013"),
-    //         ("4c", "IMDBQ014"),
-    //         // EMPTY input ("5a", "IMDBQ015"),
-    //         // EMPTY input ("5b", "IMDBQ016"),
-    //         ("5c", "IMDBQ017"),
+            // ("1a", "IMDBQ001"),
+            // ("1b", "IMDBQ002"),
+            // ("1c", "IMDBQ003"),
+            // ("1d", "IMDBQ004"),
+            // ("2a", "IMDBQ005"),
+            // ("2b", "IMDBQ006"),
+            // // ("2c", "IMDBQ007"), // EMPTY
+            // ("2d", "IMDBQ008"),
+            // ("3a", "IMDBQ009"),
+            // ("3b", "IMDBQ010"),
+            // ("3c", "IMDBQ011"),
+            // ("4a", "IMDBQ012"),
+            // ("4b", "IMDBQ013"),
+            // ("4c", "IMDBQ014"),
+            // // EMPTY input ("5a", "IMDBQ015"),
+            // // EMPTY input ("5b", "IMDBQ016"),
+            // ("5c", "IMDBQ017"),
     //     ])
     // }
 
-    if bushy {
-        queries.extend_from_slice(&[
+    // if bushy {
+    //     queries.extend_from_slice(&[
             // ("6a", "IMDBQ018"),
             // ("6b", "IMDBQ019"),
             // ("6c", "IMDBQ020"),
@@ -90,7 +96,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             // ("6f", "IMDBQ023"),
             // ("7a", "IMDBQ024"),
             // ("7b", "IMDBQ025"),
-            ("7c", "IMDBQ026"), 
+            // ("7c", "IMDBQ026"), 
             // ("8a", "IMDBQ027"),
             // ("8b", "IMDBQ028"),
             // ("8c", "IMDBQ029"), // SLOW
@@ -100,10 +106,10 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             // ("9c", "IMDBQ033"),
             // ("9d", "IMDBQ034"), // SLOW
             // ("10a", "IMDBQ035"),
-            // ("10b", "IMDBQ036"), // EMPTY
-            // ("10c", "IMDBQ037"),
-        ])
-    }
+            // // ("10b", "IMDBQ036"), // EMPTY
+    //         ("10c", "IMDBQ037"),
+    //     ])
+    // }
 
     // if linear {
     //     queries.extend_from_slice(&[
@@ -128,30 +134,30 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     //     ])
     // }
 
-    if bushy {
-        queries.extend_from_slice(&[
-            // ("16a", "IMDBQ056"), 
-            // ("16b", "IMDBQ057"), 
-            // ("16c", "IMDBQ058"), 
-            // ("16d", "IMDBQ059"), 
-            // ("17a", "IMDBQ060"), 
-            // ("17b", "IMDBQ061"), 
-            // ("17c", "IMDBQ062"), 
-            // ("17d", "IMDBQ063"), 
-            // ("17e", "IMDBQ064"), 
-            // ("17f", "IMDBQ065"), 
-            // ("18a", "IMDBQ066"),
-            // ("18b", "IMDBQ067"),
-            // ("18c", "IMDBQ068"),
-            // ("19a", "IMDBQ069"),
-            // ("19b", "IMDBQ070"),
-            // ("19c", "IMDBQ071"),
-            // ("19d", "IMDBQ072"),
-            // ("20a", "IMDBQ073"),
-            // ("20b", "IMDBQ074"),
-            // ("20c", "IMDBQ075"),
-        ])
-    }
+    // if bushy {
+    //     queries.extend_from_slice(&[
+    //         ("16a", "IMDBQ056"), 
+    //         ("16b", "IMDBQ057"), 
+    //         ("16c", "IMDBQ058"), 
+    //         ("16d", "IMDBQ059"), 
+    //         ("17a", "IMDBQ060"), 
+    //         ("17b", "IMDBQ061"), 
+    //         ("17c", "IMDBQ062"), 
+    //         ("17d", "IMDBQ063"), 
+    //         ("17e", "IMDBQ064"), 
+    //         ("17f", "IMDBQ065"), 
+    //         ("18a", "IMDBQ066"),
+    //         ("18b", "IMDBQ067"),
+    //         ("18c", "IMDBQ068"),
+    //         ("19a", "IMDBQ069"),
+    //         ("19b", "IMDBQ070"),
+    //         ("19c", "IMDBQ071"),
+    //         ("19d", "IMDBQ072"),
+    //         ("20a", "IMDBQ073"),
+    //         ("20b", "IMDBQ074"),
+    //         ("20c", "IMDBQ075"),
+    //     ])
+    // }
 
     // if linear {
     //     queries.extend_from_slice(&[

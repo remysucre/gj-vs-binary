@@ -273,8 +273,8 @@ pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
     };
 
     // traverse_left(root, &mut get_plan);
-    traverse_lr(root, &mut get_plan);
-    // inorder_traverse(root, &mut get_plan);
+    // traverse_lr(root, &mut get_plan);
+    inorder_traverse(root, &mut get_plan);
 
     plan
 }
@@ -368,5 +368,6 @@ pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
         }
     };
     traverse_lrm(root, &mut collect_reduce, true);
+    // traverse_lrm(root, &mut collect_reduce, false);
     reduce
 }
