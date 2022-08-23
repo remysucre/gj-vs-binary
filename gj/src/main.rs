@@ -27,16 +27,6 @@ fn main() {
         
         let mut db = load_db(q, &scan);
 
-        for t in db.values() {
-            let mut count = 0;
-            for c in t.values() {
-                if count == 0 {
-                    count = c.len();
-                }
-                assert_eq!(count, c.len());
-            }
-        }
-        
         let time = Instant::now();
 
         semijoin_reduce(&mut db, &plan_tree);
