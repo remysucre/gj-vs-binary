@@ -53,12 +53,12 @@ fn main() {
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    let bushy = false;
+    let bushy = true;
     let linear = true;
 
-    let queries = vec![("32b", "IMDBQ110")];
+    // let queries = vec![("32b", "IMDBQ110")];
 
-    /*
+    // /*
     let mut queries = vec![];
 
     if linear {
@@ -175,9 +175,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("23c", "IMDBQ085"), // SLOW
             ("24a", "IMDBQ086"),
             ("24b", "IMDBQ087"),
-            ("25a", "IMDBQ088"), // error
-            ("25b", "IMDBQ089"), // error
-            ("25c", "IMDBQ090"), // error
+            ("25a", "IMDBQ088"),
+            ("25b", "IMDBQ089"),
+            ("25c", "IMDBQ090"), // SJ SLOW
             ("26a", "IMDBQ091"),
             ("26b", "IMDBQ092"),
             ("26c", "IMDBQ093"),
@@ -193,9 +193,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("30a", "IMDBQ103"),
             ("30b", "IMDBQ104"),
             ("30c", "IMDBQ105"),
-            ("31a", "IMDBQ106"),
-            ("31b", "IMDBQ107"),
-            ("31c", "IMDBQ108"),
+            ("31a", "IMDBQ106"), // SJ SLOW
+            ("31b", "IMDBQ107"), // SJ SLOW
+            ("31c", "IMDBQ108"), // SJ SLOW
         ])
     }
 
