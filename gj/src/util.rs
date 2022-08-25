@@ -14,13 +14,13 @@ use std::fs::File;
 use std::sync::Arc;
 
 use crate::{
-    join::semijoin,
-    trie::{Table, Tb},
+    join::{semijoin, sj},
+    trie::{Table, Tb, insert},
 };
 use crate::{
     join::Tab,
     sql::*,
-    trie::{Trie, Value},
+    trie::{FlatRelation, Trie, Value},
     *,
 };
 
@@ -80,13 +80,18 @@ pub fn aggr(db: &DB, payload: &[&Attribute]) {
         }
 
         let col = db.get(t_name).unwrap().get(&a.attr_name).unwrap();
-        print!("{:?}", col.iter().min_by(|x, y| {
-            match (x, y) {
-                (Value::Num(x), Value::Num(y)) => x.cmp(y),
-                (Value::Str(x), Value::Str(y)) => x.cmp(y),
-                _ => panic!("unsupported type"),
-            }
-        }).unwrap());
+        print!(
+            "{:?}",
+            col.iter()
+                .min_by(|x, y| {
+                    match (x, y) {
+                        (Value::Num(x), Value::Num(y)) => x.cmp(y),
+                        (Value::Str(x), Value::Str(y)) => x.cmp(y),
+                        _ => panic!("unsupported type"),
+                    }
+                })
+                .unwrap()
+        );
     }
     println!();
 }
@@ -275,6 +280,118 @@ fn find_shared(table_name: &str) -> &str {
         "t" => "title",
         _ => panic!("unsupported table {}", table_name),
     }
+}
+
+pub fn sj_reduce<'a>(db: &'a DB, plan: &'a [Vec<&Attribute>], payload: &[&Attribute]) {
+    let mut relations = build_rels(db, plan);
+    let shuffles: Vec<_> = relations.iter().map(|t| {
+        std::iter::repeat(0).take(t.len()).collect::<Vec<usize>>()
+    }).collect();
+    let shuffle_slices = shuffles.iter().map(|s| s.as_slice()).collect::<Vec<_>>();
+    let (compiled_plan, compiled_payload) = compile_plan(plan, payload);
+
+    println!("Compiled plan: {:?}", compiled_plan);
+    
+    for r in &relations {
+        println!("BEFORE");
+        println!("{:?}", r.len());
+    }
+    
+    let mut rel_refs: Vec<_> = relations.iter_mut().collect();
+    sj(&mut rel_refs, &compiled_plan, &shuffle_slices);
+
+    for r in &relations {
+        println!("AFTER");
+        println!("{:?}", r.len());
+    }
+
+    let mut result: Vec<Vec<&'a Value>> = relations.iter().map(|_| vec![]).collect::<Vec<_>>();
+
+    for i in compiled_payload {
+        for (_ids, vals) in &relations[i] {
+            if result[i].is_empty() {
+                result[i] = vals.to_vec();
+            } else {
+                for (idx, val) in vals.iter().enumerate() {
+                    if result[i][idx] > val {
+                        result[i][idx] = val;
+                    }
+                }
+            }
+        }
+    }
+    println!("{:?}", result);
+}
+
+pub fn build_rels<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<FlatRelation<'a>> {
+    let mut tables = Vec::new();
+    let mut id_cols = IndexMap::new();
+    let mut data_cols = IndexMap::new();
+
+    for node in plan {
+        for a in node {
+            let trie_name = a.table_name.as_str();
+            let mut table_name = a.table_name.as_str();
+
+            if !db.contains_key(table_name) {
+                table_name = find_shared(table_name);
+            }
+            id_cols
+                .entry(trie_name)
+                .or_insert(IndexMap::new())
+                .insert(&a.attr_name, &db.get(table_name).unwrap()[&a.attr_name]);
+        }
+    }
+
+    for (&trie_name, cols) in &id_cols {
+        let mut table_name = trie_name;
+
+        if !db.contains_key(table_name) {
+            table_name = find_shared(table_name);
+        }
+
+        for (attr, data_col) in &db[table_name] {
+            if !cols.contains_key(attr) {
+                data_cols
+                    .entry(trie_name)
+                    .or_insert(IndexMap::new())
+                    .insert(attr, data_col);
+            }
+        }
+    }
+
+    for (table_name, cols) in &id_cols {
+        let start = Instant::now();
+        println!("building FlatRelation on {}", table_name);
+
+        let mut rel = FlatRelation::new();
+
+        for i in 0..cols[0].len() {
+            let mut ids = Vec::new();
+            let mut data = Vec::new();
+
+            for (_col_name, col) in cols {
+                ids.push(col[i].as_num());
+            }
+
+            if let Some(cols) = data_cols.get(table_name) {
+                for (_col_name, col) in cols {
+                    data.push(&col[i]);
+                }
+            }
+
+            insert(&mut rel, &ids, &data);
+        }
+
+        tables.push(rel);
+
+        println!(
+            "building {} takes {}s",
+            table_name,
+            start.elapsed().as_secs_f32()
+        );
+    }
+    tables
 }
 
 pub fn build_tables<'a>(db: &'a DB, plan: &'a [Vec<&'a Attribute>]) -> Vec<Table<'a, Value>> {

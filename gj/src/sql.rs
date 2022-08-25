@@ -65,15 +65,15 @@ pub struct TreeOp {
 //     }
 // }
 
-// fn postorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
-// where
-//     T: FnMut(&mut TreeOp),
-// {
-//     for child_node in node.children.iter_mut() {
-//         postorder_traverse_mut(child_node, func);
-//     }
-//     func(node);
-// }
+fn postorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
+where
+    T: FnMut(&'a TreeOp),
+{
+    for child_node in node.children.iter() {
+        postorder_traverse(child_node, func);
+    }
+    func(node);
+}
 
 fn inorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
 where
@@ -274,7 +274,8 @@ pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
 
     // traverse_left(root, &mut get_plan);
     // traverse_lr(root, &mut get_plan);
-    inorder_traverse(root, &mut get_plan);
+    // inorder_traverse(root, &mut get_plan);
+    postorder_traverse(root, &mut get_plan);
 
     plan
 }

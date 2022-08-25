@@ -16,53 +16,57 @@ fn main() {
         let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", id)).unwrap();
         let plan = to_gj_plan(&plan_tree);
         let payload = get_payload(&plan_tree);
-
-        // println!("payload {:#?}", payload);
-        // println!("plan {:#?}", plan);
-
-        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-
+        
+        println!("payload {:#?}", payload);
+        println!("plan {:#?}", plan);
+        
+        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
+        
         // println!("compiled plan {:#?} ", compiled_plan);
         // println!("compiled payload {:#?} ", compiled_payload);
-
+        
         let mut db = load_db(q, &scan);
 
-        let time = Instant::now();
+        {
+            sj_reduce(&db, &plan, &payload);
+        }
 
-        semijoin_reduce(&mut db, &plan_tree);
+        // let time = Instant::now();
 
-        println!("semijoin takes {:?}", time.elapsed().as_secs_f32());
+        // semijoin_reduce(&mut db, &plan_tree);
 
-        aggr(&db, &payload);
+        // println!("semijoin takes {:?}", time.elapsed().as_secs_f32());
 
-        // let tables = build_tables(&db, &plan);
-        // let mut result = vec![];
+        // aggr(&db, &payload);
 
-        // let start = Instant::now();
+        // // let tables = build_tables(&db, &plan);
+        // // let mut result = vec![];
 
-        // join(
-        //     &tables.iter().collect::<Vec<_>>(),
-        //     &compiled_plan,
-        //     &compiled_payload,
-        //     &mut |t| aggregate_min(&mut result, t),
-        // );
+        // // let start = Instant::now();
 
-        // println!("output {:?}", result);
-        // println!("join takes {:?}", start.elapsed());
-        
-        println!("total takes {:?}", time.elapsed().as_secs_f32());
+        // // join(
+        // //     &tables.iter().collect::<Vec<_>>(),
+        // //     &compiled_plan,
+        // //     &compiled_payload,
+        // //     &mut |t| aggregate_min(&mut result, t),
+        // // );
+
+        // // println!("output {:?}", result);
+        // // println!("join takes {:?}", start.elapsed());
+
+        // println!("total takes {:?}", time.elapsed().as_secs_f32());
     }
 }
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    let bushy = true;
+    let bushy = false;
     let linear = true;
 
     // let queries = vec![("32b", "IMDBQ110")];
 
-    let queries = vec![("6f", "IMDBQ023")];
-    
+    let queries = vec![("1a", "IMDBQ001")];
+
     /*
     let mut queries = vec![];
 

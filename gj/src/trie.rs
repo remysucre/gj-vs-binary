@@ -2,6 +2,19 @@ use rustc_hash::FxHashMap as HashMap;
 use std::fmt;
 use std::fmt::{Debug, Display};
 
+pub type FlatRelation<'a> = Vec<(Vec<i32>, Vec<&'a Value>)>;
+
+pub fn insert<'a>(rel: &mut FlatRelation<'a>, id: &[i32], data: &[&'a Value]) {
+    rel.push((id.to_vec(), data.to_vec()));
+}
+
+pub struct FlatTable<'a> {
+    pub table_name: &'a str,
+    pub id_schema: Vec<&'a str>,
+    pub data_schema: Vec<&'a str>,
+    pub relation: FlatRelation<'a>,
+}
+
 type Id = i32;
 
 // static VEC_CAPACITY: usize = 1;

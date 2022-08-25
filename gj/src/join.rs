@@ -1,6 +1,9 @@
+use indexmap::set::Intersection;
+use rustc_hash::{FxHashMap, FxHashSet};
+
 use crate::{trie::*, Relation};
 
-use std::fmt::Debug;
+use std::{fmt::Debug, iter::Filter};
 
 fn select<'a, T, F>(relations: &[&'a Trie<T>], f: &mut F, tuple: &mut Vec<&'a [T]>)
 where
@@ -94,6 +97,81 @@ pub struct Tab<'a, T> {
     pub table: &'a Table<'a, T>,
     pub rel: &'a mut Relation,
     pub ids: &'a mut Vec<i32>,
+}
+
+pub fn sj(relations: &mut [&mut FlatRelation], plan: &[Vec<usize>], shuffles: &[&[usize]]) -> bool {
+    if plan.is_empty() {
+        true
+    } else {
+        let js = &plan[0];
+
+        let mut maps: Vec<_> = js
+            .iter()
+            .map(|&j| {
+                let mut map = FxHashMap::default();
+                for (ids, data) in relations[j].iter() {
+                    map.entry(ids[0])
+                        .or_insert(vec![])
+                        .push((ids[1..].to_vec(), data.to_vec()));
+                }
+                map
+            })
+            .collect();
+
+        let map_min = maps.iter().min_by_key(|m| m.keys().len()).unwrap();
+
+        // TODO just iterate over map_min.keys()
+        let intersection: FxHashSet<_> = map_min
+            .keys()
+            .copied()
+            .filter(|id| maps.iter().all(|m| m.contains_key(id)))
+            .collect();
+
+            
+        let mut success = false;
+        
+        let mut inter = FxHashSet::default();
+        
+        for id in intersection {
+            let mut rels: Vec<_> = relations.iter_mut().map(|r| &mut (**r)).collect();
+            for (j, map) in js.iter().zip(maps.iter_mut()) {
+                rels[*j] = map.get_mut(&id).unwrap();
+            }
+            
+            let mut new_shuffles = shuffles.to_vec();
+            
+            for j in js {
+                new_shuffles[*j] = &shuffles[*j][1..];
+            }
+            
+            let keep = sj(&mut rels, &plan[1..], &new_shuffles[..]);
+            if keep {
+                // println!("KEEPING");
+                success = true;
+                inter.insert(id);
+            }
+        }
+
+        // println!("INTER SIZE {:?}", inter.len());
+            
+        for map in &mut maps {
+            map.retain(|id, _| inter.contains(id));
+        }
+
+        for (j, map) in js.iter().zip(maps.iter()) {
+            let rel = &mut relations[*j];
+            **rel = vec![];
+            for (id, r) in map.iter() {
+                for (ids, data) in r {
+                    let mut new_ids = ids.to_vec();
+                    new_ids.insert(shuffles[*j][0], *id);
+                    rel.push((new_ids, data.to_vec()));
+                }
+            }
+        }
+
+        success
+    }
 }
 
 pub fn semijoin(relations: &mut [Tab<Value>], plan: &[Vec<usize>]) {
