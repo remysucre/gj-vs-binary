@@ -11,15 +11,17 @@ fn main() {
         println!("running query {} ", q);
 
         let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
-        let scan = get_scans(&scan_tree);
-
         let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", id)).unwrap();
+
+        let scan = get_scans(&scan_tree);
+        let db = load_db(q, &scan);
+
+        // let intermediate_idx = unimplemented!();
+
         let plan = to_gj_plan(&plan_tree);
         let payload = get_payload(&plan_tree);
         
-        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-        
-        let db = load_db(q, &scan);
+        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);        
 
         let time = Instant::now();
 

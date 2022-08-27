@@ -65,9 +65,7 @@ pub struct TreeOp {
 //     }
 // }
 
-fn postorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
-where
-    T: FnMut(&'a TreeOp),
+fn postorder_traverse<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp),)
 {
     for child_node in node.children.iter() {
         postorder_traverse(child_node, func);
@@ -250,18 +248,29 @@ pub fn get_payload<'a>(root: &'a TreeOp) -> Vec<&'a Attribute> {
     payload
 }
 
-pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
+pub fn to_gj_plan(root: &TreeOp) -> Vec<Vec<&Attribute>> {
+    to_plan(root, postorder_traverse)
+}
+
+pub fn to_left_deep_plan(root: &TreeOp) -> Vec<Vec<&Attribute>> {
+    to_plan(root, traverse_left)
+}
+
+fn to_plan<'a, F>(root: &'a TreeOp, mut traverse: F) -> Vec<Vec<&'a Attribute>> 
+where
+    F: FnMut(&'a TreeOp, &mut dyn FnMut(&'a TreeOp)),
+{
     let mut plan: Vec<Vec<&'a Attribute>> = vec![];
 
-    let mut get_plan = |node: &'a TreeOp| {
+    let mut collect_plan = |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {
                 let lattr = &equalizer.left_attr;
                 let rattr = &equalizer.right_attr;
-
+    
                 let lpos_opt = plan.iter().position(|x| x.contains(&lattr));
                 let rpos_opt = plan.iter().position(|x| x.contains(&rattr));
-
+    
                 match (lpos_opt, rpos_opt) {
                     (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
                     (Some(lpos), None) => plan[lpos].push(rattr),
@@ -272,10 +281,7 @@ pub fn to_gj_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
         }
     };
 
-    // traverse_left(root, &mut get_plan);
-    // traverse_lr(root, &mut get_plan);
-    // inorder_traverse(root, &mut get_plan);
-    postorder_traverse(root, &mut get_plan);
+    traverse(root, &mut collect_plan);
 
     plan
 }
@@ -331,9 +337,7 @@ pub fn to_semijoin_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
     plan
 }
 
-fn traverse_left<'a, T>(node: &'a TreeOp, func: &mut T)
-where
-    T: FnMut(&'a TreeOp),
+fn traverse_left<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp))
 {
     if !node.children.is_empty() {
         traverse_left(&node.children[0], func);
@@ -359,16 +363,15 @@ where
     func(node, is_right_child);
 }
 
-pub fn to_reduce<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
-    let mut reduce = vec![];
+pub fn to_materialize<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
+    let mut nodes = vec![];
     let mut collect_reduce = |node: &'a TreeOp, is_right_child: bool| {
         if let Some(NodeAttr::Join(_attr)) = &node.attr {
             if is_right_child {
-                reduce.push(node);
+                nodes.push(node);
             }
         }
     };
-    traverse_lrm(root, &mut collect_reduce, true);
-    // traverse_lrm(root, &mut collect_reduce, false);
-    reduce
+    traverse_lrm(root, &mut collect_reduce, false);
+    nodes
 }

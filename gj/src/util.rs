@@ -99,13 +99,13 @@ pub fn aggr(db: &DB, payload: &[&Attribute]) {
 pub fn semijoin_reduce(db: &mut DB, root: &TreeOp) {
     println!("START SEMIJOIN");
 
-    for node in to_reduce(root) {
+    for node in to_materialize(root) {
         sjr(db, node);
     }
 
     println!("FIRST SEMIJOIN DONE");
 
-    for node in to_reduce(root).iter().rev().skip(1) {
+    for node in to_materialize(root).iter().rev().skip(1) {
         sjr(db, node);
     }
     println!("END SEMIJOIN");
