@@ -1,9 +1,8 @@
-use indexmap::set::Intersection;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use crate::{trie::*, Relation};
 
-use std::{fmt::Debug, iter::Filter};
+use std::fmt::Debug;
 
 fn select<'a, T, F>(relations: &[&'a Trie<T>], f: &mut F, tuple: &mut Vec<&'a [T]>)
 where

@@ -17,44 +17,28 @@ fn main() {
         let plan = to_gj_plan(&plan_tree);
         let payload = get_payload(&plan_tree);
         
-        println!("payload {:#?}", payload);
-        println!("plan {:#?}", plan);
+        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
         
-        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-        
-        // println!("compiled plan {:#?} ", compiled_plan);
-        // println!("compiled payload {:#?} ", compiled_payload);
-        
-        let mut db = load_db(q, &scan);
+        let db = load_db(q, &scan);
 
-        {
-            sj_reduce(&db, &plan, &payload);
-        }
+        let time = Instant::now();
 
-        // let time = Instant::now();
+        let tables = build_tables(&db, &plan);
+        let mut result = vec![];
 
-        // semijoin_reduce(&mut db, &plan_tree);
+        let start = Instant::now();
 
-        // println!("semijoin takes {:?}", time.elapsed().as_secs_f32());
+        join(
+            &tables.iter().collect::<Vec<_>>(),
+            &compiled_plan,
+            &compiled_payload,
+            &mut |t| aggregate_min(&mut result, t),
+        );
 
-        // aggr(&db, &payload);
+        println!("output {:?}", result);
+        println!("join takes {:?}", start.elapsed());
 
-        // // let tables = build_tables(&db, &plan);
-        // // let mut result = vec![];
-
-        // // let start = Instant::now();
-
-        // // join(
-        // //     &tables.iter().collect::<Vec<_>>(),
-        // //     &compiled_plan,
-        // //     &compiled_payload,
-        // //     &mut |t| aggregate_min(&mut result, t),
-        // // );
-
-        // // println!("output {:?}", result);
-        // // println!("join takes {:?}", start.elapsed());
-
-        // println!("total takes {:?}", time.elapsed().as_secs_f32());
+        println!("total takes {:?}", time.elapsed().as_secs_f32());
     }
 }
 
@@ -63,11 +47,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     let bushy = false;
     let linear = true;
 
-    // let queries = vec![("32b", "IMDBQ110")];
+    // let queries = vec![("1a", "IMDBQ001")];
 
-    let queries = vec![("1a", "IMDBQ001")];
-
-    /*
+    // /*
     let mut queries = vec![];
 
     if linear {
