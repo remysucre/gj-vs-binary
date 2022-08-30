@@ -1,4 +1,4 @@
-use std::{error::Error, fs, path};
+use std::{error::Error, fs, path, collections::{HashMap, HashSet}};
 
 use serde::{Deserialize, Serialize};
 
@@ -345,17 +345,17 @@ fn traverse_left<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp))
     func(node);
 }
 
-fn traverse_lrm<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
+fn traverse_rlm<'a, T>(node: &'a TreeOp, func: &mut T, is_right_child: bool)
 where
     T: FnMut(&'a TreeOp, bool),
 {
     match node.children.len() {
-        1 => traverse_lrm(&node.children[0], func, is_right_child),
+        1 => traverse_rlm(&node.children[0], func, is_right_child),
         x if x > 1 => {
-            traverse_lrm(&node.children[0], func, false);
             for child_node in &node.children[1..] {
-                traverse_lrm(child_node, func, true);
+                traverse_rlm(child_node, func, true);
             }
+            traverse_rlm(&node.children[0], func, false);
         }
         _ => {}
     }
@@ -372,6 +372,49 @@ pub fn to_materialize<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
             }
         }
     };
-    traverse_lrm(root, &mut collect_reduce, false);
+    traverse_rlm(root, &mut collect_reduce, false);
     nodes
+}
+
+pub fn intermediate_idx<'a>(root: &'a TreeOp) -> HashMap<&'a str, usize> {
+    let mut idx = 0;
+    let mut tables = HashSet::new();
+    let mut table_idx = HashMap::new();
+
+    let mut collect_tables = |node: &'a TreeOp, is_right_child: bool| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
+                tables.insert(lattr.table_name.as_str());
+                tables.insert(rattr.table_name.as_str());
+            }
+        }
+
+        if is_right_child {
+            for t in &tables {
+                table_idx.insert(*t, idx);
+            }
+            idx += 1;
+        }
+    };
+
+    traverse_rlm(root, &mut collect_tables, false);
+
+    table_idx
+}
+
+pub fn update_materialize_map<'a>(root: &'a TreeOp, map: &mut HashMap<&'a str, &'a TreeOp>) {
+
+    let mut collect_reduce = |node: &'a TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            for equalizer in &attr.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
+                map.insert(lattr.table_name.as_str(), root);
+                map.insert(rattr.table_name.as_str(), root);
+            }
+        }
+    };
+    inorder_traverse(root, &mut collect_reduce);
 }

@@ -2,22 +2,9 @@ use rustc_hash::FxHashMap as HashMap;
 use std::fmt;
 use std::fmt::{Debug, Display};
 
-pub type FlatRelation<'a> = Vec<(Vec<i32>, Vec<&'a Value>)>;
-
-pub fn insert<'a>(rel: &mut FlatRelation<'a>, id: &[i32], data: &[&'a Value]) {
-    rel.push((id.to_vec(), data.to_vec()));
-}
-
-pub struct FlatTable<'a> {
-    pub table_name: &'a str,
-    pub id_schema: Vec<&'a str>,
-    pub data_schema: Vec<&'a str>,
-    pub relation: FlatRelation<'a>,
-}
+use crate::sql::Attribute;
 
 type Id = i32;
-
-// static VEC_CAPACITY: usize = 1;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Value {
@@ -40,10 +27,10 @@ pub enum Trie<T> {
     Data(Vec<Vec<T>>),
 }
 
-pub type Schema<'a> = (&'a str, Vec<&'a str>);
+pub type Schema = Vec<Attribute>;
 
 pub struct Table<'a, T> {
-    pub schema: Schema<'a>,
+    pub schema: Schema,
     pub data: Tb<'a, T>,
 }
 

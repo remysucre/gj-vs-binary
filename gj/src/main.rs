@@ -1,9 +1,9 @@
-use std::time::Instant;
+use std::{time::Instant, collections::{HashMap, HashSet}};
 
 use gj::{
     join::*,
-    sql::{get_join_tree, get_payload, get_scans, to_gj_plan},
-    util::*,
+    sql::{get_join_tree, get_payload, get_scans, to_gj_plan, to_materialize, to_left_deep_plan, intermediate_idx, update_materialize_map, Attribute},
+    util::*, trie::Value,
 };
 
 fn main() {
@@ -15,32 +15,59 @@ fn main() {
 
         let scan = get_scans(&scan_tree);
         let db = load_db(q, &scan);
+        let mut views: HashMap<_, HashMap<Attribute, Vec<Value>>> = HashMap::new();
+        let mut in_view = HashMap::new();
 
-        // let intermediate_idx = unimplemented!();
+        for node in &to_materialize(&plan_tree) {
+            let plan = to_left_deep_plan(node);
+            let compiled_plan = compile_gj_plan(&plan, &[], &in_view);
+            let tables = build_ts(&db, &views, &in_view, &plan);
 
-        let plan = to_gj_plan(&plan_tree);
+            update_materialize_map(node, &mut in_view);
+            views.insert(node, HashMap::new());
+        }
+
+        println!("FINAL PLAN");
+        let plan = to_left_deep_plan(&plan_tree);
+        println!("{:?}", plan);
         let payload = get_payload(&plan_tree);
+        println!("{:?}", payload);
+        let compiled_plan = compile_gj_plan(&plan, &payload, &in_view);
+
+        println!("{:?}", compiled_plan);
+
+        // compile_gj_plan(plan_tree, payload, views)
+
+        // let mut materialized_in = HashMap::new();
+
+        // for plan in plans {
+        //     let (compiled_plan, _) = compile_plan(&plan, &[]);
+        //     let tables = build_tables(&db, &plan);
+        // }
+
+        // let plan = to_gj_plan(&plan_tree);
+        // let payload = get_payload(&plan_tree);
         
-        let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);        
+        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);        
 
-        let time = Instant::now();
+        // let time = Instant::now();
 
-        let tables = build_tables(&db, &plan);
-        let mut result = vec![];
+        // let tables = build_tables(&db, &plan);
+        // let mut result = vec![];
 
-        let start = Instant::now();
+        // let start = Instant::now();
 
-        join(
-            &tables.iter().collect::<Vec<_>>(),
-            &compiled_plan,
-            &compiled_payload,
-            &mut |t| aggregate_min(&mut result, t),
-        );
+        // join(
+        //     &tables.iter().collect::<Vec<_>>(),
+        //     &compiled_plan,
+        //     &compiled_payload,
+        //     &mut |t| aggregate_min(&mut result, t),
+        // );
 
-        println!("output {:?}", result);
-        println!("join takes {:?}", start.elapsed());
+        // println!("output {:?}", result);
+        // println!("join takes {:?}", start.elapsed());
 
-        println!("total takes {:?}", time.elapsed().as_secs_f32());
+        // println!("total takes {:?}", time.elapsed().as_secs_f32());
     }
 }
 
@@ -49,9 +76,11 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     let bushy = false;
     let linear = true;
 
-    // let queries = vec![("1a", "IMDBQ001")];
+    let queries = vec![
+        ("33c", "IMDBQ113"), // SLOW
+    ];
 
-    // /*
+    /*
     let mut queries = vec![];
 
     if linear {
