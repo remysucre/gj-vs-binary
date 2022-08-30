@@ -1,13 +1,10 @@
-use std::{
-    collections::HashMap,
-    // time::Instant,
-};
+use std::collections::HashMap;
 
 use gj::{
     join::*,
     sql::{
-        get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan,
-        to_materialize, update_materialize_map
+        get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan, to_materialize,
+        update_materialize_map,
     },
     util::*,
 };
@@ -58,18 +55,22 @@ fn main() {
         for attr in payload {
             let col = in_view
                 .get(attr.table_name.as_str())
-                .map(|tree_op| &materialized_columns[*views.get(tree_op).unwrap().get(attr).unwrap()])
+                .map(|tree_op| {
+                    &materialized_columns[*views.get(tree_op).unwrap().get(attr).unwrap()]
+                })
                 .unwrap();
-            println!("{:?}", col.iter().min_by(|x, y| {
-                x.partial_cmp(y).unwrap()
-            }).unwrap());
+            println!(
+                "{:?}",
+                col.iter()
+                    .min_by(|x, y| { x.partial_cmp(y).unwrap() })
+                    .unwrap()
+            );
         }
     }
 }
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-
     let queries = vec![
         ("33c", "IMDBQ113"), // SLOW
     ];

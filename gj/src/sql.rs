@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    error::Error,
-    fs, path,
-};
+use std::{collections::HashMap, error::Error, fs, path};
 
 use serde::{Deserialize, Serialize};
 
