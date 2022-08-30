@@ -1,4 +1,4 @@
-use crate::trie::*;
+use crate::{sql::Attribute, trie::*, Relation};
 
 use std::fmt::Debug;
 
@@ -86,5 +86,71 @@ where
         let rels: Vec<_> = payload.iter().map(|&i| relations[i]).collect();
         let mut tuple = Vec::new();
         select(&rels, f, &mut tuple);
+    }
+}
+
+pub fn bushy_join_inner(
+    relations: &[&Trie<Value>],
+    compiled_plan: &[Vec<usize>],
+    tuple: &[Value],
+    plan: &[Vec<&Attribute>],
+    out_vars: &[Vec<Attribute>],
+    out: &mut Relation,
+) {
+    if compiled_plan.is_empty() {
+        let payload = Vec::new();
+        materialize(relations, tuple, plan, &payload, out_vars, out);
+    } else {
+        let js = &compiled_plan[0];
+
+        let j_min = js
+            .iter()
+            .copied()
+            .min_by_key(|&j| relations[j].get_map().unwrap().len())
+            .unwrap();
+
+        for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
+            if let Some(tries) = js
+                .iter()
+                .filter(|&j| j != &j_min)
+                .map(|&j| {
+                    relations[j]
+                        .get_map()
+                        .unwrap()
+                        .get(id)
+                        .map(|trie| (j, trie))
+                })
+                .collect::<Option<Vec<_>>>()
+            {
+                let mut rels = relations.to_vec();
+                rels[j_min] = trie_min;
+                for (j, trie) in tries {
+                    rels[j] = trie;
+                }
+                let mut t = tuple.to_vec();
+                t.push(Value::Num(*id));
+                bushy_join_inner(&rels, &compiled_plan[1..], &t[..], plan, out_vars, out);
+            }
+        }
+    }
+}
+
+fn materialize(
+    relations: &[&Trie<Value>],
+    tuple: &[Value],
+    plan: &[Vec<&Attribute>],
+    payload: &[&[Value]],
+    out_vars: &[Vec<Attribute>],
+    out: &mut Relation,
+) {
+    if relations.is_empty() {
+        unimplemented!()
+    } else {
+        let mut p = payload.to_vec();
+        for vs in relations[0].get_data().unwrap() {
+            p.push(vs);
+            materialize(relations, tuple, plan, &p, out_vars, out);
+            p.pop();
+        }
     }
 }

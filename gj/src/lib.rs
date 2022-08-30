@@ -5,10 +5,10 @@ pub mod util;
 
 use std::collections::HashMap;
 
-use sql::{TreeOp, Attribute};
+use sql::{Attribute, TreeOp};
 use trie::Value;
 
 pub type Col = Vec<Value>;
-pub type Relation = HashMap<String, Col>;
+pub type Relation = HashMap<Attribute, Col>;
 pub type DB = HashMap<String, Relation>;
 pub type Views<'a> = HashMap<&'a TreeOp, HashMap<Attribute, Col>>;

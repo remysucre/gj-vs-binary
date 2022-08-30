@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path;
 use std::time::Instant;
 
@@ -13,49 +13,16 @@ use parquet::{
 use std::fs::File;
 use std::sync::Arc;
 
-use crate::{
-    // join::, sj},
-    trie::{Table, Tb},
-};
+use crate::trie::Tb;
 use crate::{
     sql::*,
     trie::{Trie, Value},
     *,
 };
 
-pub fn compile_bushy_plan(
-    plan: &[Vec<&Attribute>],
-    views: &HashMap<&str, &TreeOp>,
-) -> Vec<Vec<usize>> {
-    let mut compiled_plan = Vec::new();
-    let mut table_ids = HashMap::new();
-    let mut view_ids = HashMap::new();
-
-    for node in plan {
-        let mut node_ids = vec![];
-        for a in node {
-            let l = table_ids.len() + view_ids.len();
-
-            if let Some(tree_op) = views.get(a.table_name.as_str()) {
-                let id = view_ids.entry(tree_op).or_insert(l);
-                if !node_ids.contains(id) {
-                    node_ids.push(*id);
-                }
-            } else {
-                let id = table_ids.entry(a.table_name.as_str()).or_insert(l);
-                if !node_ids.contains(id) {
-                    node_ids.push(*id);
-                }
-            }
-        }
-        compiled_plan.push(node_ids);
-    }
-    compiled_plan
-}
-
-pub fn compile_gj_plan(
-    plan: &[Vec<&Attribute>],
-    payload: &[&Attribute],
+pub fn compile_gj_plan<'a>(
+    plan: &[Vec<&'a Attribute>],
+    payload: &[&'a Attribute],
     views: &HashMap<&str, &TreeOp>,
 ) -> (Vec<Vec<usize>>, Vec<usize>) {
     let mut compiled_plan = Vec::new();
@@ -70,42 +37,12 @@ pub fn compile_gj_plan(
 
             let id = views
                 .get(a.table_name.as_str())
-                .map(|tree_op| {
-                    view_ids.entry(tree_op).or_insert(l)
-                })
-                .unwrap_or_else(|| {
-                    table_ids.entry(a.table_name.as_str()).or_insert(l)
-                });
-            
+                .map(|tree_op| view_ids.entry(tree_op).or_insert(l))
+                .unwrap_or_else(|| table_ids.entry(a.table_name.as_str()).or_insert(l));
+
             if !node_ids.contains(id) {
                 node_ids.push(*id);
             }
-
-            if payload.iter().any(|b| a.table_name == b.table_name)
-                && !compiled_payload.contains(id)
-            {
-                compiled_payload.push(*id);
-            }
-        }
-        compiled_plan.push(node_ids);
-    }
-    (compiled_plan, compiled_payload)
-}
-
-pub fn compile_plan(
-    plan: &[Vec<&Attribute>],
-    payload: &[&Attribute],
-) -> (Vec<Vec<usize>>, Vec<usize>) {
-    let mut compiled_plan = Vec::new();
-    let mut compiled_payload = Vec::new();
-    let mut table_ids = HashMap::new();
-
-    for node in plan {
-        let mut node_ids = Vec::new();
-        for a in node {
-            let l = table_ids.len();
-            let id = table_ids.entry(a.table_name.clone()).or_insert(l);
-            node_ids.push(*id);
 
             if payload.iter().any(|b| a.table_name == b.table_name)
                 && !compiled_payload.contains(id)
@@ -134,93 +71,93 @@ pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
     }
 }
 
-fn is_shared(table_name: &str) -> bool {
-    matches!(
-        table_name,
-        "aka_name"
-            | "aka_title"
-            | "cast_info"
-            | "char_name"
-            | "comp_cast_type"
-            | "company_name"
-            | "company_type"
-            | "complete_cast"
-            | "info_type"
-            | "keyword"
-            | "kind_type"
-            | "link_type"
-            | "movie_companies"
-            | "movie_info"
-            | "movie_info_idx"
-            | "movie_keyword"
-            | "movie_link"
-            | "name"
-            | "person_info"
-            | "role_type"
-            | "title"
-    )
-}
+pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
+    let tables = scan
+        .iter()
+        .map(|s| s.table_name.as_str())
+        .collect::<HashSet<_>>();
 
-pub fn clean_db(db: &mut DB) {
-    db.retain(|t, _| is_shared(t));
-}
+    let mut plan_table_name = HashMap::new();
 
-pub fn load_db(q: &str, scan: &[&ScanAttr]) -> DB {
-    println!("Query: {}", q);
+    for node in plan {
+        for a in node {
+            let t_name = tables
+                .get(a.table_name.as_str())
+                .map(|s| &**s)
+                .unwrap_or_else(|| find_shared(&a.table_name));
+            plan_table_name.insert(t_name, a.table_name.as_str());
+        }
+    }
+
     let mut db = DB::new();
+
     for attr in scan {
-        let table_name = &attr.table_name;
-        let cols = &attr.attributes;
+        let table_name = plan_table_name[&attr.table_name.as_str()];
         println!("Loading {}", table_name);
+
+        let cols = &attr.attributes;
         let table = db.entry(table_name.to_string()).or_default();
+
         let mut col_types = vec![];
 
         for col in cols {
-            if table.get(&col.attr_name).is_none() {
+            if table.get(&col).is_none() {
                 col_types.push(Arc::new(type_of(&col.attr_name)));
             }
         }
+
         let table_schema = Type::group_type_builder("duckdb_schema")
             .with_fields(&mut col_types)
             .build()
             .unwrap();
 
-        let file_name = if is_shared(table_name) {
-            format!("../data/imdb/{}.parquet", table_name)
-        } else {
-            format!(
-                "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
-                q, table_name
-            )
-        };
-        from_parquet(table, &file_name, table_schema);
+        from_parquet(table, q, table_name, table_schema);
     }
+
     db
 }
 
-pub fn from_parquet(table: &mut Relation, file_path: &str, schema: Type) {
-    let path = path::Path::new(file_path);
-    let file = File::open(path).unwrap();
+pub fn from_parquet(table: &mut Relation, query: &str, t_name: &str, schema: Type) {
+    let path_s = format!(
+        "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
+        query, t_name
+    );
+    let path = path::Path::new(&path_s);
+    let file = File::open(path)
+        .or_else(|_| {
+            let shared_name = find_shared(t_name);
+            let path_s = format!("../data/imdb/{}.parquet", shared_name);
+            let path = path::Path::new(&path_s);
+            File::open(path)
+        })
+        .unwrap();
+
     let reader = SerializedFileReader::new(file).unwrap();
 
     let rows = reader.get_row_iter(Some(schema)).unwrap();
 
-    // NOTE this is awkward. Ideally we want to load column by column,
-    // but the ColumnReader API is lacking.
-    // changing to use Data Fusion's RecordBatch API may be cleaner.
     for row in rows {
-        // check if row has nulls TODO handle this carefully
         if row.get_column_iter().any(|(_, f)| matches!(f, Field::Null)) {
             continue;
         }
         for (col_name, field) in row.get_column_iter() {
             match field {
                 Field::Int(i) => {
-                    let col = table.entry(col_name.to_string()).or_default();
+                    let col = table
+                        .entry(Attribute {
+                            table_name: t_name.to_string(),
+                            attr_name: col_name.to_string(),
+                        })
+                        .or_default();
                     col.push(Value::Num(*i));
                 }
                 Field::Str(s) => {
-                    let col = table.entry(col_name.to_string()).or_default();
+                    let col = table
+                        .entry(Attribute {
+                            table_name: t_name.to_string(),
+                            attr_name: col_name.to_string(),
+                        })
+                        .or_default();
                     col.push(Value::Str(s.to_string()));
                 }
                 Field::Null => {
@@ -263,71 +200,53 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-pub fn build_ts<'a>(
-    db: &'a DB, 
-    views: &'a Views<'a>, 
-    in_view: &'a HashMap<&'a str, &'a TreeOp>, 
-    plan: &'a [Vec<&'a Attribute>]
-) -> Vec<Table<'a, Value>> {
-
+pub fn build_tables<'a>(
+    db: &'a DB,
+    views: &'a Views<'a>,
+    in_view: &'a HashMap<&'a str, &'a TreeOp>,
+    plan: &'a [Vec<&'a Attribute>],
+) -> (Vec<Tb<'a, Value>>, Vec<Vec<Attribute>>) {
     let mut tables = Vec::new();
     let mut id_cols = IndexMap::new();
     let mut data_cols = IndexMap::new();
+    let mut out_vars = Vec::new();
 
     for node in plan {
         for a in node {
-            let trie_name = a.table_name.as_str();
-            let mut table_name = a.table_name.as_str();
+            let t = a.table_name.as_str();
 
-            if let Some(tree_op) = in_view.get(table_name) {
-                id_cols
-                    .entry(trie_name)
-                    .or_insert(IndexMap::new())
-                    .insert(&**a, &views.get(tree_op).unwrap()[&a]);
-            } else {
-                if !db.contains_key(table_name) {
-                    table_name = find_shared(table_name);
-                }
+            let col = in_view
+                .get(t)
+                .map(|tree_op| views.get(tree_op).unwrap().get(a).unwrap())
+                .unwrap_or_else(|| db.get(t).unwrap().get(a).unwrap());
 
-                id_cols
-                    .entry(trie_name)
+            id_cols
+                .entry(t)
+                .or_insert(IndexMap::new())
+                .insert(&**a, col);
+        }
+    }
+
+    for (&t, cols) in &id_cols {
+        let table = in_view
+            .get(t)
+            .map(|tree_op| views.get(tree_op).unwrap())
+            .or_else(|| db.get(t))
+            .unwrap();
+
+        for (attr, data_col) in table {
+            if !cols.contains_key(attr) {
+                data_cols
+                    .entry(t)
                     .or_insert(IndexMap::new())
-                    .insert(&**a, &db.get(table_name).unwrap()[&a.attr_name]);
+                    .insert(attr.clone(), data_col);
             }
         }
     }
 
-    for (&trie_name, cols) in &id_cols {
-        let mut table_name = trie_name;
-
-        if let Some(tree_op) = in_view.get(table_name) {
-            for (attr, data_col) in &views[tree_op] {
-                if !cols.contains_key(attr) {
-                    data_cols
-                        .entry(trie_name)
-                        .or_insert(IndexMap::new())
-                        .insert(attr.clone(), data_col);
-                }
-            }
-        } else {
-            if !db.contains_key(table_name) {
-                table_name = find_shared(table_name);
-            }
-    
-            for (attr, data_col) in &db[table_name] {
-                let a = Attribute {
-                    table_name: table_name.to_string(),
-                    attr_name: attr.to_string(),
-                };
-                if !cols.contains_key(&a) {
-                    data_cols
-                        .entry(trie_name)
-                        .or_insert(IndexMap::new())
-                        .insert(a, data_col);
-                }
-            }
-        }
-
+    for cols in data_cols.values() {
+        let vars = cols.keys().cloned().collect();
+        out_vars.push(vars);
     }
 
     let start = Instant::now();
@@ -337,24 +256,18 @@ pub fn build_ts<'a>(
 
     let mut ids = vec![];
     let mut data = vec![];
-    let mut vs = vec![];
 
-    // for (&col_name, col) in cols {
-    //     vs.push(col_name.as_str());
-    //     ids.push(&col[..])
-    // }
+    for col in cols.values() {
+        ids.push(&col[..])
+    }
 
     if let Some(cols) = data_cols.get(trie_name) {
-        for (col_name, col) in cols {
-            vs.push((*col_name).clone());
+        for col in cols.values() {
             data.push(&col[..])
         }
     }
 
-    tables.push(Table {
-        schema: vs,
-        data: Tb::Arr((ids, data)),
-    });
+    tables.push(Tb::Arr((ids, data)));
 
     println!(
         "building {} takes {}s",
@@ -367,17 +280,6 @@ pub fn build_ts<'a>(
         println!("building trie on {}", table_name);
 
         let mut trie = Trie::default();
-        let mut vs = vec![];
-
-        // for (&col_name, _col) in cols {
-        //     vs.push(col_name.as_str());
-        // }
-
-        // if let Some(cols) = data_cols.get(table_name) {
-        //     for (&col_name, _col) in cols {
-        //         vs.push(col_name.as_str());
-        //     }
-        // }
 
         for i in 0..cols[0].len() {
             let mut ids = Vec::new();
@@ -396,10 +298,7 @@ pub fn build_ts<'a>(
             trie.insert(&ids, data);
         }
 
-        tables.push(Table {
-            schema: vs,
-            data: Tb::Trie(trie),
-        });
+        tables.push(Tb::Trie(trie));
 
         println!(
             "building {} takes {}s",
@@ -407,7 +306,7 @@ pub fn build_ts<'a>(
             start.elapsed().as_secs_f32()
         );
     }
-    tables
+    (tables, out_vars)
 }
 
 fn type_of(col: &str) -> Type {

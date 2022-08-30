@@ -1,4 +1,8 @@
-use std::{error::Error, fs, path, collections::{HashMap, HashSet}};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    fs, path,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -65,8 +69,7 @@ pub struct TreeOp {
 //     }
 // }
 
-fn postorder_traverse<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp),)
-{
+fn postorder_traverse<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp)) {
     for child_node in node.children.iter() {
         postorder_traverse(child_node, func);
     }
@@ -256,7 +259,7 @@ pub fn to_left_deep_plan(root: &TreeOp) -> Vec<Vec<&Attribute>> {
     to_plan(root, traverse_left)
 }
 
-fn to_plan<'a, F>(root: &'a TreeOp, mut traverse: F) -> Vec<Vec<&'a Attribute>> 
+fn to_plan<'a, F>(root: &'a TreeOp, mut traverse: F) -> Vec<Vec<&'a Attribute>>
 where
     F: FnMut(&'a TreeOp, &mut dyn FnMut(&'a TreeOp)),
 {
@@ -267,10 +270,10 @@ where
             for equalizer in &attr.equalizers {
                 let lattr = &equalizer.left_attr;
                 let rattr = &equalizer.right_attr;
-    
+
                 let lpos_opt = plan.iter().position(|x| x.contains(&lattr));
                 let rpos_opt = plan.iter().position(|x| x.contains(&rattr));
-    
+
                 match (lpos_opt, rpos_opt) {
                     (Some(_lpos), Some(_rpos)) => {} // TODO add this back assert_eq!(lpos, rpos),
                     (Some(lpos), None) => plan[lpos].push(rattr),
@@ -337,8 +340,7 @@ pub fn to_semijoin_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
     plan
 }
 
-fn traverse_left<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp))
-{
+fn traverse_left<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp)) {
     if !node.children.is_empty() {
         traverse_left(&node.children[0], func);
     }
@@ -405,7 +407,6 @@ pub fn intermediate_idx<'a>(root: &'a TreeOp) -> HashMap<&'a str, usize> {
 }
 
 pub fn update_materialize_map<'a>(root: &'a TreeOp, map: &mut HashMap<&'a str, &'a TreeOp>) {
-
     let mut collect_reduce = |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {

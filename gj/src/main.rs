@@ -1,9 +1,17 @@
-use std::{time::Instant, collections::{HashMap, HashSet}};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Instant,
+};
 
 use gj::{
     join::*,
-    sql::{get_join_tree, get_payload, get_scans, to_gj_plan, to_materialize, to_left_deep_plan, intermediate_idx, update_materialize_map, Attribute},
-    util::*, trie::Value,
+    sql::{
+        get_join_tree, get_payload, get_scans, intermediate_idx, to_gj_plan, to_left_deep_plan,
+        to_materialize, update_materialize_map, Attribute,
+    },
+    trie::Value,
+    util::*,
+    Relation,
 };
 
 fn main() {
@@ -14,27 +22,32 @@ fn main() {
         let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", id)).unwrap();
 
         let scan = get_scans(&scan_tree);
-        let db = load_db(q, &scan);
-        let mut views: HashMap<_, HashMap<Attribute, Vec<Value>>> = HashMap::new();
+        let plan = to_gj_plan(&plan_tree);
+
+        let db = load_db(q, &scan, &plan);
+
+        let mut views = HashMap::new();
         let mut in_view = HashMap::new();
 
-        for node in &to_materialize(&plan_tree) {
+        for node in to_materialize(&plan_tree) {
             let plan = to_left_deep_plan(node);
             let compiled_plan = compile_gj_plan(&plan, &[], &in_view);
-            let tables = build_ts(&db, &views, &in_view, &plan);
+            println!("{:?}", compiled_plan);
+
+            let (tables, out_vars) = build_tables(&db, &views, &in_view, &plan);
 
             update_materialize_map(node, &mut in_view);
             views.insert(node, HashMap::new());
         }
 
-        println!("FINAL PLAN");
-        let plan = to_left_deep_plan(&plan_tree);
-        println!("{:?}", plan);
-        let payload = get_payload(&plan_tree);
-        println!("{:?}", payload);
-        let compiled_plan = compile_gj_plan(&plan, &payload, &in_view);
+        // println!("FINAL PLAN");
+        // let plan = to_left_deep_plan(&plan_tree);
+        // println!("{:?}", plan);
+        // let payload = get_payload(&plan_tree);
+        // println!("{:?}", payload);
+        // let compiled_plan = compile_gj_plan(&plan, &payload, &in_view);
 
-        println!("{:?}", compiled_plan);
+        // println!("{:?}", compiled_plan);
 
         // compile_gj_plan(plan_tree, payload, views)
 
@@ -47,8 +60,8 @@ fn main() {
 
         // let plan = to_gj_plan(&plan_tree);
         // let payload = get_payload(&plan_tree);
-        
-        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);        
+
+        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
 
         // let time = Instant::now();
 
