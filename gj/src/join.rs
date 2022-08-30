@@ -1,6 +1,6 @@
-use crate::{sql::Attribute, trie::*, Relation};
+use crate::{sql::Attribute, trie::*};
 
-use std::{collections::HashMap, fmt::Debug, rc::Rc};
+use std::{collections::HashMap, fmt::Debug};
 
 fn select<'a, T, F>(relations: &[&'a Trie<T>], f: &mut F, tuple: &mut Vec<&'a [T]>)
 where

@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     error::Error,
     fs, path,
 };
@@ -289,22 +289,22 @@ where
     plan
 }
 
-fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
-where
-    T: FnMut(&'a TreeOp),
-{
-    if !node.children.is_empty() {
-        traverse_lr(&node.children[0], func);
-    }
+// fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)
+// where
+//     T: FnMut(&'a TreeOp),
+// {
+//     if !node.children.is_empty() {
+//         traverse_lr(&node.children[0], func);
+//     }
 
-    func(node);
+//     func(node);
 
-    if !node.children.is_empty() {
-        for child_node in &node.children[1..] {
-            preorder_traverse(child_node, func);
-        }
-    }
-}
+//     if !node.children.is_empty() {
+//         for child_node in &node.children[1..] {
+//             preorder_traverse(child_node, func);
+//         }
+//     }
+// }
 
 fn preorder_traverse<'a, T>(node: &'a TreeOp, func: &mut T)
 where

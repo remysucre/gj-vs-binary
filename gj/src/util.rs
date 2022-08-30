@@ -101,7 +101,7 @@ pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
         let mut col_types = vec![];
 
         for col in cols {
-            if table.get(&col).is_none() {
+            if table.get(col).is_none() {
                 col_types.push(Arc::new(type_of(&col.attr_name)));
             }
         }
