@@ -1,17 +1,15 @@
 use std::{
-    collections::{HashMap, HashSet},
-    time::Instant,
+    collections::HashMap,
+    // time::Instant,
 };
 
 use gj::{
     join::*,
     sql::{
-        get_join_tree, get_payload, get_scans, intermediate_idx, to_gj_plan, to_left_deep_plan,
-        to_materialize, update_materialize_map, Attribute,
+        get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan,
+        to_materialize, update_materialize_map
     },
-    trie::Value,
     util::*,
-    Relation,
 };
 
 fn main() {
@@ -23,64 +21,49 @@ fn main() {
 
         let scan = get_scans(&scan_tree);
         let plan = to_gj_plan(&plan_tree);
+        let payload = get_payload(&plan_tree);
 
         let db = load_db(q, &scan, &plan);
 
+        let mut materialized_columns = Vec::new();
         let mut views = HashMap::new();
         let mut in_view = HashMap::new();
 
         for node in to_materialize(&plan_tree) {
             let plan = to_left_deep_plan(node);
-            let compiled_plan = compile_gj_plan(&plan, &[], &in_view);
+            let (compiled_plan, _) = compile_gj_plan(&plan, &[], &in_view);
             println!("{:?}", compiled_plan);
 
-            let (tables, out_vars) = build_tables(&db, &views, &in_view, &plan);
+            let (tables, out_vars) =
+                build_tables(&db, &materialized_columns, &views, &in_view, &plan);
 
+            let mut new_columns = Vec::new();
+            let out = views.get_mut(node).unwrap();
+            let tuple = &[];
+
+            bushy_join(
+                &tables,
+                &compiled_plan,
+                tuple,
+                &plan,
+                &out_vars,
+                out,
+                &mut new_columns,
+            );
+
+            materialized_columns.extend(new_columns);
             update_materialize_map(node, &mut in_view);
-            views.insert(node, HashMap::new());
         }
 
-        // println!("FINAL PLAN");
-        // let plan = to_left_deep_plan(&plan_tree);
-        // println!("{:?}", plan);
-        // let payload = get_payload(&plan_tree);
-        // println!("{:?}", payload);
-        // let compiled_plan = compile_gj_plan(&plan, &payload, &in_view);
-
-        // println!("{:?}", compiled_plan);
-
-        // compile_gj_plan(plan_tree, payload, views)
-
-        // let mut materialized_in = HashMap::new();
-
-        // for plan in plans {
-        //     let (compiled_plan, _) = compile_plan(&plan, &[]);
-        //     let tables = build_tables(&db, &plan);
-        // }
-
-        // let plan = to_gj_plan(&plan_tree);
-        // let payload = get_payload(&plan_tree);
-
-        // let (compiled_plan, compiled_payload) = compile_plan(&plan, &payload);
-
-        // let time = Instant::now();
-
-        // let tables = build_tables(&db, &plan);
-        // let mut result = vec![];
-
-        // let start = Instant::now();
-
-        // join(
-        //     &tables.iter().collect::<Vec<_>>(),
-        //     &compiled_plan,
-        //     &compiled_payload,
-        //     &mut |t| aggregate_min(&mut result, t),
-        // );
-
-        // println!("output {:?}", result);
-        // println!("join takes {:?}", start.elapsed());
-
-        // println!("total takes {:?}", time.elapsed().as_secs_f32());
+        for attr in payload {
+            let col = in_view
+                .get(attr.table_name.as_str())
+                .map(|tree_op| &materialized_columns[*views.get(tree_op).unwrap().get(attr).unwrap()])
+                .unwrap();
+            println!("{:?}", col.iter().min_by(|x, y| {
+                x.partial_cmp(y).unwrap()
+            }).unwrap());
+        }
     }
 }
 

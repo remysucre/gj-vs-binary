@@ -202,7 +202,8 @@ fn find_shared(table_name: &str) -> &str {
 
 pub fn build_tables<'a>(
     db: &'a DB,
-    views: &'a Views<'a>,
+    materialized_columns: &'a [Vec<Value>],
+    views: &HashMap<&TreeOp, HashMap<Attribute, usize>>,
     in_view: &'a HashMap<&'a str, &'a TreeOp>,
     plan: &'a [Vec<&'a Attribute>],
 ) -> (Vec<Tb<'a, Value>>, Vec<Vec<Attribute>>) {
@@ -217,7 +218,7 @@ pub fn build_tables<'a>(
 
             let col = in_view
                 .get(t)
-                .map(|tree_op| views.get(tree_op).unwrap().get(a).unwrap())
+                .map(|tree_op| &materialized_columns[*views.get(tree_op).unwrap().get(a).unwrap()])
                 .unwrap_or_else(|| db.get(t).unwrap().get(a).unwrap());
 
             id_cols
@@ -228,18 +229,24 @@ pub fn build_tables<'a>(
     }
 
     for (&t, cols) in &id_cols {
-        let table = in_view
-            .get(t)
-            .map(|tree_op| views.get(tree_op).unwrap())
-            .or_else(|| db.get(t))
-            .unwrap();
-
-        for (attr, data_col) in table {
-            if !cols.contains_key(attr) {
-                data_cols
-                    .entry(t)
-                    .or_insert(IndexMap::new())
-                    .insert(attr.clone(), data_col);
+        if let Some(tree_op) = in_view.get(t) {
+            for (attr, data_col_idx) in views.get(tree_op).unwrap() {
+                let data_col = &materialized_columns[*data_col_idx];
+                if !cols.contains_key(attr) {
+                    data_cols
+                        .entry(t)
+                        .or_insert(IndexMap::new())
+                        .insert(attr.clone(), data_col);
+                }
+            }
+        } else {
+            for (attr, data_col) in db.get(t).unwrap() {
+                if !cols.contains_key(attr) {
+                    data_cols
+                        .entry(t)
+                        .or_insert(IndexMap::new())
+                        .insert(attr.clone(), data_col);
+                }
             }
         }
     }

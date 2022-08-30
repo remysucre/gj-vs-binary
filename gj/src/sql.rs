@@ -374,37 +374,37 @@ pub fn to_materialize<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
             }
         }
     };
-    traverse_rlm(root, &mut collect_reduce, false);
+    traverse_rlm(root, &mut collect_reduce, true);
     nodes
 }
 
-pub fn intermediate_idx<'a>(root: &'a TreeOp) -> HashMap<&'a str, usize> {
-    let mut idx = 0;
-    let mut tables = HashSet::new();
-    let mut table_idx = HashMap::new();
+// pub fn intermediate_idx<'a>(root: &'a TreeOp) -> HashMap<&'a str, usize> {
+//     let mut idx = 0;
+//     let mut tables = HashSet::new();
+//     let mut table_idx = HashMap::new();
 
-    let mut collect_tables = |node: &'a TreeOp, is_right_child: bool| {
-        if let Some(NodeAttr::Join(attr)) = &node.attr {
-            for equalizer in &attr.equalizers {
-                let lattr = &equalizer.left_attr;
-                let rattr = &equalizer.right_attr;
-                tables.insert(lattr.table_name.as_str());
-                tables.insert(rattr.table_name.as_str());
-            }
-        }
+//     let mut collect_tables = |node: &'a TreeOp, is_right_child: bool| {
+//         if let Some(NodeAttr::Join(attr)) = &node.attr {
+//             for equalizer in &attr.equalizers {
+//                 let lattr = &equalizer.left_attr;
+//                 let rattr = &equalizer.right_attr;
+//                 tables.insert(lattr.table_name.as_str());
+//                 tables.insert(rattr.table_name.as_str());
+//             }
+//         }
 
-        if is_right_child {
-            for t in &tables {
-                table_idx.insert(*t, idx);
-            }
-            idx += 1;
-        }
-    };
+//         if is_right_child {
+//             for t in &tables {
+//                 table_idx.insert(*t, idx);
+//             }
+//             idx += 1;
+//         }
+//     };
 
-    traverse_rlm(root, &mut collect_tables, false);
+//     traverse_rlm(root, &mut collect_tables, false);
 
-    table_idx
-}
+//     table_idx
+// }
 
 pub fn update_materialize_map<'a>(root: &'a TreeOp, map: &mut HashMap<&'a str, &'a TreeOp>) {
     let mut collect_reduce = |node: &'a TreeOp| {
