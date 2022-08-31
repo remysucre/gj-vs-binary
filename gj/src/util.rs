@@ -85,31 +85,45 @@ pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
                 .get(a.table_name.as_str())
                 .map(|s| &**s)
                 .unwrap_or_else(|| find_shared(&a.table_name));
-            plan_table_name.insert(t_name, a.table_name.as_str());
+            let ns = plan_table_name.entry(t_name).or_insert(vec![]);
+
+            if !ns.contains(&a.table_name.as_str()) {
+                ns.push(a.table_name.as_str());
+            }
         }
     }
 
     let mut db = DB::new();
 
+    let mut loaded = HashSet::new();
+
     for attr in scan {
-        let table_name = plan_table_name[&attr.table_name.as_str()];
-        println!("Loading {}", table_name);
+        for table_name in &plan_table_name[&attr.table_name.as_str()] {
 
-        let mut col_types = attr
-            .attributes
-            .iter()
-            .map(|a| Arc::new(type_of(&a.attr_name)))
-            .collect();
+            if loaded.contains(table_name) {
+                continue;
+            }
 
-        let table_schema = Type::group_type_builder("duckdb_schema")
-            .with_fields(&mut col_types)
-            .build()
-            .unwrap();
+            println!("Loading {} to DB", table_name);
+    
+            let mut col_types = attr
+                .attributes
+                .iter()
+                .map(|a| Arc::new(type_of(&a.attr_name)))
+                .collect();
+    
+            let table_schema = Type::group_type_builder("duckdb_schema")
+                .with_fields(&mut col_types)
+                .build()
+                .unwrap();
+    
+            db.insert(
+                table_name.to_string(),
+                from_parquet(q, table_name, table_schema),
+            );
 
-        db.insert(
-            table_name.to_string(),
-            from_parquet(q, table_name, table_schema),
-        );
+            loaded.insert(table_name);
+        }
     }
 
     db
@@ -291,7 +305,7 @@ pub fn build_tables<'a>(
         println!("building flat table on intermediate");
     }
 
-    // println!("{:#?}", cols.keys());
+    println!("ID cols {:#?}", cols.keys());
 
     let mut ids = vec![];
     let mut data = vec![];
@@ -301,7 +315,7 @@ pub fn build_tables<'a>(
     }
 
     if let Some(cols) = data_cols.get(trie_name) {
-        // println!("{:#?}", cols.keys());
+        println!("Data cols {:#?}", cols.keys());
         for col in cols.values() {
             data.push(&col[..])
         }
@@ -319,10 +333,10 @@ pub fn build_tables<'a>(
             println!("building table on intermediate");
         }
 
-        // println!("{:#?}", cols.keys());
-        // if let Some(cols) = data_cols.get(table_name) {
-        //     println!("{:#?}", cols.keys());
-        // }
+        println!("ID cols {:#?}", cols.keys());
+        if let Some(cols) = data_cols.get(table_name) {
+            println!("Data cols {:#?}", cols.keys());
+        }
 
         let mut trie = Trie::default();
 

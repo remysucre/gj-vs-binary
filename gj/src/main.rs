@@ -22,6 +22,11 @@ fn main() {
 
         let db = load_db(q, &scan, &plan);
 
+        println!("{:?}", db.keys());
+        for c in db.values() {
+            println!("{:?}", c.keys());
+        }
+
         let mut materialized_columns = Vec::new();
         let mut views = HashMap::new();
         let mut in_view = HashMap::new();
