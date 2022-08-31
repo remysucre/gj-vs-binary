@@ -4,7 +4,7 @@ use gj::{
     join::*,
     sql::{
         get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan, to_materialize,
-        update_materialize_map,
+        update_materialize_map, TreeOp, Attribute,
     },
     util::*,
 };
@@ -62,6 +62,14 @@ fn main() {
 
             // println!("materialized {:?}", out.keys());
             views.insert(node, out);
+
+            for m in views.values() {
+                println!("MAPPPP");
+                for (a, i) in m.iter() {
+                    println!("in view {:#?}", (a, i));
+                }
+            }    
+
             materialized_columns.extend(new_columns);
             update_materialize_map(node, &mut in_view);
         }
@@ -96,7 +104,11 @@ fn main() {
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    // let queries = vec![("6a", "IMDBQ018")];
+    // let queries = vec![
+    //         ("33a", "IMDBQ111"),
+    //         ("33b", "IMDBQ112"), // SLOW
+    //         ("33c", "IMDBQ113"), // SLOW
+    //     ];
 
     // /*
     let bushy = true;
@@ -220,7 +232,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("24b", "IMDBQ087"),
             ("25a", "IMDBQ088"),
             ("25b", "IMDBQ089"),
-            ("25c", "IMDBQ090"), // SJ SLOW
+            ("25c", "IMDBQ090"),
             ("26a", "IMDBQ091"),
             ("26b", "IMDBQ092"),
             ("26c", "IMDBQ093"),
@@ -236,9 +248,9 @@ fn queries() -> Vec<(&'static str, &'static str)> {
             ("30a", "IMDBQ103"),
             ("30b", "IMDBQ104"),
             ("30c", "IMDBQ105"),
-            ("31a", "IMDBQ106"), // SJ SLOW
-            ("31b", "IMDBQ107"), // SJ SLOW
-            ("31c", "IMDBQ108"), // SJ SLOW
+            ("31a", "IMDBQ106"),
+            ("31b", "IMDBQ107"),
+            ("31c", "IMDBQ108"),
         ])
     }
 

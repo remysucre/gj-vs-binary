@@ -132,7 +132,7 @@ pub fn bushy_join(
 }
 
 pub struct OutInfo<'a> {
-    pub out_vars: &'a [Vec<Attribute>],
+    pub out_vars: &'a [Vec<Vec<Attribute>>],
     pub out: &'a mut HashMap<Attribute, usize>,
     pub view_len: usize,
     pub new_columns: &'a mut Vec<Vec<Value>>,
@@ -220,16 +220,19 @@ fn materialize(
         }
         for (vals, attrs) in payload.iter().zip(o.out_vars.iter()) {
             for (a, v) in attrs.iter().zip(vals.iter()) {
+
                 let idx = *o
                     .out
-                    .entry(a.clone())
+                    .entry(a[0].clone())
                     .or_insert_with(|| o.view_len + o.new_columns.len())
                     - o.view_len;
                 if idx == o.new_columns.len() {
                     o.new_columns.push(Vec::new());
                 }
                 o.new_columns[idx].push(v.clone());
-                o.out.insert(a.clone(), idx + o.view_len);
+                for a in &a[1..] {
+                    o.out.insert(a.clone(), idx + o.view_len);
+                }
             }
         }
     } else {

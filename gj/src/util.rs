@@ -232,16 +232,15 @@ pub fn build_tables<'a>(
     views: &'a HashMap<&'a TreeOp, HashMap<Attribute, usize>>,
     in_view: &'a HashMap<&'a str, &'a TreeOp>,
     plan: &'a [Vec<&'a Attribute>],
-) -> (Vec<Tb<'a, Value>>, Vec<Vec<Attribute>>) {
+) -> (Vec<Tb<'a, Value>>, Vec<Vec<Vec<Attribute>>>) {
     let mut tables = Vec::new();
     let mut id_cols = IndexMap::new();
     let mut data_cols = IndexMap::new();
-    let mut out_vars = Vec::new();
+    let mut out_vars = IndexMap::new();
 
     for node in plan {
         for a in node {
             let t = a.table_name.as_str();
-
 
             if let Some(tree_op) = in_view.get(t) {
                 let tid = Tid::Node(tree_op);
@@ -272,7 +271,13 @@ pub fn build_tables<'a>(
                         data_cols
                             .entry(t.clone())
                             .or_insert(IndexMap::new())
-                            .insert(attr.clone(), data_col);
+                            .insert(Cid::Idx(*data_col_idx), data_col);
+                        out_vars
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .entry(Cid::Idx(*data_col_idx))
+                            .or_insert(vec![])
+                            .push(attr.clone());
                     }
                 }
             }
@@ -282,17 +287,16 @@ pub fn build_tables<'a>(
                         data_cols
                             .entry(t.clone())
                             .or_insert(IndexMap::new())
-                            .insert(attr.clone(), data_col);
+                            .insert(Cid::Attr(attr), data_col);
+                        out_vars
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .entry(Cid::Attr(attr))
+                            .or_insert(vec![])
+                            .push(attr.clone());
                     }
                 }
             }
-        }
-    }
-
-    for cols in data_cols.values() {
-        let vars: Vec<_> = cols.keys().cloned().collect();
-        if !vars.is_empty() {
-            out_vars.push(vars);
         }
     }
 
@@ -361,7 +365,13 @@ pub fn build_tables<'a>(
 
         println!("building table takes {}", start.elapsed().as_secs_f32());
     }
-    (tables, out_vars)
+    let vars = out_vars
+        .into_values()
+        .map(|cols| {
+            cols.into_values().collect()
+        }).collect();
+        
+    (tables, vars)
 }
 
 fn type_of(col: &str) -> Type {
