@@ -225,6 +225,154 @@ enum Cid<'a> {
     Attr(&'a Attribute),
 }
 
+pub fn build_ts<'a>(
+    db: &'a DB,
+    materialized_columns: &'a [Vec<Value>],
+    views: &'a HashMap<&'a TreeOp, HashMap<Attribute, usize>>,
+    in_view: &'a HashMap<&'a str, &'a TreeOp>,
+    plan: &'a [Vec<&'a Attribute>],
+) -> (Vec<Tb<'a, Value>>, Vec<Vec<Vec<Attribute>>>) {
+    let mut tables = Vec::new();
+    let mut id_cols = IndexMap::new();
+    let mut data_cols = IndexMap::new();
+    let mut out_vars = IndexMap::new();
+
+    for node in plan {
+        for a in node {
+            let t = a.table_name.as_str();
+
+            if let Some(tree_op) = in_view.get(t) {
+                let tid = Tid::Node(tree_op);
+                let idx = *views[tree_op].get(a).unwrap();
+                let col = &materialized_columns[idx];
+
+                id_cols
+                    .entry(tid)
+                    .or_insert(IndexMap::new())
+                    .insert(Cid::Idx(idx), col);
+            } else {
+                let tid = Tid::Name(t);
+                let col = &db[t][a];
+                id_cols
+                    .entry(tid)
+                    .or_insert(IndexMap::new())
+                    .insert(Cid::Attr(a), col);
+            }
+        }
+    }
+
+    for (t, cols) in &id_cols {
+        match t {
+            Tid::Node(tree_op) => {
+                for (attr, data_col_idx) in views.get(tree_op).unwrap() {
+                    let data_col = &materialized_columns[*data_col_idx];
+                    if !cols.contains_key(&Cid::Idx(*data_col_idx)) {
+                        data_cols
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .insert(Cid::Idx(*data_col_idx), data_col);
+                        out_vars
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .entry(Cid::Idx(*data_col_idx))
+                            .or_insert(vec![])
+                            .push(attr.clone());
+                    }
+                }
+            }
+            Tid::Name(t_name) => {
+                for (attr, data_col) in db.get(*t_name).unwrap() {
+                    if !cols.contains_key(&Cid::Attr(attr)) {
+                        data_cols
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .insert(Cid::Attr(attr), data_col);
+                        out_vars
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .entry(Cid::Attr(attr))
+                            .or_insert(vec![])
+                            .push(attr.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    let start = Instant::now();
+
+    let (trie_name, cols) = id_cols.first().unwrap();
+    if let Tid::Name(s) = trie_name {
+        println!("building flat table on {}", s);
+    } else {
+        println!("building flat table on intermediate");
+    }
+
+    let d_cols: Vec<_> = data_cols
+        .get(trie_name)
+        .map(|cs| cs.values().collect::<Vec<_>>())
+        .unwrap_or_default();
+
+    let mut ids = Vec::with_capacity(cols.len());
+    let mut data = Vec::with_capacity(d_cols.len());
+
+    for col in cols.values() {
+        ids.push(&col[..])
+    }
+
+    for d_col in d_cols {
+        data.push(&d_col[..])
+    }
+
+    tables.push(Tb::Arr((ids, data)));
+
+    println!("building table takes {}s", start.elapsed().as_secs_f32());
+
+    for (table_name, cols) in id_cols.iter().skip(1) {
+        let start = Instant::now();
+        if let Tid::Name(s) = table_name {
+            println!("building table on {}", s);
+        } else {
+            println!("building table on intermediate");
+        }
+
+        let mut trie = Trie::default();
+
+        let d_cols: Vec<_> = data_cols
+            .get(table_name)
+            .map(|cs| cs.values().collect::<Vec<_>>())
+            .unwrap_or_default();
+
+        let id_len = cols.len();
+        let d_len = d_cols.len();
+
+        for i in 0..cols[0].len() {
+            let mut ids = Vec::with_capacity(id_len);
+            let mut data = Vec::with_capacity(d_len);
+
+            for col in cols.values() {
+                ids.push(col[i].as_num());
+            }
+
+            for col in &d_cols {
+                data.push(&col[i]);
+            }
+
+            trie.insert(&ids, data);
+        }
+
+        tables.push(Tb::Trie(trie));
+
+        println!("building table takes {}", start.elapsed().as_secs_f32());
+    }
+    let vars = out_vars
+        .into_values()
+        .map(|cols| cols.into_values().collect())
+        .collect();
+
+    (tables, vars)
+}
+
 pub fn build_tables<'a>(
     db: &'a DB,
     materialized_columns: &'a [Vec<Value>],
@@ -355,7 +503,7 @@ pub fn build_tables<'a>(
             }
 
             for col in &d_cols {
-                data.push(col[i].clone());
+                data.push(&col[i]);
             }
 
             trie.insert(&ids, data);

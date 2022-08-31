@@ -12,6 +12,12 @@ pub enum Value {
     Num(i32),
 }
 
+#[derive(Clone)]
+pub enum ValRef<'a> {
+    Id(i32),
+    Val(&'a Value),
+}
+
 impl Value {
     pub fn as_num(&self) -> i32 {
         match self {
@@ -22,9 +28,9 @@ impl Value {
 }
 
 #[derive(Debug, Clone)]
-pub enum Trie<T> {
+pub enum Trie<'a, T> {
     Node(HashMap<Id, Self>),
-    Data(Vec<Vec<T>>),
+    Data(Vec<Vec<&'a T>>),
 }
 
 pub type Schema = Vec<Attribute>;
@@ -35,12 +41,12 @@ pub struct Table<'a, T> {
 }
 
 pub enum Tb<'a, T> {
-    Trie(Trie<T>),
+    Trie(Trie<'a, T>),
     Arr((Vec<&'a [Value]>, Vec<&'a [T]>)),
 }
 
 impl<'a, T> Table<'a, T> {
-    pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
+    pub fn get_data(&self) -> Result<&[Vec<&'a T>], NotAData> {
         match &self.data {
             Tb::Trie(Trie::Data(data)) => Ok(data),
             // Table::Single((_, data)) => Ok(&data),
@@ -78,13 +84,13 @@ impl Display for NotANode {
 
 impl std::error::Error for NotANode {}
 
-impl<T> Default for Trie<T> {
+impl<'a, T> Default for Trie<'a, T> {
     fn default() -> Self {
         Trie::Node(HashMap::default())
     }
 }
 
-impl<T> Trie<T> {
+impl<'a, T> Trie<'a, T> {
     pub fn get_map(&self) -> Result<&HashMap<Id, Self>, NotANode> {
         if let Trie::Node(ref map) = *self {
             Ok(map)
@@ -101,7 +107,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
+    pub fn get_data(&self) -> Result<&[Vec<&'a T>], NotAData> {
         if let Trie::Data(ref data) = *self {
             Ok(data)
         } else {
@@ -109,7 +115,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get_data_mut(&mut self) -> Result<&mut Vec<Vec<T>>, NotAData> {
+    pub fn get_data_mut(&mut self) -> Result<&mut Vec<Vec<&'a T>>, NotAData> {
         if let Trie::Data(ref mut data) = *self {
             Ok(data)
         } else {
@@ -117,7 +123,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
+    pub fn insert(&mut self, ids: &[Id], data: Vec<&'a T>) {
         let mut trie = self;
         for id in &ids[..ids.len() - 1] {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();

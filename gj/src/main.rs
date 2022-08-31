@@ -37,7 +37,7 @@ fn main() {
 
             let mut new_columns = Vec::new();
             let mut out = HashMap::new();
-            let tuple = &[];
+            let mut tuple = Vec::new();
             let view_len = materialized_columns.len();
 
             let now = Instant::now();
@@ -45,21 +45,15 @@ fn main() {
             bushy_join(
                 &tables,
                 &compiled_plan,
-                tuple,
-                &plan,
-                OutInfo {
-                    out_vars: &out_vars,
-                    out: &mut out,
-                    view_len,
-                    new_columns: &mut new_columns,
-                },
+                &mut tuple,
+                &mut new_columns,
             );
 
             println!("bushy join takes {}", now.elapsed().as_secs_f32());
 
             views.insert(node, out);
 
-            materialized_columns.extend(new_columns);
+            // materialized_columns.extend(new_columns);
             update_materialize_map(node, &mut in_view);
         }
 
@@ -92,7 +86,17 @@ fn main() {
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    let queries = vec![("31c", "IMDBQ108")];
+    let queries = vec![
+        ("31c", "IMDBQ108"),
+        ("31b", "IMDBQ107"),
+        ("25c", "IMDBQ090"),
+        ("25a", "IMDBQ088"),
+        ("8c", "IMDBQ029"),
+        ("17e", "IMDBQ064"),
+        ("16b", "IMDBQ057"),
+        ("8d", "IMDBQ030"),
+        ("6f", "IMDBQ023"),
+    ];
 
     /*
     let bushy = false;
