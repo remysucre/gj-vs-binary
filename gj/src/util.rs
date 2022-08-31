@@ -95,29 +95,28 @@ pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
         let table_name = plan_table_name[&attr.table_name.as_str()];
         println!("Loading {}", table_name);
 
-        let cols = &attr.attributes;
-        let table = db.entry(table_name.to_string()).or_default();
-
-        let mut col_types = vec![];
-
-        for col in cols {
-            if table.get(col).is_none() {
-                col_types.push(Arc::new(type_of(&col.attr_name)));
-            }
-        }
+        let mut col_types = attr
+            .attributes
+            .iter()
+            .map(|a| Arc::new(type_of(&a.attr_name)))
+            .collect();
 
         let table_schema = Type::group_type_builder("duckdb_schema")
             .with_fields(&mut col_types)
             .build()
             .unwrap();
 
-        from_parquet(table, q, table_name, table_schema);
+        db.insert(
+            table_name.to_string(),
+            from_parquet(q, table_name, table_schema),
+        );
     }
 
     db
 }
 
-pub fn from_parquet(table: &mut Relation, query: &str, t_name: &str, schema: Type) {
+pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
+    let mut table = Relation::default();
     let path_s = format!(
         "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
         query, t_name
@@ -169,6 +168,7 @@ pub fn from_parquet(table: &mut Relation, query: &str, t_name: &str, schema: Typ
             }
         }
     }
+    table
 }
 
 fn find_shared(table_name: &str) -> &str {
@@ -200,10 +200,22 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum Tid<'a> {
+    Name(&'a str),
+    Node(&'a TreeOp),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum Cid<'a> {
+    Idx(usize),
+    Attr(&'a Attribute),
+}
+
 pub fn build_tables<'a>(
     db: &'a DB,
     materialized_columns: &'a [Vec<Value>],
-    views: &HashMap<&TreeOp, HashMap<Attribute, usize>>,
+    views: &'a HashMap<&'a TreeOp, HashMap<Attribute, usize>>,
     in_view: &'a HashMap<&'a str, &'a TreeOp>,
     plan: &'a [Vec<&'a Attribute>],
 ) -> (Vec<Tb<'a, Value>>, Vec<Vec<Attribute>>) {
@@ -216,50 +228,70 @@ pub fn build_tables<'a>(
         for a in node {
             let t = a.table_name.as_str();
 
-            let col = in_view
-                .get(t)
-                .map(|tree_op| &materialized_columns[*views.get(tree_op).unwrap().get(a).unwrap()])
-                .unwrap_or_else(|| db.get(t).unwrap().get(a).unwrap());
 
-            id_cols
-                .entry(t)
-                .or_insert(IndexMap::new())
-                .insert(&**a, col);
+            if let Some(tree_op) = in_view.get(t) {
+                let tid = Tid::Node(tree_op);
+                let idx = *views[tree_op].get(a).unwrap();
+                let col = &materialized_columns[idx];
+
+                id_cols
+                    .entry(tid)
+                    .or_insert(IndexMap::new())
+                    .insert(Cid::Idx(idx), col);
+            } else {
+                let tid = Tid::Name(t);
+                let col = &db[t][a];
+                id_cols
+                    .entry(tid)
+                    .or_insert(IndexMap::new())
+                    .insert(Cid::Attr(a), col);
+            }
         }
     }
 
-    for (&t, cols) in &id_cols {
-        if let Some(tree_op) = in_view.get(t) {
-            for (attr, data_col_idx) in views.get(tree_op).unwrap() {
-                let data_col = &materialized_columns[*data_col_idx];
-                if !cols.contains_key(attr) {
-                    data_cols
-                        .entry(t)
-                        .or_insert(IndexMap::new())
-                        .insert(attr.clone(), data_col);
+    for (t, cols) in &id_cols {
+        match t {
+            Tid::Node(tree_op) => {
+                for (attr, data_col_idx) in views.get(tree_op).unwrap() {
+                    let data_col = &materialized_columns[*data_col_idx];
+                    if !cols.contains_key(&Cid::Idx(*data_col_idx)) {
+                        data_cols
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .insert(attr.clone(), data_col);
+                    }
                 }
             }
-        } else {
-            for (attr, data_col) in db.get(t).unwrap() {
-                if !cols.contains_key(attr) {
-                    data_cols
-                        .entry(t)
-                        .or_insert(IndexMap::new())
-                        .insert(attr.clone(), data_col);
+            Tid::Name(t_name) => {
+                for (attr, data_col) in db.get(*t_name).unwrap() {
+                    if !cols.contains_key(&Cid::Attr(attr)) {
+                        data_cols
+                            .entry(t.clone())
+                            .or_insert(IndexMap::new())
+                            .insert(attr.clone(), data_col);
+                    }
                 }
             }
         }
     }
 
     for cols in data_cols.values() {
-        let vars = cols.keys().cloned().collect();
-        out_vars.push(vars);
+        let vars: Vec<_> = cols.keys().cloned().collect();
+        if !vars.is_empty() {
+            out_vars.push(vars);
+        }
     }
 
     let start = Instant::now();
 
     let (trie_name, cols) = id_cols.first().unwrap();
-    println!("building flat table on {}", trie_name);
+    if let Tid::Name(s) = trie_name {
+        println!("building flat table on {}", s);
+    } else {
+        println!("building flat table on intermediate");
+    }
+
+    // println!("{:#?}", cols.keys());
 
     let mut ids = vec![];
     let mut data = vec![];
@@ -269,6 +301,7 @@ pub fn build_tables<'a>(
     }
 
     if let Some(cols) = data_cols.get(trie_name) {
+        // println!("{:#?}", cols.keys());
         for col in cols.values() {
             data.push(&col[..])
         }
@@ -276,15 +309,20 @@ pub fn build_tables<'a>(
 
     tables.push(Tb::Arr((ids, data)));
 
-    println!(
-        "building {} takes {}s",
-        trie_name,
-        start.elapsed().as_secs_f32()
-    );
+    println!("building table takes {}s", start.elapsed().as_secs_f32());
 
     for (table_name, cols) in id_cols.iter().skip(1) {
         let start = Instant::now();
-        println!("building trie on {}", table_name);
+        if let Tid::Name(s) = table_name {
+            println!("building table on {}", s);
+        } else {
+            println!("building table on intermediate");
+        }
+
+        // println!("{:#?}", cols.keys());
+        // if let Some(cols) = data_cols.get(table_name) {
+        //     println!("{:#?}", cols.keys());
+        // }
 
         let mut trie = Trie::default();
 
@@ -292,12 +330,12 @@ pub fn build_tables<'a>(
             let mut ids = Vec::new();
             let mut data = Vec::new();
 
-            for (_col_name, col) in cols {
+            for col in cols.values() {
                 ids.push(col[i].as_num());
             }
 
             if let Some(cols) = data_cols.get(table_name) {
-                for (_col_name, col) in cols {
+                for col in cols.values() {
                     data.push(col[i].clone());
                 }
             }
@@ -307,11 +345,7 @@ pub fn build_tables<'a>(
 
         tables.push(Tb::Trie(trie));
 
-        println!(
-            "building {} takes {}s",
-            table_name,
-            start.elapsed().as_secs_f32()
-        );
+        println!("building table takes {}", start.elapsed().as_secs_f32());
     }
     (tables, out_vars)
 }

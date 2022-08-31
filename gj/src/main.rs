@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Instant};
 
 use gj::{
     join::*,
@@ -10,15 +10,15 @@ use gj::{
 };
 
 fn main() {
-    for (q, id) in queries() {
-        println!("running query {} ", q);
+    for (q, i) in queries() {
+        println!("running query {}: {} ", q, i);
 
         let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
-        let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", id)).unwrap();
+        let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", i)).unwrap();
 
         let scan = get_scans(&scan_tree);
-        let plan = to_gj_plan(&plan_tree);
         let payload = get_payload(&plan_tree);
+        let plan = to_gj_plan(&plan_tree);
 
         let db = load_db(q, &scan, &plan);
 
@@ -26,31 +26,45 @@ fn main() {
         let mut views = HashMap::new();
         let mut in_view = HashMap::new();
 
+        let start = Instant::now();
+
         for node in to_materialize(&plan_tree) {
             let plan = to_left_deep_plan(node);
             let (compiled_plan, _) = compile_gj_plan(&plan, &[], &in_view);
-            println!("{:?}", compiled_plan);
+
+            // println!("{:?}", compiled_plan);
 
             let (tables, out_vars) =
                 build_tables(&db, &materialized_columns, &views, &in_view, &plan);
 
             let mut new_columns = Vec::new();
-            let out = views.get_mut(node).unwrap();
+            let mut out = HashMap::new();
             let tuple = &[];
+            let view_len = materialized_columns.len();
 
             bushy_join(
                 &tables,
                 &compiled_plan,
                 tuple,
                 &plan,
-                &out_vars,
-                out,
-                &mut new_columns,
+                OutInfo {
+                    out_vars: &out_vars,
+                    out: &mut out,
+                    view_len,
+                    new_columns: &mut new_columns,
+                },
             );
 
+            // println!("materialized {:?}", out.keys());
+            views.insert(node, out);
             materialized_columns.extend(new_columns);
             update_materialize_map(node, &mut in_view);
         }
+
+        let elapsed = start.elapsed().as_secs_f32();
+        println!("join takes: {:?}", elapsed);
+
+        print!("output: ");
 
         for attr in payload {
             let col = in_view
@@ -59,24 +73,28 @@ fn main() {
                     &materialized_columns[*views.get(tree_op).unwrap().get(attr).unwrap()]
                 })
                 .unwrap();
-            println!(
+            print!(
                 "{:?}",
                 col.iter()
                     .min_by(|x, y| { x.partial_cmp(y).unwrap() })
                     .unwrap()
             );
         }
+
+        let now = start.elapsed().as_secs_f32();
+
+        println!();
+        println!("total takes: {:?}", now);
+
     }
 }
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    let queries = vec![
-        ("33c", "IMDBQ113"), // SLOW
-    ];
+    // let queries = vec![("6a", "IMDBQ018")];
 
-    /*
-    let bushy = false;
+    // /*
+    let bushy = true;
     let linear = true;
 
     let mut queries = vec![];
@@ -235,6 +253,5 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     }
 
     // */
-
     queries
 }

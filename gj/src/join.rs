@@ -94,9 +94,7 @@ pub fn bushy_join(
     compiled_plan: &[Vec<usize>],
     tuple: &[i32],
     plan: &[Vec<&Attribute>],
-    out_vars: &[Vec<Attribute>],
-    out: &mut HashMap<Attribute, usize>,
-    new_columns: &mut Vec<Vec<Value>>,
+    o: OutInfo,
 ) {
     let js = &compiled_plan[0];
 
@@ -120,9 +118,12 @@ pub fn bushy_join(
                     compiled_plan,
                     tuple,
                     plan,
-                    out_vars,
-                    out,
-                    new_columns,
+                    OutInfo {
+                        out_vars: o.out_vars,
+                        out: o.out,
+                        view_len: o.view_len,
+                        new_columns: o.new_columns,
+                    },
                 );
             }
             return;
@@ -130,25 +131,32 @@ pub fn bushy_join(
     }
 }
 
+pub struct OutInfo<'a> {
+    pub out_vars: &'a [Vec<Attribute>],
+    pub out: &'a mut HashMap<Attribute, usize>,
+    pub view_len: usize,
+    pub new_columns: &'a mut Vec<Vec<Value>>,
+}
+
 pub fn bushy_join_inner(
     relations: &[&Trie<Value>],
     compiled_plan: &[Vec<usize>],
     tuple: &[i32],
     plan: &[Vec<&Attribute>],
-    out_vars: &[Vec<Attribute>],
-    out: &mut HashMap<Attribute, usize>,
-    new_columns: &mut Vec<Vec<Value>>,
+    o: OutInfo,
 ) {
     if compiled_plan.is_empty() {
         let payload = Vec::new();
-        materialize(relations, tuple, plan, &payload, out_vars, out, new_columns);
+        materialize(relations, tuple, plan, &payload, o);
     } else {
         let js = &compiled_plan[0];
 
         let j_min = js
             .iter()
             .copied()
-            .min_by_key(|&j| relations[j].get_map().unwrap().len())
+            .min_by_key(|&j| {
+                relations[j].get_map().unwrap().len()
+            })
             .unwrap();
 
         for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
@@ -176,9 +184,12 @@ pub fn bushy_join_inner(
                     &compiled_plan[1..],
                     &t[..],
                     plan,
-                    out_vars,
-                    out,
-                    new_columns,
+                    OutInfo {
+                        out_vars: o.out_vars,
+                        out: o.out,
+                        view_len: o.view_len,
+                        new_columns: o.new_columns,
+                    },
                 );
             }
         }
@@ -190,48 +201,70 @@ fn materialize(
     tuple: &[i32],
     plan: &[Vec<&Attribute>],
     payload: &[&[Value]],
-    out_vars: &[Vec<Attribute>],
-    out: &mut HashMap<Attribute, usize>,
-    materialized_columns: &mut Vec<Vec<Value>>,
+    o: OutInfo,
 ) {
     if relations.is_empty() {
         for (id, attrs) in tuple.iter().zip(plan.iter()) {
-            let idx = *out
+            let idx = *o
+                .out
                 .entry(attrs[0].clone())
-                .or_insert_with(|| materialized_columns.len());
-            if idx == materialized_columns.len() {
-                materialized_columns.push(Vec::new());
+                .or_insert_with(|| o.view_len + o.new_columns.len())
+                - o.view_len;
+            if idx == o.new_columns.len() {
+                o.new_columns.push(Vec::new());
             }
-            materialized_columns[idx].push(Value::Num(*id));
+            o.new_columns[idx].push(Value::Num(*id));
             for a in attrs {
-                out.insert((*a).clone(), idx);
+                o.out.insert((*a).clone(), idx + o.view_len);
             }
         }
-        for (vals, attrs) in payload.iter().zip(out_vars.iter()) {
+        for (vals, attrs) in payload.iter().zip(o.out_vars.iter()) {
             for (a, v) in attrs.iter().zip(vals.iter()) {
-                let idx = *out
+                let idx = *o
+                    .out
                     .entry(a.clone())
-                    .or_insert_with(|| materialized_columns.len());
-                if idx == materialized_columns.len() {
-                    materialized_columns.push(Vec::new());
+                    .or_insert_with(|| o.view_len + o.new_columns.len())
+                    - o.view_len;
+                if idx == o.new_columns.len() {
+                    o.new_columns.push(Vec::new());
                 }
-                materialized_columns[idx].push(v.clone());
+                o.new_columns[idx].push(v.clone());
+                o.out.insert(a.clone(), idx + o.view_len);
             }
         }
     } else {
         let mut p = payload.to_vec();
-        for vs in relations[0].get_data().unwrap() {
-            p.push(vs);
+
+        if relations[0].get_data().unwrap().is_empty() {
             materialize(
-                relations,
+                &relations[1..],
                 tuple,
                 plan,
                 &p,
-                out_vars,
-                out,
-                materialized_columns,
+                OutInfo {
+                    out_vars: o.out_vars,
+                    out: o.out,
+                    view_len: o.view_len,
+                    new_columns: o.new_columns,
+                },
             );
-            p.pop();
+        } else {
+            for vs in relations[0].get_data().unwrap() {
+                p.push(vs);
+                materialize(
+                    &relations[1..],
+                    tuple,
+                    plan,
+                    &p,
+                    OutInfo {
+                        out_vars: o.out_vars,
+                        out: o.out,
+                        view_len: o.view_len,
+                        new_columns: o.new_columns,
+                    },
+                );
+                p.pop();
+            }
         }
     }
 }
