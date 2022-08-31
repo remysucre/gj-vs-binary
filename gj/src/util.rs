@@ -99,24 +99,23 @@ pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
 
     for attr in scan {
         for table_name in &plan_table_name[&attr.table_name.as_str()] {
-
             if loaded.contains(table_name) {
                 continue;
             }
 
             println!("Loading {} to DB", table_name);
-    
+
             let mut col_types = attr
                 .attributes
                 .iter()
                 .map(|a| Arc::new(type_of(&a.attr_name)))
                 .collect();
-    
+
             let table_schema = Type::group_type_builder("duckdb_schema")
                 .with_fields(&mut col_types)
                 .build()
                 .unwrap();
-    
+
             db.insert(
                 table_name.to_string(),
                 from_parquet(q, table_name, table_schema),
@@ -309,20 +308,20 @@ pub fn build_tables<'a>(
         println!("building flat table on intermediate");
     }
 
-    println!("ID cols {:#?}", cols.keys());
+    let d_cols: Vec<_> = data_cols
+        .get(trie_name)
+        .map(|cs| cs.values().collect::<Vec<_>>())
+        .unwrap_or_default();
 
-    let mut ids = vec![];
-    let mut data = vec![];
+    let mut ids = Vec::with_capacity(cols.len());
+    let mut data = Vec::with_capacity(d_cols.len());
 
     for col in cols.values() {
         ids.push(&col[..])
     }
 
-    if let Some(cols) = data_cols.get(trie_name) {
-        println!("Data cols {:#?}", cols.keys());
-        for col in cols.values() {
-            data.push(&col[..])
-        }
+    for d_col in d_cols {
+        data.push(&d_col[..])
     }
 
     tables.push(Tb::Arr((ids, data)));
@@ -337,25 +336,26 @@ pub fn build_tables<'a>(
             println!("building table on intermediate");
         }
 
-        println!("ID cols {:#?}", cols.keys());
-        if let Some(cols) = data_cols.get(table_name) {
-            println!("Data cols {:#?}", cols.keys());
-        }
-
         let mut trie = Trie::default();
 
+        let d_cols: Vec<_> = data_cols
+            .get(table_name)
+            .map(|cs| cs.values().collect::<Vec<_>>())
+            .unwrap_or_default();
+
+        let id_len = cols.len();
+        let d_len = d_cols.len();
+
         for i in 0..cols[0].len() {
-            let mut ids = Vec::new();
-            let mut data = Vec::new();
+            let mut ids = Vec::with_capacity(id_len);
+            let mut data = Vec::with_capacity(d_len);
 
             for col in cols.values() {
                 ids.push(col[i].as_num());
             }
 
-            if let Some(cols) = data_cols.get(table_name) {
-                for col in cols.values() {
-                    data.push(col[i].clone());
-                }
+            for col in &d_cols {
+                data.push(col[i].clone());
             }
 
             trie.insert(&ids, data);
@@ -367,10 +367,9 @@ pub fn build_tables<'a>(
     }
     let vars = out_vars
         .into_values()
-        .map(|cols| {
-            cols.into_values().collect()
-        }).collect();
-        
+        .map(|cols| cols.into_values().collect())
+        .collect();
+
     (tables, vars)
 }
 

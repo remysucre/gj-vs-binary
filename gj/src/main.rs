@@ -4,7 +4,7 @@ use gj::{
     join::*,
     sql::{
         get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan, to_materialize,
-        update_materialize_map, TreeOp, Attribute,
+        update_materialize_map,
     },
     util::*,
 };
@@ -22,11 +22,6 @@ fn main() {
 
         let db = load_db(q, &scan, &plan);
 
-        println!("{:?}", db.keys());
-        for c in db.values() {
-            println!("{:?}", c.keys());
-        }
-
         let mut materialized_columns = Vec::new();
         let mut views = HashMap::new();
         let mut in_view = HashMap::new();
@@ -37,8 +32,6 @@ fn main() {
             let plan = to_left_deep_plan(node);
             let (compiled_plan, _) = compile_gj_plan(&plan, &[], &in_view);
 
-            // println!("{:?}", compiled_plan);
-
             let (tables, out_vars) =
                 build_tables(&db, &materialized_columns, &views, &in_view, &plan);
 
@@ -46,6 +39,8 @@ fn main() {
             let mut out = HashMap::new();
             let tuple = &[];
             let view_len = materialized_columns.len();
+
+            let now = Instant::now();
 
             bushy_join(
                 &tables,
@@ -60,15 +55,9 @@ fn main() {
                 },
             );
 
-            // println!("materialized {:?}", out.keys());
-            views.insert(node, out);
+            println!("bushy join takes {}", now.elapsed().as_secs_f32());
 
-            for m in views.values() {
-                println!("MAPPPP");
-                for (a, i) in m.iter() {
-                    println!("in view {:#?}", (a, i));
-                }
-            }    
+            views.insert(node, out);
 
             materialized_columns.extend(new_columns);
             update_materialize_map(node, &mut in_view);
@@ -98,19 +87,14 @@ fn main() {
 
         println!();
         println!("total takes: {:?}", now);
-
     }
 }
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    // let queries = vec![
-    //         ("33a", "IMDBQ111"),
-    //         ("33b", "IMDBQ112"), // SLOW
-    //         ("33c", "IMDBQ113"), // SLOW
-    //     ];
+    let queries = vec![("31c", "IMDBQ108")];
 
-    // /*
+    /*
     let bushy = false;
     let linear = true;
 

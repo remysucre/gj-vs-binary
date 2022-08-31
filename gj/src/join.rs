@@ -154,9 +154,7 @@ pub fn bushy_join_inner(
         let j_min = js
             .iter()
             .copied()
-            .min_by_key(|&j| {
-                relations[j].get_map().unwrap().len()
-            })
+            .min_by_key(|&j| relations[j].get_map().unwrap().len())
             .unwrap();
 
         for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
@@ -220,7 +218,6 @@ fn materialize(
         }
         for (vals, attrs) in payload.iter().zip(o.out_vars.iter()) {
             for (a, v) in attrs.iter().zip(vals.iter()) {
-
                 let idx = *o
                     .out
                     .entry(a[0].clone())
