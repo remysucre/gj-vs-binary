@@ -111,7 +111,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     //     ];
 
     // /*
-    let bushy = true;
+    let bushy = false;
     let linear = true;
 
     let mut queries = vec![];
