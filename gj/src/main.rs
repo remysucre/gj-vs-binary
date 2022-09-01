@@ -1,14 +1,6 @@
 use std::{collections::HashMap, time::Instant};
 
-use gj::{
-    join::*,
-    sql::{
-        get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan, to_materialize,
-        map_tables_to_node,
-    },
-    trie::{RawValue, Value},
-    util::*, from_raw,
-};
+use gj::{join::*, sql::*, util::*};
 use indexmap::IndexMap;
 
 fn main() {
@@ -24,7 +16,7 @@ fn main() {
 
         let raw_db = load_db(q, &scan, &plan);
         let db = from_raw(&raw_db);
-        
+
         let mut in_view = HashMap::new();
         let mut provides = IndexMap::new();
         let mut build_plans = IndexMap::new();
@@ -32,9 +24,7 @@ fn main() {
 
         let tm = to_materialize(&plan_tree);
 
-        let root = tm[tm.len() -1];
-        // let root = to_materialize(&plan_tree)
-        // assert!(to_materialize(&plan_tree).contains(&&plan_tree));
+        let root = tm[tm.len() - 1];
 
         for node in to_materialize(&plan_tree) {
             let plan = to_left_deep_plan(node);
@@ -48,34 +38,7 @@ fn main() {
             map_tables_to_node(node, &mut in_view);
         }
 
-        // for p in &build_plans {
-        //     for (t, id_cols, data_cols) in p.1 {
-        //         println!("PLAN");
-        //         for col in id_cols {
-        //             match col {
-        //                 ColID::Name(s) => println!(" {} ", s),
-        //                 ColID::Id(i) => {
-        //                     if let TableID::Node(n) = t {
-        //                         println!(" {:?} ", provides[n][*i]);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         for col in data_cols {
-        //             match col {
-        //                 ColID::Name(s) => println!(" {} ", s),
-        //                 ColID::Id(i) => {
-        //                     if let TableID::Node(n) = t {
-        //                         println!(" {:?} ", provides[n][*i]);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
         let mut views = HashMap::new();
-
 
         let start = Instant::now();
 
@@ -86,10 +49,10 @@ fn main() {
             let build_start = Instant::now();
             let tables = build_ts(&db, &views, build_plan);
             println!("Building takes {}", build_start.elapsed().as_secs_f32());
-            
+
             let mut intermediate = Vec::new();
             let mut tuple = vec![];
-            
+
             println!("Running join");
             let join_start = Instant::now();
             bushy_join(&tables, compiled_plan, &mut tuple, &mut intermediate);
@@ -103,21 +66,25 @@ fn main() {
         let final_attrs = provides.get(&root).unwrap();
         let final_view = views.get(&root).unwrap();
 
-
         print!("output ");
 
-        let payload_ids: Vec<_> = payload.iter().map(|p| {
-            final_attrs.iter().position(|attrs| attrs.contains(p)).unwrap()
-        }).collect();
+        let payload_ids: Vec<_> = payload
+            .iter()
+            .map(|p| {
+                final_attrs
+                    .iter()
+                    .position(|attrs| attrs.contains(p))
+                    .unwrap()
+            })
+            .collect();
 
-        // let mut result = HashMap::with_capacity(capacity);
         let mut result = Vec::new();
 
         for row in final_view {
             if result.is_empty() {
                 result = payload_ids.iter().map(|i| &row[*i]).collect();
             } else {
-                for (j, i)  in payload_ids.iter().enumerate() {
+                for (j, i) in payload_ids.iter().enumerate() {
                     if result[j] > &row[*i] {
                         result[j] = &row[*i];
                     }
@@ -126,147 +93,26 @@ fn main() {
         }
 
         println!("{:?}", result);
-
         println!("Total takes {}", start.elapsed().as_secs_f32());
- 
-        // for a in payload {
-        //     let idx = final_attrs.iter().position(|attrs| attrs.contains(a)).unwrap();
-        //     let result = final_view[idx].iter().min_by(|x, y| x.partial_cmp(y).unwrap()).unwrap();
-        //     println!(" {:?} ", result);
-        // }
-        // println!();
-
-        // for attr_sets in provides.values() {
-        //     println!("provides {:#?}", attr_sets);
-        // }
-
-        // for p in build_plans {
-        //     for (t, cols) in p {
-        //         println!("PLAN");
-        //         for col in cols {
-        //             match col {
-        //                 ColID::Name(s) => println!(" {} ", s),
-        //                 ColID::Id(i) => {
-        //                     if let TableID::Node(n) = t {
-        //                         println!(" {:?} ", provides[n][i]);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-        // println!("build_plans {:#?}", build_plans);
-
-
-        // let mut materialized_columns = Vec::new();
-        // let mut views = HashMap::new();
-
-        // let start = Instant::now();
-
-        // // compute a plan: compute an ordering of tables, then
-        // // for each table, compute an ordering of columns
-        // // a table is identified with a name if it is a base table,
-        // // or with a tree node if it is a view
-        // // a column is identified with a name if it is a base column,
-        // // or with an index if it is a view column
-
-        // // this requires the following mappings:
-        // // 1. an attribute to an index for each view
-        // // 2. an attribute to the view (tree node) that provides it, if any
-
-        // // update_materialize_map updates mapping 2.
-        // // to update mapping 1, we first map each plan attribute to its plan level.
-        // // then, for each table / view, we map each attribute to the next index.
-
-        // // every view will have two attribute orderings:
-        // // 1. the ordering it provides, and
-        // // 2. the ordering a plan needs from it.
-
-        // for node in to_materialize(&plan_tree) {
-        //     let plan = to_left_deep_plan(node);
-
-        //     update_materialize_map(node, &mut in_view);
-        // }
-
-        // for node in to_materialize(&plan_tree) {
-        //     let plan = to_left_deep_plan(node);
-        //     let (compiled_plan, _) = compile_gj_plan(&plan, &[], &in_view);
-
-        //     let (tables, out_vars) =
-        //         build_tables(&db, &materialized_columns, &views, &in_view, &plan);
-
-        //     let mut new_columns = Vec::new();
-        //     let mut out = HashMap::new();
-        //     let mut tuple = Vec::new();
-        //     let view_len = materialized_columns.len();
-
-        //     let now = Instant::now();
-
-        //     bushy_join(
-        //         &tables,
-        //         &compiled_plan,
-        //         &tuple,
-        //         &plan,
-        //         &out_vars,
-        //         &mut out,
-        //         view_len,
-        //         &mut new_columns,
-        //     );
-
-        //     println!("bushy join takes {}", now.elapsed().as_secs_f32());
-
-        //     views.insert(node, out);
-
-        //     materialized_columns.extend(new_columns);
-        //     update_materialize_map(node, &mut in_view);
-        // }
-
-        // let elapsed = start.elapsed().as_secs_f32();
-        // println!("join takes: {:?}", elapsed);
-
-        // print!("output: ");
-
-        // for attr in payload {
-        //     let col = in_view
-        //         .get(attr.table_name.as_str())
-        //         .map(|tree_op| {
-        //             &materialized_columns[*views.get(tree_op).unwrap().get(attr).unwrap()]
-        //         })
-        //         .unwrap();
-        //     print!(
-        //         "{:?}",
-        //         col.iter()
-        //             .min_by(|x, y| { x.partial_cmp(y).unwrap() })
-        //             .unwrap()
-        //     );
-        // }
-
-        // let now = start.elapsed().as_secs_f32();
-
-        // println!();
-        // println!("total takes: {:?}", now);
     }
 }
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-
     // let queries = vec![("33c", "IMDBQ113")];
 
-    // let queries = vec![
-    //     ("31c", "IMDBQ108"),
-    //     ("31b", "IMDBQ107"),
-    //     ("25c", "IMDBQ090"),
-    //     ("25a", "IMDBQ088"),
-    //     ("8c", "IMDBQ029"),
-    //     ("17e", "IMDBQ064"),
-    //     ("16b", "IMDBQ057"),
-    //     ("8d", "IMDBQ030"),
-    //     ("6f", "IMDBQ023"),
-    // ];
+    let queries = vec![
+        ("16a", "IMDBQ056"),
+        ("16b", "IMDBQ057"),
+        ("16c", "IMDBQ058"),
+        ("16d", "IMDBQ059"),
+        ("17e", "IMDBQ064"),
+        ("6f", "IMDBQ023"),
+        ("8c", "IMDBQ029"),
+        ("8d", "IMDBQ030"),
+    ];
 
-    // /*
+    /*
     let bushy = true;
     let linear = true;
 

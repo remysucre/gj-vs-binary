@@ -17,12 +17,6 @@ pub enum RawValue {
     Num(i32),
 }
 
-// #[derive(Clone)]
-// pub enum ValRef<'a> {
-//     Id(i32),
-//     Val(&'a Value),
-// }
-
 impl Value<'_> {
     pub fn as_num(&self) -> i32 {
         match self {
@@ -40,32 +34,10 @@ pub enum Trie<T> {
 
 pub type Schema = Vec<Attribute>;
 
-// pub struct Table<'a, T> {
-//     pub schema: Schema,
-//     pub data: Tb<'a, T>,
-// }
-
 pub enum Tb<'a, 'b, T> {
     Trie(Trie<T>),
     Arr((Vec<&'b [Value<'a>]>, Vec<&'b [T]>)),
 }
-
-// impl<'a, T> Table<'a, T> {
-//     pub fn get_data(&self) -> Result<&[Vec<&'a T>], NotAData> {
-//         match &self.data {
-//             Tb::Trie(Trie::Data(data)) => Ok(data),
-//             // Table::Single((_, data)) => Ok(&data),
-//             _ => Err(NotAData),
-//         }
-//     }
-
-//     pub fn get_map(&self) -> Result<&HashMap<Id, Trie<T>>, NotANode> {
-//         match &self.data {
-//             Tb::Trie(Trie::Node(map)) => Ok(map),
-//             _ => Err(NotANode),
-//         }
-//     }
-// }
 
 #[derive(Debug, Clone, Copy)]
 pub struct NotAData;

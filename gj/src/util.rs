@@ -1,9 +1,8 @@
 // use core::slice::SlicePattern;
 use std::collections::{HashMap, HashSet};
 use std::path;
-use std::time::Instant;
 
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
     file::reader::{FileReader, SerializedFileReader},
@@ -20,6 +19,58 @@ use crate::{
     trie::{Trie, Value},
     *,
 };
+
+pub fn from_raw(rdb: &RawDB) -> DB {
+    rdb.iter()
+        .map(|(name, table)| {
+            let t: HashMap<_, _> = table
+                .iter()
+                .map(|(attr, col)| {
+                    let c: Vec<_> = col
+                        .iter()
+                        .map(|val| match val {
+                            RawValue::Num(id) => Value::Num(*id),
+                            RawValue::Str(s) => Value::Str(s.as_str()),
+                        })
+                        .collect();
+                    (attr.clone(), c)
+                })
+                .collect();
+            (name.clone(), t)
+        })
+        .collect()
+}
+
+pub fn debug_build_plans<'a>(
+    build_plans: &IndexMap<&'a TreeOp, BuildPlan<'a>>,
+    provides: &IndexMap<&'a TreeOp, Vec<Vec<Attribute>>>,
+) {
+    for p in build_plans {
+        for (t, id_cols, data_cols) in p.1 {
+            println!("PLAN");
+            for col in id_cols {
+                match col {
+                    ColID::Name(s) => println!(" {} ", s),
+                    ColID::Id(i) => {
+                        if let TableID::Node(n) = t {
+                            println!(" {:?} ", provides[n][*i]);
+                        }
+                    }
+                }
+            }
+            for col in data_cols {
+                match col {
+                    ColID::Name(s) => println!(" {} ", s),
+                    ColID::Id(i) => {
+                        if let TableID::Node(n) = t {
+                            println!(" {:?} ", provides[n][*i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 pub fn compile_gj_plan<'a>(
     plan: &[Vec<&'a Attribute>],
@@ -56,22 +107,6 @@ pub fn compile_gj_plan<'a>(
     (compiled_plan, compiled_payload)
 }
 
-// take the min of each attribute
-// the result is in the form [[t1.c1, t1.c2, ...], [t2.c1, t2.c2, ...], ...]
-// pub fn aggregate_min(result: &mut Vec<Vec<Value>>, payload: &[&[Value]]) {
-//     if result.is_empty() {
-//         result.extend(payload.iter().map(|ss| ss.to_vec()));
-//     } else if payload.len() == result.len() {
-//         for (i, s) in payload.iter().enumerate() {
-//             for (j, v) in s.iter().enumerate() {
-//                 if result[i][j] > *v {
-//                     result[i][j] = v.clone();
-//                 }
-//             }
-//         }
-//     }
-// }
-
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub enum TableID<'a> {
     Name(String),
@@ -99,24 +134,31 @@ pub fn compute_full_plan<'a>(
     // traverse plan bottom up to collect table and column ordering
     for attrs in plan {
         for a in attrs {
-
             let col_id;
             let table_id;
 
             if let Some(node) = in_view.get(a.table_name.as_str()) {
                 table_id = TableID::Node(&**node);
-                col_id = ColID::Id(provides[node].iter().position(|attrs| attrs.contains(a)).unwrap());
+                col_id = ColID::Id(
+                    provides[node]
+                        .iter()
+                        .position(|attrs| attrs.contains(a))
+                        .unwrap(),
+                );
             } else {
                 table_id = TableID::Name(a.table_name.clone());
                 col_id = ColID::Name(a.attr_name.clone());
             };
 
-            build_plan.entry(table_id).or_default().insert(col_id, vec![]);
+            build_plan
+                .entry(table_id)
+                .or_default()
+                .insert(col_id, vec![]);
         }
     }
 
     // collect data columns to the back of building order
-    // collect attributes attached to each column 
+    // collect attributes attached to each column
     // a view column can have more than 1 attributes if it was a join column
     for (table_id, column_ids) in build_plan.iter_mut() {
         match table_id {
@@ -317,19 +359,6 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-enum Tid<'a> {
-    Name(&'a str),
-    Node(&'a TreeOp),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-enum Cid<'a> {
-    Idx(usize),
-    Attr(&'a Attribute),
-}
-
-
 // TODO lots of repetition, refactor this
 pub fn build_ts<'a, 'b>(
     db: &'b DB<'a>,
@@ -359,7 +388,7 @@ pub fn build_ts<'a, 'b>(
     } else {
         unreachable!("Left table cannot be a view");
     }
-    
+
     for (t_id, id_col_ids, data_col_ids) in &plan[1..] {
         match t_id {
             TableID::Name(t) => {
@@ -395,7 +424,7 @@ pub fn build_ts<'a, 'b>(
             }
         }
     }
-    
+
     tables
 }
 
@@ -406,8 +435,14 @@ fn build_flat_table<'a, 'b>(
     data_attrs: &[Attribute],
 ) -> (Vec<&'b [Value<'a>]>, Vec<&'b [Value<'a>]>) {
     let rel = &db[table_name];
-    let id_cols: Vec<_> = id_attrs.iter().map(|a| rel.get(a).unwrap().as_slice()).collect();
-    let data_cols: Vec<_> = data_attrs.iter().map(|a| rel.get(a).unwrap().as_slice()).collect();
+    let id_cols: Vec<_> = id_attrs
+        .iter()
+        .map(|a| rel.get(a).unwrap().as_slice())
+        .collect();
+    let data_cols: Vec<_> = data_attrs
+        .iter()
+        .map(|a| rel.get(a).unwrap().as_slice())
+        .collect();
     (id_cols, data_cols)
 }
 
@@ -422,9 +457,9 @@ fn build_trie_from_view<'a>(
     for row in views.get(node).unwrap() {
         let ids: Vec<_> = id_ids.iter().map(|i| row[*i].as_num()).collect();
         let data: Vec<_> = data_ids.iter().map(|i| row[*i].clone()).collect();
-        trie.insert(&ids, data);   
+        trie.insert(&ids, data);
     }
-    
+
     trie
 }
 
@@ -439,7 +474,7 @@ fn build_trie_from_db<'a>(
     let data_cols: Vec<_> = data_attrs.iter().map(|a| rel.get(a).unwrap()).collect();
 
     let mut trie = Trie::default();
-    
+
     for i in 0..id_cols[0].len() {
         let ids: Vec<_> = id_cols.iter().map(|col| col[i].as_num()).collect();
         let data: Vec<_> = data_cols.iter().map(|col| col[i].clone()).collect();
@@ -448,302 +483,6 @@ fn build_trie_from_db<'a>(
     }
 
     trie
-}
-
-// pub fn build_ts<'a, 'b>(
-//     db: &'a DB,
-//     materialized_columns: &'a [Vec<Value>],
-//     views: &'a HashMap<&'a TreeOp, HashMap<Attribute, usize>>,
-//     in_view: &'a HashMap<&'a str, &'a TreeOp>,
-//     plan: &'a [Vec<&'a Attribute>],
-// ) -> (Vec<Tb<'a, Value<'a>>>, Vec<Vec<Vec<Attribute>>>) {
-//     let mut tables = Vec::new();
-//     let mut id_cols = IndexMap::new();
-//     let mut data_cols = IndexMap::new();
-//     let mut out_vars = IndexMap::new();
-
-//     for node in plan {
-//         for a in node {
-//             let t = a.table_name.as_str();
-
-//             if let Some(tree_op) = in_view.get(t) {
-//                 let tid = Tid::Node(tree_op);
-//                 let idx = *views[tree_op].get(a).unwrap();
-//                 let col = &materialized_columns[idx];
-
-//                 id_cols
-//                     .entry(tid)
-//                     .or_insert(IndexMap::new())
-//                     .insert(Cid::Idx(idx), col);
-//             } else {
-//                 let tid = Tid::Name(t);
-//                 let col = &db[t][a];
-//                 id_cols
-//                     .entry(tid)
-//                     .or_insert(IndexMap::new())
-//                     .insert(Cid::Attr(a), col);
-//             }
-//         }
-//     }
-
-//     for (t, cols) in &id_cols {
-//         match t {
-//             Tid::Node(tree_op) => {
-//                 for (attr, data_col_idx) in views.get(tree_op).unwrap() {
-//                     let data_col = &materialized_columns[*data_col_idx];
-//                     if !cols.contains_key(&Cid::Idx(*data_col_idx)) {
-//                         data_cols
-//                             .entry(t.clone())
-//                             .or_insert(IndexMap::new())
-//                             .insert(Cid::Idx(*data_col_idx), data_col);
-//                         out_vars
-//                             .entry(t.clone())
-//                             .or_insert(IndexMap::new())
-//                             .entry(Cid::Idx(*data_col_idx))
-//                             .or_insert(vec![])
-//                             .push(attr.clone());
-//                     }
-//                 }
-//             }
-//             Tid::Name(t_name) => {
-//                 for (attr, data_col) in db.get(*t_name).unwrap() {
-//                     if !cols.contains_key(&Cid::Attr(attr)) {
-//                         data_cols
-//                             .entry(t.clone())
-//                             .or_insert(IndexMap::new())
-//                             .insert(Cid::Attr(attr), data_col);
-//                         out_vars
-//                             .entry(t.clone())
-//                             .or_insert(IndexMap::new())
-//                             .entry(Cid::Attr(attr))
-//                             .or_insert(vec![])
-//                             .push(attr.clone());
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-//     let start = Instant::now();
-
-//     let (trie_name, cols) = id_cols.first().unwrap();
-//     if let Tid::Name(s) = trie_name {
-//         println!("building flat table on {}", s);
-//     } else {
-//         println!("building flat table on intermediate");
-//     }
-
-//     let d_cols: Vec<_> = data_cols
-//         .get(trie_name)
-//         .map(|cs| cs.values().collect::<Vec<_>>())
-//         .unwrap_or_default();
-
-//     let mut ids = Vec::with_capacity(cols.len());
-//     let mut data = Vec::with_capacity(d_cols.len());
-
-//     for col in cols.values() {
-//         ids.push(&col[..])
-//     }
-
-//     for d_col in d_cols {
-//         data.push(&d_col[..])
-//     }
-
-//     tables.push(Tb::Arr((ids, data)));
-
-//     println!("building table takes {}s", start.elapsed().as_secs_f32());
-
-//     for (table_name, cols) in id_cols.iter().skip(1) {
-//         let start = Instant::now();
-//         if let Tid::Name(s) = table_name {
-//             println!("building table on {}", s);
-//         } else {
-//             println!("building table on intermediate");
-//         }
-
-//         let mut trie = Trie::default();
-
-//         let d_cols: Vec<_> = data_cols
-//             .get(table_name)
-//             .map(|cs| cs.values().collect::<Vec<_>>())
-//             .unwrap_or_default();
-
-//         let id_len = cols.len();
-//         let d_len = d_cols.len();
-
-//         for i in 0..cols[0].len() {
-//             let mut ids = Vec::with_capacity(id_len);
-//             let mut data = Vec::with_capacity(d_len);
-
-//             for col in cols.values() {
-//                 ids.push(col[i].as_num());
-//             }
-
-//             for col in &d_cols {
-//                 data.push(col[i].clone());
-//             }
-
-//             trie.insert(&ids, data);
-//         }
-
-//         tables.push(Tb::Trie(trie));
-
-//         println!("building table takes {}", start.elapsed().as_secs_f32());
-//     }
-//     let vars = out_vars
-//         .into_values()
-//         .map(|cols| cols.into_values().collect())
-//         .collect();
-
-//     (tables, vars)
-// }
-
-pub fn build_tables<'a, 'b: 'c, 'c>(
-    db: &'a DB<'a>,
-    materialized_columns: &'c [Vec<Value<'a>>],
-    views: &HashMap<&'b TreeOp, HashMap<Attribute, usize>>,
-    in_view: &HashMap<&str, &'b TreeOp>,
-    plan: &[Vec<&Attribute>],
-) -> (Vec<Tb<'a, 'c, Value<'a>>>, Vec<Vec<Vec<Attribute>>>) {
-    let mut tables = Vec::new();
-    let mut id_cols = IndexMap::new();
-    let mut data_cols = IndexMap::new();
-    let mut out_vars = IndexMap::new();
-
-    for node in plan {
-        for a in node {
-            let t = a.table_name.as_str();
-
-            if let Some(tree_op) = in_view.get(t) {
-                let tid = Tid::Node(tree_op);
-                let idx = *views[tree_op].get(a).unwrap();
-                let col = &materialized_columns[idx];
-
-                id_cols
-                    .entry(tid)
-                    .or_insert(IndexMap::new())
-                    .insert(Cid::Idx(idx), col);
-            } else {
-                let tid = Tid::Name(t);
-                let col = &db[t][a];
-                id_cols
-                    .entry(tid)
-                    .or_insert(IndexMap::new())
-                    .insert(Cid::Attr(a), col);
-            }
-        }
-    }
-
-    for (t, cols) in &id_cols {
-        match t {
-            Tid::Node(tree_op) => {
-                for (attr, data_col_idx) in views.get(tree_op).unwrap() {
-                    let data_col = &materialized_columns[*data_col_idx];
-                    if !cols.contains_key(&Cid::Idx(*data_col_idx)) {
-                        data_cols
-                            .entry(t.clone())
-                            .or_insert(IndexMap::new())
-                            .insert(Cid::Idx(*data_col_idx), data_col);
-                        out_vars
-                            .entry(t.clone())
-                            .or_insert(IndexMap::new())
-                            .entry(Cid::Idx(*data_col_idx))
-                            .or_insert(vec![])
-                            .push(attr.clone());
-                    }
-                }
-            }
-            Tid::Name(t_name) => {
-                for (attr, data_col) in db.get(*t_name).unwrap() {
-                    if !cols.contains_key(&Cid::Attr(attr)) {
-                        data_cols
-                            .entry(t.clone())
-                            .or_insert(IndexMap::new())
-                            .insert(Cid::Attr(attr), data_col);
-                        out_vars
-                            .entry(t.clone())
-                            .or_insert(IndexMap::new())
-                            .entry(Cid::Attr(attr))
-                            .or_insert(vec![])
-                            .push(attr.clone());
-                    }
-                }
-            }
-        }
-    }
-
-    let start = Instant::now();
-
-    let (trie_name, cols) = id_cols.first().unwrap();
-    if let Tid::Name(s) = trie_name {
-        println!("building flat table on {}", s);
-    } else {
-        println!("building flat table on intermediate");
-    }
-
-    let d_cols: Vec<_> = data_cols
-        .get(trie_name)
-        .map(|cs| cs.values().collect::<Vec<_>>())
-        .unwrap_or_default();
-
-    let mut ids = Vec::with_capacity(cols.len());
-    let mut data = Vec::with_capacity(d_cols.len());
-
-    for col in cols.values() {
-        ids.push(&col[..])
-    }
-
-    for d_col in d_cols {
-        data.push(&d_col[..])
-    }
-
-    tables.push(Tb::Arr((ids, data)));
-
-    println!("building table takes {}s", start.elapsed().as_secs_f32());
-
-    for (table_name, cols) in id_cols.iter().skip(1) {
-        let start = Instant::now();
-        if let Tid::Name(s) = table_name {
-            println!("building table on {}", s);
-        } else {
-            println!("building table on intermediate");
-        }
-
-        let mut trie = Trie::default();
-
-        let d_cols: Vec<_> = data_cols
-            .get(table_name)
-            .map(|cs| cs.values().collect::<Vec<_>>())
-            .unwrap_or_default();
-
-        let id_len = cols.len();
-        let d_len = d_cols.len();
-
-        for i in 0..cols[0].len() {
-            let mut ids = Vec::with_capacity(id_len);
-            let mut data = Vec::with_capacity(d_len);
-
-            for col in cols.values() {
-                ids.push(col[i].as_num());
-            }
-
-            for col in &d_cols {
-                data.push(col[i].clone());
-            }
-
-            trie.insert(&ids, data);
-        }
-
-        tables.push(Tb::Trie(trie));
-
-        println!("building table takes {}", start.elapsed().as_secs_f32());
-    }
-    let vars = out_vars
-        .into_values()
-        .map(|cols| cols.into_values().collect())
-        .collect();
-
-    (tables, vars)
 }
 
 fn type_of(col: &str) -> Type {

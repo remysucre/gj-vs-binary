@@ -374,34 +374,6 @@ pub fn to_materialize<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
     nodes
 }
 
-// pub fn intermediate_idx<'a>(root: &'a TreeOp) -> HashMap<&'a str, usize> {
-//     let mut idx = 0;
-//     let mut tables = HashSet::new();
-//     let mut table_idx = HashMap::new();
-
-//     let mut collect_tables = |node: &'a TreeOp, is_right_child: bool| {
-//         if let Some(NodeAttr::Join(attr)) = &node.attr {
-//             for equalizer in &attr.equalizers {
-//                 let lattr = &equalizer.left_attr;
-//                 let rattr = &equalizer.right_attr;
-//                 tables.insert(lattr.table_name.as_str());
-//                 tables.insert(rattr.table_name.as_str());
-//             }
-//         }
-
-//         if is_right_child {
-//             for t in &tables {
-//                 table_idx.insert(*t, idx);
-//             }
-//             idx += 1;
-//         }
-//     };
-
-//     traverse_rlm(root, &mut collect_tables, false);
-
-//     table_idx
-// }
-
 pub fn map_tables_to_node<'a>(root: &'a TreeOp, map: &mut HashMap<&'a str, &'a TreeOp>) {
     let mut collect_reduce = |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
