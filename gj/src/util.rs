@@ -417,19 +417,14 @@ fn build_trie_from_view<'a>(
     id_ids: &[usize],
     data_ids: &[usize],
 ) -> Trie<Value<'a>> {
-    let rel = views.get(node).unwrap();
-    let id_cols: Vec<_> = id_ids.iter().map(|i| &rel[*i]).collect();
-    let data_cols: Vec<_> = data_ids.iter().map(|i| &rel[*i]).collect();
-
     let mut trie = Trie::default();
 
-    for i in 0..id_cols[0].len() {
-        let ids: Vec<_> = id_cols.iter().map(|col| col[i].as_num()).collect();
-        let data: Vec<_> = data_cols.iter().map(|col| col[i].clone()).collect();
-
-        trie.insert(&ids, data);
+    for row in views.get(node).unwrap() {
+        let ids: Vec<_> = id_ids.iter().map(|i| row[*i].as_num()).collect();
+        let data: Vec<_> = data_ids.iter().map(|i| row[*i].clone()).collect();
+        trie.insert(&ids, data);   
     }
-
+    
     trie
 }
 
