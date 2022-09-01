@@ -41,9 +41,32 @@ fn main() {
             map_tables_to_node(node, &mut in_view);
         }
 
-        for (node, p) in plans {
-            let build_p = &build_plans[node];
+        let mut views = HashMap::new();
+
+        // TODO hash treeop by address
+        for (node, plan) in &plans {
+            let build_plan = &build_plans[node];
+            let (compiled_plan, _payload) = compile_gj_plan(plan, &[], &in_view);
+            let tables = build_ts(&db, &views, build_plan);
+
+            let mut intermediate = Vec::new();
+            let mut tuple = vec![];
+
+            bushy_join(&tables, &compiled_plan, &mut tuple, &mut intermediate);
+
+            views.insert(node, intermediate);
         }
+
+        let final_attrs = provides.get(&plan_tree).unwrap();
+        let final_view = views.get(&plan_tree).unwrap();
+
+        print!("output ");
+        for a in payload {
+            let idx = final_attrs.iter().position(|attrs| attrs.contains(a)).unwrap();
+            let result = final_view[idx].iter().min_by(|x, y| x.partial_cmp(y).unwrap()).unwrap();
+            println!(" {:?} ", result);
+        }
+        println!();
 
         // for attr_sets in provides.values() {
         //     println!("provides {:#?}", attr_sets);
