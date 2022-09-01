@@ -72,13 +72,11 @@ pub fn debug_build_plans<'a>(
     }
 }
 
-pub fn compile_gj_plan<'a>(
+pub fn compile_plan<'a>(
     plan: &[Vec<&'a Attribute>],
-    payload: &[&'a Attribute],
     views: &HashMap<&str, &TreeOp>,
-) -> (Vec<Vec<usize>>, Vec<usize>) {
+) -> Vec<Vec<usize>> {
     let mut compiled_plan = Vec::new();
-    let mut compiled_payload = Vec::new();
     let mut table_ids = HashMap::new();
     let mut view_ids = HashMap::new();
 
@@ -95,16 +93,10 @@ pub fn compile_gj_plan<'a>(
             if !node_ids.contains(id) {
                 node_ids.push(*id);
             }
-
-            if payload.iter().any(|b| a.table_name == b.table_name)
-                && !compiled_payload.contains(id)
-            {
-                compiled_payload.push(*id);
-            }
         }
         compiled_plan.push(node_ids);
     }
-    (compiled_plan, compiled_payload)
+    compiled_plan
 }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
@@ -360,7 +352,7 @@ fn find_shared(table_name: &str) -> &str {
 }
 
 // TODO lots of repetition, refactor this
-pub fn build_ts<'a, 'b>(
+pub fn build_tables<'a, 'b>(
     db: &'b DB<'a>,
     views: &HashMap<&TreeOp, Vec<Vec<Value<'a>>>>,
     plan: &BuildPlan,

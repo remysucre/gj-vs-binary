@@ -28,7 +28,7 @@ fn main() {
 
         for node in to_materialize(&plan_tree) {
             let plan = to_left_deep_plan(node);
-            let (compiled_plan, _) = compile_gj_plan(&plan, &[], &in_view);
+            let compiled_plan = compile_plan(&plan, &in_view);
             let (out_schema, build_plan) = compute_full_plan(&db, &plan, &provides, &in_view);
 
             build_plans.insert(node, build_plan);
@@ -47,7 +47,7 @@ fn main() {
             let build_plan = &build_plans[node];
 
             let build_start = Instant::now();
-            let tables = build_ts(&db, &views, build_plan);
+            let tables = build_tables(&db, &views, build_plan);
             println!("Building takes {}", build_start.elapsed().as_secs_f32());
 
             let mut intermediate = Vec::new();
