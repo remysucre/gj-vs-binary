@@ -402,7 +402,7 @@ pub fn to_materialize<'a>(root: &'a TreeOp) -> Vec<&'a TreeOp> {
 //     table_idx
 // }
 
-pub fn update_materialize_map<'a>(root: &'a TreeOp, map: &mut HashMap<&'a str, &'a TreeOp>) {
+pub fn map_tables_to_node<'a>(root: &'a TreeOp, map: &mut HashMap<&'a str, &'a TreeOp>) {
     let mut collect_reduce = |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
             for equalizer in &attr.equalizers {

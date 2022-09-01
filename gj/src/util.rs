@@ -1,3 +1,4 @@
+// use core::slice::SlicePattern;
 use std::collections::{HashMap, HashSet};
 use std::path;
 use std::time::Instant;
@@ -85,12 +86,12 @@ pub enum ColID {
 
 pub type ViewSchema = Vec<Vec<Attribute>>;
 
-pub type BuildPlan<'a> = Vec<(TableID<'a>, Vec<ColID>)>;
+pub type BuildPlan<'a> = Vec<(TableID<'a>, Vec<ColID>, Vec<ColID>)>;
 
 pub fn compute_full_plan<'a>(
     db: &DB,
     plan: &[Vec<&Attribute>],
-    provides: &HashMap<&'a TreeOp, Vec<Vec<Attribute>>>,
+    provides: &IndexMap<&'a TreeOp, Vec<Vec<Attribute>>>,
     in_view: &HashMap<&str, &'a TreeOp>,
 ) -> (ViewSchema, BuildPlan<'a>) {
     let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::new();
@@ -141,12 +142,22 @@ pub fn compute_full_plan<'a>(
     }
 
     // collect build plans into a table ordering, each with a column ordering
-    let build_plan_out = build_plan
-        .iter()
-        .map(|(t, m)| {
-            let cols: Vec<_> = m.keys().cloned().collect();
-            (t.clone(), cols)
-        }).collect();
+    let mut build_plan_out = Vec::new();
+
+    for (t_id, col_id_map) in &build_plan {
+        let mut id_cols = Vec::new();
+        let mut data_cols = Vec::new();
+
+        for (col_id, attrs) in col_id_map {
+            if attrs.is_empty() {
+                id_cols.push(col_id.clone());
+            } else {
+                data_cols.push(col_id.clone());
+            }
+        }
+
+        build_plan_out.push((t_id.clone(), id_cols, data_cols));
+    }
 
     // the output schema for this materialized view
     let mut out_schema: Vec<Vec<Attribute>> = Vec::new();
@@ -316,6 +327,132 @@ enum Tid<'a> {
 enum Cid<'a> {
     Idx(usize),
     Attr(&'a Attribute),
+}
+
+
+// TODO lots of repetition, refactor this
+pub fn build_ts<'a, 'b>(
+    db: &'b DB<'a>,
+    views: &HashMap<&TreeOp, Vec<Vec<Value<'a>>>>,
+    plan: &BuildPlan,
+) -> Vec<Tb<'a, 'b, Value<'a>>> {
+    let mut tables = vec![];
+
+    let (t_id, id_col_ids, data_col_ids) = &plan[0];
+
+    if let TableID::Name(t) = t_id {
+        let to_attr = |cid: &ColID| {
+            if let ColID::Name(a) = cid {
+                Attribute {
+                    table_name: t.to_string(),
+                    attr_name: a.to_string(),
+                }
+            } else {
+                unreachable!("DB table must have named column IDs")
+            }
+        };
+
+        let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
+        let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
+        let flat_table = build_flat_table(db, t, &id_attrs, &data_attrs);
+        tables.push(Tb::Arr(flat_table));
+    } else {
+        unreachable!("Left table cannot be a view");
+    }
+    
+    for (t_id, id_col_ids, data_col_ids) in &plan[1..] {
+        match t_id {
+            TableID::Name(t) => {
+                let to_attr = |cid: &ColID| {
+                    if let ColID::Name(a) = cid {
+                        Attribute {
+                            table_name: t.to_string(),
+                            attr_name: a.to_string(),
+                        }
+                    } else {
+                        unreachable!("DB table must have named column IDs")
+                    }
+                };
+
+                let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
+                let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
+                let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
+                tables.push(Tb::Trie(trie));
+            }
+            TableID::Node(node) => {
+                let to_id = |cid: &ColID| {
+                    if let ColID::Id(i) = cid {
+                        *i
+                    } else {
+                        unreachable!("View table must have usize column IDs")
+                    }
+                };
+
+                let id_ids: Vec<_> = id_col_ids.iter().map(to_id).collect();
+                let data_ids: Vec<_> = data_col_ids.iter().map(to_id).collect();
+                let trie = build_trie_from_view(views, node, &id_ids, &data_ids);
+                tables.push(Tb::Trie(trie));
+            }
+        }
+    }
+    
+    tables
+}
+
+fn build_flat_table<'a, 'b>(
+    db: &'b DB<'a>,
+    table_name: &str,
+    id_attrs: &[Attribute],
+    data_attrs: &[Attribute],
+) -> (Vec<&'b [Value<'a>]>, Vec<&'b [Value<'a>]>) {
+    let rel = &db[table_name];
+    let id_cols: Vec<_> = id_attrs.iter().map(|a| rel.get(a).unwrap().as_slice()).collect();
+    let data_cols: Vec<_> = data_attrs.iter().map(|a| rel.get(a).unwrap().as_slice()).collect();
+    (id_cols, data_cols)
+}
+
+fn build_trie_from_view<'a>(
+    views: &HashMap<&TreeOp, Vec<Vec<Value<'a>>>>,
+    node: &TreeOp,
+    id_ids: &[usize],
+    data_ids: &[usize],
+) -> Trie<Value<'a>> {
+    let rel = views.get(node).unwrap();
+    let id_cols: Vec<_> = id_ids.iter().map(|i| &rel[*i]).collect();
+    let data_cols: Vec<_> = data_ids.iter().map(|i| &rel[*i]).collect();
+
+    let mut trie = Trie::default();
+
+    for i in 0..id_cols[0].len() {
+        let ids: Vec<_> = id_cols.iter().map(|col| col[i].as_num()).collect();
+        let data: Vec<_> = data_cols.iter().map(|col| col[i].clone()).collect();
+
+        trie.insert(&ids, data);
+    }
+
+    trie
+}
+
+fn build_trie_from_db<'a>(
+    db: &DB<'a>,
+    table_name: &str,
+    id_attrs: &[Attribute],
+    data_attrs: &[Attribute],
+) -> Trie<Value<'a>> {
+    let rel = &db[table_name];
+    let id_cols: Vec<_> = id_attrs.iter().map(|a| rel.get(a).unwrap()).collect();
+    let data_cols: Vec<_> = data_attrs.iter().map(|a| rel.get(a).unwrap()).collect();
+
+    let mut trie = Trie::default();
+    
+    for i in 0..id_cols[0].len() {
+        let ids: Vec<_> = id_cols.iter().map(|col| col[i].as_num()).collect();
+        let data: Vec<_> = data_cols.iter().map(|col| col[i].clone()).collect();
+
+        trie.insert(&ids, data);
+    }
+
+    trie
 }
 
 // pub fn build_ts<'a, 'b>(

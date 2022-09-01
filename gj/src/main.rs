@@ -4,11 +4,12 @@ use gj::{
     join::*,
     sql::{
         get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan, to_materialize,
-        update_materialize_map,
+        map_tables_to_node,
     },
     trie::{RawValue, Value},
-    util::*,
+    util::*, from_raw,
 };
+use indexmap::IndexMap;
 
 fn main() {
     for (q, i) in queries() {
@@ -22,61 +23,47 @@ fn main() {
         let plan = to_gj_plan(&plan_tree);
 
         let raw_db = load_db(q, &scan, &plan);
-        
-        let db: HashMap<_, _> = raw_db
-        .iter()
-        .map(|(name, table)| {
-            let t: HashMap<_, _> = table
-            .iter()
-            .map(|(attr, col)| {
-                let c: Vec<_> = col
-                .iter()
-                .map(|val| match val {
-                    RawValue::Num(id) => Value::Num(*id),
-                    RawValue::Str(s) => Value::Str(s.as_str()),
-                })
-                .collect();
-                (attr.clone(), c)
-            })
-            .collect();
-            (name.clone(), t)
-        })
-        .collect();
+        let db = from_raw(&raw_db);
         
         let mut in_view = HashMap::new();
-        let mut provides = HashMap::new();
-        let mut build_plans = Vec::new();
+        let mut provides = IndexMap::new();
+        let mut build_plans = IndexMap::new();
+        let mut plans = IndexMap::new();
 
         for node in to_materialize(&plan_tree) {
             let plan = to_left_deep_plan(node);
             let (out_schema, build_plan) = compute_full_plan(&db, &plan, &provides, &in_view);
 
-            build_plans.push(build_plan);
+            build_plans.insert(node, build_plan);
             provides.insert(node, out_schema);
-            update_materialize_map(node, &mut in_view);
+            plans.insert(node, plan);
+
+            map_tables_to_node(node, &mut in_view);
         }
 
-        // println!("in_view {:#?}", in_view);
-        for attr_sets in provides.values() {
-            println!("provides {:#?}", attr_sets);
+        for (node, p) in plans {
+            let build_p = &build_plans[node];
         }
 
-        for p in build_plans {
-            for (t, cols) in p {
-                println!("PLAN");
-                for col in cols {
-                    match col {
-                        ColID::Name(s) => println!(" {} ", s),
-                        ColID::Id(i) => {
-                            if let TableID::Node(n) = t {
-                                println!(" {:?} ", provides[n][i]);
-                            }
-                        }
-                    }
-                }
-                // println!("plan {:?}", cols);
-            }
-        }
+        // for attr_sets in provides.values() {
+        //     println!("provides {:#?}", attr_sets);
+        // }
+
+        // for p in build_plans {
+        //     for (t, cols) in p {
+        //         println!("PLAN");
+        //         for col in cols {
+        //             match col {
+        //                 ColID::Name(s) => println!(" {} ", s),
+        //                 ColID::Id(i) => {
+        //                     if let TableID::Node(n) = t {
+        //                         println!(" {:?} ", provides[n][i]);
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         // println!("build_plans {:#?}", build_plans);
 
