@@ -4,430 +4,276 @@ Loading mi_idx to DB
 Loading it to DB
 Loading mc to DB
 Loading ct to DB
-building flat table on t
-building table takes 0.000025291s
-building table on mi_idx
-building table takes 0.12610121
-bushy join takes 1.3911312
-building flat table on mc
-building table takes 0.000017083s
-building table on intermediate
-building table takes 0.19395413
-building table on it
-building table takes 0.000003541
-building table on ct
-building table takes 0.000002166
-bushy join takes 0.011427583
-join takes: 2.119087
-output: Str("(A Warner Bros.-First National Picture) (presents)")Str("A Clockwork Orange")Num(1934)
-total takes: 2.1191237
+Building takes 0.12260433
+Running join
+Join took 0.6085489
+Building takes 0.18276104
+Running join
+Join took 0.010459791
+Bushy join takes 1.3223879
+output [Str("(A Warner Bros.-First National Picture) (presents)"), Str("A Clockwork Orange"), Num(1934)]
+Total takes 1.3224301
 running query 1b: IMDBQ002 
 Loading mi_idx to DB
 Loading it to DB
 Loading mc to DB
 Loading ct to DB
 Loading t to DB
-building flat table on t
-building table takes 0.00002675s
-building table on mi_idx
-building table takes 0.124321505
-bushy join takes 0.37654555
-building flat table on mc
-building table takes 0.000013125s
-building table on intermediate
-building table takes 0.044393457
-building table on it
-building table takes 0.000003208
-building table on ct
-building table takes 0.0000025
-bushy join takes 0.318022
-join takes: 1.0496954
-output: Str("(Set Decoration Rentals) (uncredited)")Str("Disaster Movie")Num(2008)
-total takes: 1.0497226
+Building takes 0.119815715
+Running join
+Join took 0.16943112
+Building takes 0.04069704
+Running join
+Join took 0.3010841
+Bushy join takes 0.81773704
+output [Str("(Set Decoration Rentals) (uncredited)"), Str("Disaster Movie"), Num(2008)]
+Total takes 0.8177618
 running query 1c: IMDBQ003 
 Loading mi_idx to DB
 Loading t to DB
 Loading mc to DB
 Loading ct to DB
 Loading it to DB
-building flat table on t
-building table takes 0.000017708s
-building table on mi_idx
-building table takes 0.124201834
-bushy join takes 0.1630112
-building flat table on mc
-building table takes 0.000015541s
-building table on intermediate
-building table takes 0.014522041
-building table on it
-building table takes 0.000003125
-building table on ct
-building table takes 0.000001916
-bushy join takes 0.004100125
-join takes: 0.44508
-output: Str("(co-production)")Str("Intouchables")Num(2011)
-total takes: 0.445105
+Building takes 0.11897421
+Running join
+Join took 0.08540091
+Building takes 0.012608541
+Running join
+Join took 0.003892666
+Bushy join takes 0.36449715
+output [Str("(co-production)"), Str("Intouchables"), Num(2011)]
+Total takes 0.36453143
 running query 1d: IMDBQ004 
 Loading t to DB
 Loading mc to DB
 Loading ct to DB
 Loading mi_idx to DB
 Loading it to DB
-building flat table on t
-building table takes 0.000021958s
-building table on mi_idx
-building table takes 0.12225679
-bushy join takes 0.70688486
-building flat table on mc
-building table takes 0.000017791s
-building table on intermediate
-building table takes 0.08501171
-building table on it
-building table takes 0.000008875
-building table on ct
-building table takes 0.000003208
-bushy join takes 0.3680208
-join takes: 1.5310171
-output: Str("(Set Decoration Rentals) (uncredited)")Str("Disaster Movie")Num(2004)
-total takes: 1.5310456
+Building takes 0.11834579
+Running join
+Join took 0.32147047
+Building takes 0.08225004
+Running join
+Join took 0.34732512
+Bushy join takes 1.1203043
+output [Str("(Set Decoration Rentals) (uncredited)"), Str("Disaster Movie"), Num(2004)]
+Total takes 1.1203477
 running query 2a: IMDBQ005 
 Loading mk to DB
 Loading mc to DB
 Loading t to DB
 Loading cn to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000025875s
-building table on t
-building table takes 0.49405253
-building table on mc
-building table takes 0.36626896
-building table on k
-building table takes 0.000004666
-building table on cn
-building table takes 0.000740666
-bushy join takes 1.2098508
-join takes: 2.5923944
-output: Str("'Doc'")
-total takes: 2.592857
+Building takes 0.8355183
+Running join
+Join took 1.043021
+Bushy join takes 2.3948882
+output [Str("'Doc'")]
+Total takes 2.3950658
 running query 2b: IMDBQ006 
 Loading mk to DB
 Loading mc to DB
 Loading t to DB
 Loading k to DB
 Loading cn to DB
-building flat table on mk
-building table takes 0.000022416s
-building table on t
-building table takes 0.48859975
-building table on mc
-building table takes 0.36545572
-building table on k
-building table takes 0.000009375
-building table on cn
-building table takes 0.000488125
-bushy join takes 1.2394501
-join takes: 2.6101675
-output: Str("'Doc'")
-total takes: 2.6104875
+Building takes 0.84797126
+Running join
+Join took 1.0403799
+Bushy join takes 2.4043803
+output [Str("'Doc'")]
+Total takes 2.404486
 running query 2d: IMDBQ008 
 Loading mk to DB
 Loading mc to DB
 Loading cn to DB
 Loading t to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.0000275s
-building table on t
-building table takes 0.4869045
-building table on mc
-building table takes 0.36252454
-building table on k
-building table takes 0.000005041
-building table on cn
-building table takes 0.004257125
-bushy join takes 1.2796309
-join takes: 2.6531558
-output: Str("& Teller")
-total takes: 2.6553729
+Building takes 0.8391021
+Running join
+Join took 1.0539184
+Bushy join takes 2.4097557
+output [Str("& Teller")]
+Total takes 2.410603
 running query 3a: IMDBQ009 
 Loading mk to DB
 Loading mi to DB
 Loading t to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000035083s
-building table on t
-building table takes 0.18956067
-bushy join takes 1.5648341
-building flat table on mi
-building table takes 0.00001325s
-building table on intermediate
-building table takes 0.14583516
-building table on k
-building table takes 0.000005541
-bushy join takes 0.0220565
-join takes: 2.1865976
-output: Str("2 Days in New York")
-total takes: 2.1866293
+Building takes 0.17753237
+Running join
+Join took 0.8764757
+Building takes 0.13535655
+Running join
+Join took 0.020908667
+Bushy join takes 1.4758155
+output [Str("2 Days in New York")]
+Total takes 1.4758649
 running query 3b: IMDBQ010 
 Loading mk to DB
 Loading k to DB
 Loading t to DB
 Loading mi to DB
-building flat table on mk
-building table takes 0.000020875s
-building table on t
-building table takes 0.050756123
-bushy join takes 0.93730295
-building flat table on mi
-building table takes 0.000012375s
-building table on intermediate
-building table takes 0.033614084
-building table on k
-building table takes 0.000006333
-bushy join takes 0.000273958
-join takes: 1.0965364
-output: Str("300: Rise of an Empire")
-total takes: 1.0965605
+Building takes 0.049375
+Running join
+Join took 0.7517505
+Building takes 0.03165304
+Running join
+Join took 0.000260333
+Bushy join takes 0.90717524
+output [Str("300: Rise of an Empire")]
+Total takes 0.9072118
 running query 3c: IMDBQ011 
 Loading mk to DB
 Loading k to DB
 Loading t to DB
 Loading mi to DB
-building flat table on mk
-building table takes 0.000024916s
-building table on t
-building table takes 0.30791095
-bushy join takes 2.5676684
-building flat table on mi
-building table takes 0.000021875s
-building table on intermediate
-building table takes 0.32408065
-building table on k
-building table takes 0.0000105
-bushy join takes 0.1489049
-join takes: 3.8809237
-output: Str("& Teller 2")
-total takes: 3.881143
+Building takes 0.30526122
+Running join
+Join took 1.0590233
+Building takes 0.30439037
+Running join
+Join took 0.13539276
+Bushy join takes 2.3367782
+output [Str("& Teller 2")]
+Total takes 2.3369253
 running query 4a: IMDBQ012 
 Loading mk to DB
 Loading t to DB
 Loading mi_idx to DB
 Loading it to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.0000275s
-building table on t
-building table takes 0.18026005
-building table on mi_idx
-building table takes 0.083185665
-building table on k
-building table takes 0.000012583
-building table on it
-building table takes 0.000004041
-bushy join takes 0.77808374
-join takes: 1.3457948
-output: Str("5.1")Str("& Teller 2")
-total takes: 1.3459414
+Building takes 0.25493455
+Running join
+Join took 0.73472214
+Bushy join takes 1.295208
+output [Str("5.1"), Str("& Teller 2")]
+Total takes 1.2952638
 running query 4b: IMDBQ013 
 Loading mk to DB
 Loading k to DB
 Loading t to DB
 Loading mi_idx to DB
 Loading it to DB
-building flat table on mk
-building table takes 0.0000205s
-building table on t
-building table takes 0.051154915
-building table on mi_idx
-building table takes 0.001341666
-building table on k
-building table takes 0.000005625
-building table on it
-building table takes 0.000003916
-bushy join takes 0.67601895
-join takes: 0.7775172
-output: Str("9.1")Str("Batman: Arkham City")
-total takes: 0.77754164
+Building takes 0.051264167
+Running join
+Join took 0.6604452
+Bushy join takes 0.7600064
+output [Str("9.1"), Str("Batman: Arkham City")]
+Total takes 0.7600405
 running query 4c: IMDBQ014 
 Loading mk to DB
 Loading mi_idx to DB
 Loading t to DB
 Loading it to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000026166s
-building table on t
-building table takes 0.30883557
-building table on mi_idx
-building table takes 0.124461666
-building table on k
-building table takes 0.000007875
-building table on it
-building table takes 0.000004208
-bushy join takes 0.9553931
-join takes: 1.8439608
-output: Str("2.1")Str("& Teller 2")
-total takes: 1.8441975
+Building takes 0.4326557
+Running join
+Join took 0.8622795
+Bushy join takes 1.752208
+output [Str("2.1"), Str("& Teller 2")]
+Total takes 1.7523723
 running query 5c: IMDBQ017 
 Loading t to DB
 Loading mc to DB
 Loading ct to DB
 Loading mi to DB
 Loading it to DB
-building flat table on mi
-building table takes 0.000026208s
-building table on t
-building table takes 0.3104142
-building table on mc
-building table takes 0.026995623
-building table on it
-building table takes 0.000012083
-building table on ct
-building table takes 0.000007833
-bushy join takes 0.20305105
-join takes: 0.806948
-output: Str("11,830,420")
-total takes: 0.8069951
+Building takes 0.33328086
+Running join
+Join took 0.19388929
+Bushy join takes 0.7948496
+output [Str("11,830,420")]
+Total takes 0.7949285
 running query 6a: IMDBQ018 
 Loading ci to DB
 Loading n to DB
 Loading t to DB
 Loading mk to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.00173375s
-building table on t
-building table takes 0.055002622
-building table on k
-building table takes 0.00000825
-bushy join takes 0.6937609
-building flat table on ci
-building table takes 0.000015916s
-building table on n
-building table takes 0.000003708
-building table on intermediate
-building table takes 0.000006375
-bushy join takes 5.0814066
-join takes: 5.8810625
-output: Str("marvel-cinematic-universe")Str("Downey Jr., Robert")Str("Iron Man 3")
-total takes: 5.881082
+Building takes 0.05329096
+Running join
+Join took 0.6685419
+Building takes 0.000008416
+Running join
+Join took 4.962608
+Bushy join takes 5.7313504
+output [Str("marvel-cinematic-universe"), Str("Downey Jr., Robert"), Str("Iron Man 3")]
+Total takes 5.7313685
 running query 6b: IMDBQ019 
 Loading ci to DB
 Loading t to DB
 Loading n to DB
 Loading mk to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000199208s
-building table on t
-building table takes 0.000046041
-building table on k
-building table takes 0.000004208
-bushy join takes 0.66041255
-building flat table on ci
-building table takes 0.000008416s
-building table on n
-building table takes 0.000005166
-building table on intermediate
-building table takes 0.00001325
-bushy join takes 5.0747757
-join takes: 5.735686
-output: Str("based-on-comic")Str("Downey Jr., Robert")Str("The Avengers 2")
-total takes: 5.735704
+Building takes 0.000042625
+Running join
+Join took 0.64824504
+Building takes 0.000011416
+Running join
+Join took 4.969429
+Bushy join takes 5.617916
+output [Str("based-on-comic"), Str("Downey Jr., Robert"), Str("The Avengers 2")]
+Total takes 5.617939
 running query 6c: IMDBQ020 
 Loading ci to DB
 Loading mk to DB
 Loading t to DB
 Loading k to DB
 Loading n to DB
-building flat table on mk
-building table takes 0.00002325s
-building table on t
-building table takes 0.000047125
-building table on k
-building table takes 0.000003125
-bushy join takes 0.6638114
-building flat table on ci
-building table takes 0.000011625s
-building table on n
-building table takes 0.00000475
-building table on intermediate
-building table takes 0.000005
-bushy join takes 5.09859
-join takes: 5.762705
-output: Str("marvel-cinematic-universe")Str("Downey Jr., Robert")Str("The Avengers 2")
-total takes: 5.762722
+Building takes 0.000041916
+Running join
+Join took 0.6480298
+Building takes 0.000006166
+Running join
+Join took 4.9705715
+Bushy join takes 5.6188135
+output [Str("marvel-cinematic-universe"), Str("Downey Jr., Robert"), Str("The Avengers 2")]
+Total takes 5.6188335
 running query 6d: IMDBQ021 
 Loading ci to DB
 Loading mk to DB
 Loading k to DB
 Loading t to DB
 Loading n to DB
-building flat table on mk
-building table takes 0.002146333s
-building table on t
-building table takes 0.2635414
-building table on k
-building table takes 0.000007541
-bushy join takes 0.8987409
-building flat table on ci
-building table takes 0.000021666s
-building table on n
-building table takes 0.000007291
-building table on intermediate
-building table takes 0.001246583
-bushy join takes 5.072397
-join takes: 6.4329095
-output: Str("based-on-comic")Str("Downey Jr., Robert")Str("2008 MTV Movie Awards")
-total takes: 6.4329433
+Building takes 0.24442609
+Running join
+Join took 0.79795307
+Building takes 0.001413208
+Running join
+Join took 4.9374495
+Bushy join takes 6.174249
+output [Str("based-on-comic"), Str("Downey Jr., Robert"), Str("2008 MTV Movie Awards")]
+Total takes 6.1742887
 running query 6e: IMDBQ022 
 Loading ci to DB
 Loading n to DB
 Loading mk to DB
 Loading k to DB
 Loading t to DB
-building flat table on mk
-building table takes 0.000305s
-building table on t
-building table takes 0.26402858
-building table on k
-building table takes 0.000005958
-bushy join takes 0.8757719
-building flat table on ci
-building table takes 0.000021625s
-building table on n
-building table takes 0.000003875
-building table on intermediate
-building table takes 0.000005541
-bushy join takes 5.0720224
-join takes: 6.4063516
-output: Str("marvel-cinematic-universe")Str("Downey Jr., Robert")Str("Iron Man 3")
-total takes: 6.406366
+Building takes 0.24203987
+Running join
+Join took 0.79675937
+Building takes 0.000011541
+Running join
+Join took 5.065719
+Bushy join takes 6.2974305
+output [Str("marvel-cinematic-universe"), Str("Downey Jr., Robert"), Str("Iron Man 3")]
+Total takes 6.2974486
 running query 6f: IMDBQ023 
 Loading ci to DB
 Loading t to DB
 Loading n to DB
 Loading mk to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000330041s
-building table on t
-building table takes 0.28110582
-building table on k
-building table takes 0.00000775
-bushy join takes 0.9022596
-building flat table on ci
-building table takes 0.000024s
-building table on n
-building table takes 1.0013106
-building table on intermediate
-building table takes 0.001728833
-bushy join takes 11.073515
-join takes: 14.086315
-output: Str("based-on-comic")Str("\"Steff\", Stefanie Oxmann Mcgaha")Str("& Teller 2")
-total takes: 14.112414
+Building takes 0.24574849
+Running join
+Join took 0.80190116
+Building takes 0.91166466
+Running join
+Join took 8.91765
+Bushy join takes 11.688348
+output [Str("based-on-comic"), Str("\"Steff\", Stefanie Oxmann Mcgaha"), Str("& Teller 2")]
+Total takes 11.707634
 running query 7a: IMDBQ024 
 Loading ci to DB
 Loading t to DB
@@ -437,32 +283,18 @@ Loading ml to DB
 Loading lt to DB
 Loading n to DB
 Loading it to DB
-building flat table on n
-building table takes 0.000380541s
-building table on pi
-building table takes 0.000012833
-building table on it
-building table takes 0.000003416
-bushy join takes 0.086412124
-building flat table on t
-building table takes 0.000005875s
-building table on ml
-building table takes 0.002672458
-building table on lt
-building table takes 0.000003541
-bushy join takes 0.055557664
-building flat table on ci
-building table takes 0.000007208s
-building table on intermediate
-building table takes 0.000087416
-building table on intermediate
-building table takes 0.00000575
-building table on an
-building table takes 0.05895954
-bushy join takes 5.6988344
-join takes: 5.9069138
-output: Str("Antonioni, Michelangelo")Str("Dressed to Kill")
-total takes: 5.9069405
+Building takes 0.00001125
+Running join
+Join took 0.08445979
+Building takes 0.002539625
+Running join
+Join took 0.053545915
+Building takes 0.050724376
+Running join
+Join took 5.6455145
+Bushy join takes 5.842465
+output [Str("Antonioni, Michelangelo"), Str("Dressed to Kill")]
+Total takes 5.8425093
 running query 7b: IMDBQ025 
 Loading ci to DB
 Loading t to DB
@@ -472,32 +304,18 @@ Loading ml to DB
 Loading lt to DB
 Loading pi to DB
 Loading it to DB
-building flat table on n
-building table takes 0.000019916s
-building table on pi
-building table takes 0.000010458
-building table on it
-building table takes 0.000003375
-bushy join takes 0.014633416
-building flat table on t
-building table takes 0.000003791s
-building table on ml
-building table takes 0.002450708
-building table on lt
-building table takes 0.000003375
-bushy join takes 0.012411541
-building flat table on ci
-building table takes 0.000005375s
-building table on intermediate
-building table takes 0.000032583
-building table on intermediate
-building table takes 0.000004208
-building table on an
-building table takes 0.054454584
-bushy join takes 5.143683
-join takes: 5.2307634
-output: Str("De Palma, Brian")Str("Dressed to Kill")
-total takes: 5.230793
+Building takes 0.000007708
+Running join
+Join took 0.014199041
+Building takes 0.002422958
+Running join
+Join took 0.011828125
+Building takes 0.048724707
+Running join
+Join took 5.108639
+Bushy join takes 5.1889286
+output [Str("De Palma, Brian"), Str("Dressed to Kill")]
+Total takes 5.1889715
 running query 7c: IMDBQ026 
 Loading ci to DB
 Loading ml to DB
@@ -507,32 +325,18 @@ Loading it to DB
 Loading an to DB
 Loading t to DB
 Loading lt to DB
-building flat table on n
-building table takes 0.000133125s
-building table on pi
-building table takes 0.014634083
-building table on it
-building table takes 0.00000475
-bushy join takes 0.101405285
-building flat table on t
-building table takes 0.00002025s
-building table on ml
-building table takes 0.002559291
-building table on lt
-building table takes 0.000003625
-bushy join takes 0.17108226
-building flat table on ci
-building table takes 0.000009875s
-building table on intermediate
-building table takes 0.001113291
-building table on intermediate
-building table takes 0.0010875
-building table on an
-building table takes 0.056255206
-bushy join takes 5.2311654
-join takes: 5.6092677
-output: Str("50 Cent")Str("\"Boo\" Arnold was born Earl Arnold in Hattiesburg, Mississippi in 1966. His father gave him the nickname 'Boo' early in life and it stuck through grade school, high school, and college. He is still known as \"Boo\" to family and friends.  Raised in central Texas, Arnold played baseball at Texas Tech University where he graduated with a BA in Advertising and Marketing. While at Texas Tech he was also a member of the Texas Epsilon chapter of Phi Delta Theta fraternity. After college he worked with Young Life, an outreach to high school students, in San Antonio, Texas.  While with Young Life Arnold began taking extension courses through Fuller Theological Seminary and ultimately went full-time to Gordon-Conwell Theological Seminary in Boston, Massachusetts. At Gordon-Conwell he completed a Master's Degree in Divinity studying Theology, Philosophy, Church History, Biblical Languages (Hebrew & Greek), and Exegetical Methods. Following seminary he was involved with reconciliation efforts in the former Yugoslavia shortly after the war ended there in1995.  Arnold started acting in his early thirties in Texas. After an encouraging visit to Los Angeles where he spent time with childhood friend George Eads (of CSI Las Vegas) he decided to move to Los Angeles in 2001 to pursue acting full-time. While in Los Angeles he has studied acting with Judith Weston at Judith Weston Studio for Actors and Directors.  Arnold's acting career has been one of steady development, booking co-star and guest-star roles in nighttime television. He guest-starred opposite of Jane Seymour on the night time television drama Justice. He played the lead, Michael Hollister, in the film The Seer, written and directed by Patrick Masset (Friday Night Lights).  He was nominated Best Actor in the168 Film Festival for the role of Phil Stevens in the short-film Useless. In Useless he played a US Marshal who must choose between mercy and justice as he confronts the man who murdered his father. Arnold's performance in Useless confirmed his ability to carry lead roles, and he continues to work toward solidifying himself as a male lead in film and television.  Arnold married fellow Texan Stacy Rudd of San Antonio in 2003 and they are now raising their three children in the Los Angeles area.")
-total takes: 5.610086
+Building takes 0.012331125
+Running join
+Join took 0.08710717
+Building takes 0.002351166
+Running join
+Join took 0.16076805
+Building takes 0.051212832
+Running join
+Join took 5.0527105
+Bushy join takes 5.395925
+output [Str("50 Cent"), Str("\"Boo\" Arnold was born Earl Arnold in Hattiesburg, Mississippi in 1966. His father gave him the nickname 'Boo' early in life and it stuck through grade school, high school, and college. He is still known as \"Boo\" to family and friends.  Raised in central Texas, Arnold played baseball at Texas Tech University where he graduated with a BA in Advertising and Marketing. While at Texas Tech he was also a member of the Texas Epsilon chapter of Phi Delta Theta fraternity. After college he worked with Young Life, an outreach to high school students, in San Antonio, Texas.  While with Young Life Arnold began taking extension courses through Fuller Theological Seminary and ultimately went full-time to Gordon-Conwell Theological Seminary in Boston, Massachusetts. At Gordon-Conwell he completed a Master's Degree in Divinity studying Theology, Philosophy, Church History, Biblical Languages (Hebrew & Greek), and Exegetical Methods. Following seminary he was involved with reconciliation efforts in the former Yugoslavia shortly after the war ended there in1995.  Arnold started acting in his early thirties in Texas. After an encouraging visit to Los Angeles where he spent time with childhood friend George Eads (of CSI Las Vegas) he decided to move to Los Angeles in 2001 to pursue acting full-time. While in Los Angeles he has studied acting with Judith Weston at Judith Weston Studio for Actors and Directors.  Arnold's acting career has been one of steady development, booking co-star and guest-star roles in nighttime television. He guest-starred opposite of Jane Seymour on the night time television drama Justice. He played the lead, Michael Hollister, in the film The Seer, written and directed by Patrick Masset (Friday Night Lights).  He was nominated Best Actor in the168 Film Festival for the role of Phil Stevens in the short-film Useless. In Useless he played a US Marshal who must choose between mercy and justice as he confronts the man who murdered his father. Arnold's performance in Useless confirmed his ability to carry lead roles, and he continues to work toward solidifying himself as a male lead in film and television.  Arnold married fellow Texan Stacy Rudd of San Antonio in 2003 and they are now raising their three children in the Los Angeles area.")]
+Total takes 5.3964686
 running query 8a: IMDBQ027 
 Loading t to DB
 Loading ci to DB
@@ -541,27 +345,15 @@ Loading rt to DB
 Loading mc to DB
 Loading cn to DB
 Loading an1 to DB
-building flat table on mc
-building table takes 0.00002225s
-building table on cn
-building table takes 0.000296708
-bushy join takes 0.03229029
-building flat table on ci
-building table takes 0.000003083s
-building table on n1
-building table takes 0.000967375
-building table on an1
-building table takes 0.11976087
-building table on intermediate
-building table takes 0.004358041
-building table on t
-building table takes 0.4959182
-building table on rt
-building table takes 0.000003583
-bushy join takes 0.017510625
-join takes: 1.1417758
-output: Str("Chambers, Linda")Str(".hack//Quantum")
-total takes: 1.141814
+Building takes 0.000360291
+Running join
+Join took 0.011464208
+Building takes 0.602708
+Running join
+Join took 0.016816331
+Bushy join takes 1.0975945
+output [Str("Chambers, Linda"), Str(".hack//Quantum")]
+Total takes 1.0976292
 running query 8b: IMDBQ028 
 Loading an to DB
 Loading ci to DB
@@ -570,27 +362,15 @@ Loading rt to DB
 Loading n to DB
 Loading mc to DB
 Loading cn to DB
-building flat table on mc
-building table takes 0.000021166s
-building table on cn
-building table takes 0.000332583
-bushy join takes 0.005647166
-building flat table on ci
-building table takes 0.000002916s
-building table on n
-building table takes 0.000956916
-building table on an
-building table takes 0.117794
-building table on intermediate
-building table takes 0.000906958
-building table on t
-building table takes 0.000003666
-building table on rt
-building table takes 0.000002125
-bushy join takes 0.017197166
-join takes: 0.23952359
-output: Str("Chambers, Linda")Str("Dragon Ball Z: Shin Budokai")
-total takes: 0.23955587
+Building takes 0.0003135
+Running join
+Join took 0.001977
+Building takes 0.11629829
+Running join
+Join took 0.01675879
+Bushy join takes 0.23096278
+output [Str("Chambers, Linda"), Str("Dragon Ball Z: Shin Budokai")]
+Total takes 0.23100151
 running query 8c: IMDBQ029 
 Loading ci to DB
 Loading t to DB
@@ -599,27 +379,15 @@ Loading rt to DB
 Loading n1 to DB
 Loading mc to DB
 Loading cn to DB
-building flat table on mc
-building table takes 0.000369875s
-building table on cn
-building table takes 0.005861458
-bushy join takes 1.0619278
-building flat table on ci
-building table takes 0.000007291s
-building table on n1
-building table takes 0.6174965
-building table on a1
-building table takes 0.119642496
-building table on intermediate
-building table takes 0.1561049
-building table on t
-building table takes 0.5978525
-building table on rt
-building table takes 0.000006833
-bushy join takes 17.132875
-join takes: 20.305456
-output: Str("\"A.J.\"")Str("#1 Cheerleader Camp")
-total takes: 20.371555
+Building takes 0.005001333
+Running join
+Join took 0.5561347
+Building takes 1.4395865
+Running join
+Join took 12.44643
+Bushy join takes 15.05305
+output [Str("\"A.J.\""), Str("#1 Cheerleader Camp")]
+Total takes 15.119183
 running query 8d: IMDBQ030 
 Loading ci to DB
 Loading n1 to DB
@@ -628,27 +396,15 @@ Loading an1 to DB
 Loading rt to DB
 Loading cn to DB
 Loading t to DB
-building flat table on mc
-building table takes 0.000349458s
-building table on cn
-building table takes 0.005303833
-bushy join takes 1.0437405
-building flat table on ci
-building table takes 0.000010416s
-building table on n1
-building table takes 0.5796562
-building table on an1
-building table takes 0.124767
-building table on intermediate
-building table takes 0.1559345
-building table on t
-building table takes 0.5972292
-building table on rt
-building table takes 0.0000055
-bushy join takes 13.318123
-join takes: 16.421398
-output: Str("\"Jenny from the Block\"")Str("#1 Cheerleader Camp")
-total takes: 16.430052
+Building takes 0.004801208
+Running join
+Join took 0.543702
+Building takes 1.3697935
+Running join
+Join took 11.452939
+Bushy join takes 13.970137
+output [Str("\"Jenny from the Block\""), Str("#1 Cheerleader Camp")]
+Total takes 13.978435
 running query 9a: IMDBQ031 
 Loading chn to DB
 Loading ci to DB
@@ -658,29 +414,15 @@ Loading n to DB
 Loading t to DB
 Loading mc to DB
 Loading cn to DB
-building flat table on mc
-building table takes 0.000031083s
-building table on cn
-building table takes 0.004933375
-bushy join takes 0.3727993
-building flat table on ci
-building table takes 0.000006791s
-building table on n
-building table takes 0.000355083
-building table on an
-building table takes 0.12005667
-building table on intermediate
-building table takes 0.064695835
-building table on t
-building table takes 0.19138226
-building table on rt
-building table takes 0.00000575
-building table on chn
-building table takes 0.62460876
-bushy join takes 0.18503164
-join takes: 2.3414655
-output: Str("AJ")Str("Airport Announcer")Str("Blue Harvest")
-total takes: 2.3415194
+Building takes 0.005161125
+Running join
+Join took 0.1419507
+Building takes 0.97321516
+Running join
+Join took 0.18180141
+Bushy join takes 2.0688336
+output [Str("AJ"), Str("Airport Announcer"), Str("Blue Harvest")]
+Total takes 2.0688858
 running query 9b: IMDBQ032 
 Loading chn to DB
 Loading an to DB
@@ -690,29 +432,15 @@ Loading n to DB
 Loading t to DB
 Loading rt to DB
 Loading cn to DB
-building flat table on mc
-building table takes 0.000025583s
-building table on cn
-building table takes 0.004191125
-bushy join takes 0.12238525
-building flat table on ci
-building table takes 0.000015166s
-building table on n
-building table takes 0.000436666
-building table on an
-building table takes 0.119625
-building table on intermediate
-building table takes 0.016825875
-building table on t
-building table takes 0.08106708
-building table on rt
-building table takes 0.000003666
-building table on chn
-building table takes 0.61759317
-bushy join takes 0.14812775
-join takes: 1.7475836
-output: Str("AJ")Str("Airport Announcer")Str("Bassett, Angela")Str("Blue Harvest")
-total takes: 1.7476218
+Building takes 0.004538916
+Running join
+Join took 0.04802096
+Building takes 0.8183537
+Running join
+Join took 0.14745837
+Bushy join takes 1.6492395
+output [Str("AJ"), Str("Airport Announcer"), Str("Bassett, Angela"), Str("Blue Harvest")]
+Total takes 1.6492854
 running query 9c: IMDBQ033 
 Loading chn to DB
 Loading mc to DB
@@ -722,29 +450,15 @@ Loading ci to DB
 Loading n to DB
 Loading rt to DB
 Loading an to DB
-building flat table on mc
-building table takes 0.000023083s
-building table on cn
-building table takes 0.004989083
-bushy join takes 1.0403167
-building flat table on ci
-building table takes 0.000004666s
-building table on n
-building table takes 0.00479775
-building table on an
-building table takes 0.12072475
-building table on intermediate
-building table takes 0.15632463
-building table on t
-building table takes 0.49139094
-building table on rt
-building table takes 0.000004041
-building table on chn
-building table takes 0.6336869
-bushy join takes 0.20293595
-join takes: 3.7101076
-output: Str("'Annette'")Str("2nd Balladeer")Str("Alborg, Ana Esther")Str("(1975-01-20)")
-total takes: 3.7104836
+Building takes 0.004860375
+Running join
+Join took 0.5395144
+Building takes 1.3782405
+Running join
+Join took 0.18336995
+Bushy join takes 3.159525
+output [Str("'Annette'"), Str("2nd Balladeer"), Str("Alborg, Ana Esther"), Str("(1975-01-20)")]
+Total takes 3.1598127
 running query 9d: IMDBQ034 
 Loading chn to DB
 Loading an to DB
@@ -754,29 +468,15 @@ Loading mc to DB
 Loading cn to DB
 Loading n to DB
 Loading t to DB
-building flat table on mc
-building table takes 0.000028s
-building table on cn
-building table takes 0.004685833
-bushy join takes 1.040149
-building flat table on ci
-building table takes 0.000004958s
-building table on n
-building table takes 0.16977963
-building table on an
-building table takes 0.11929754
-building table on intermediate
-building table takes 0.15533346
-building table on t
-building table takes 0.49382854
-building table on rt
-building table takes 0.000003916
-building table on chn
-building table takes 0.63077873
-bushy join takes 1.2219961
-join takes: 5.027686
-output: Str("!!!, Toy")Str("\"Cockamamie's\" Salesgirl")Str("Aaron, Caroline")Str("$15,000.00 Error")
-total takes: 5.0459557
+Building takes 0.004648291
+Running join
+Join took 0.5433173
+Building takes 1.556393
+Running join
+Join took 0.27112788
+Bushy join takes 3.5577807
+output [Str("!!!, Toy"), Str("\"Cockamamie's\" Salesgirl"), Str("Aaron, Caroline"), Str("$15,000.00 Error")]
+Total takes 3.5731661
 running query 10a: IMDBQ035 
 Loading chn to DB
 Loading mc to DB
@@ -785,27 +485,15 @@ Loading cn to DB
 Loading t to DB
 Loading ci to DB
 Loading rt to DB
-building flat table on mc
-building table takes 0.000024583s
-building table on t
-building table takes 0.1767325
-building table on ct
-building table takes 0.000006416
-building table on cn
-building table takes 0.000579583
-bushy join takes 0.76463246
-building flat table on ci
-building table takes 0.000021958s
-building table on rt
-building table takes 0.000006791
-building table on intermediate
-building table takes 0.000352791
-building table on chn
-building table takes 0.61527085
-bushy join takes 0.008774958
-join takes: 2.168285
-output: Str("Actor")Str("12 Rounds")
-total takes: 2.1683195
+Building takes 0.17289242
+Running join
+Join took 0.698553
+Building takes 0.599541
+Running join
+Join took 0.00766575
+Bushy join takes 2.0734456
+output [Str("Actor"), Str("12 Rounds")]
+Total takes 2.0734837
 running query 10c: IMDBQ037 
 Loading chn to DB
 Loading ci to DB
@@ -814,27 +502,15 @@ Loading ct to DB
 Loading cn to DB
 Loading t to DB
 Loading rt to DB
-building flat table on mc
-building table takes 0.000024916s
-building table on t
-building table takes 0.31710333
-building table on ct
-building table takes 0.00000675
-building table on cn
-building table takes 0.004565208
-bushy join takes 1.7273902
-building flat table on ci
-building table takes 0.00001875s
-building table on rt
-building table takes 0.000004791
-building table on intermediate
-building table takes 0.07952563
-building table on chn
-building table takes 0.6179728
-bushy join takes 0.000039958
-join takes: 3.5196965
-output: Str("Himself")Str("Evil Eyes: Behind the Scenes")
-total takes: 3.5197244
+Building takes 0.31174442
+Running join
+Join took 1.0043228
+Building takes 0.67840976
+Running join
+Join took 1.9125e-5
+Bushy join takes 2.7577443
+output [Str("Himself"), Str("Evil Eyes: Behind the Scenes")]
+Total takes 2.757783
 running query 11a: IMDBQ038 
 Loading mk to DB
 Loading k to DB
@@ -844,29 +520,15 @@ Loading cn to DB
 Loading ml to DB
 Loading lt to DB
 Loading t to DB
-building flat table on t
-building table takes 0.000026666s
-building table on ml
-building table takes 0.001980833
-bushy join takes 0.16083075
-building flat table on mk
-building table takes 0.000007541s
-building table on intermediate
-building table takes 0.001036375
-building table on mc
-building table takes 0.23481153
-building table on lt
-building table takes 0.000005
-building table on k
-building table takes 0.000004958
-building table on ct
-building table takes 0.000002166
-building table on cn
-building table takes 0.004851833
-bushy join takes 0.6528052
-join takes: 1.3116794
-output: Str("Churchill Films")Str("followed by")Str("Batman Beyond")
-total takes: 1.3117243
+Building takes 0.001932916
+Running join
+Join took 0.151352
+Building takes 0.23548888
+Running join
+Join took 0.6389759
+Bushy join takes 1.2814265
+output [Str("Churchill Films"), Str("followed by"), Str("Batman Beyond")]
+Total takes 1.2814772
 running query 11b: IMDBQ039 
 Loading mk to DB
 Loading k to DB
@@ -876,29 +538,15 @@ Loading mc to DB
 Loading cn to DB
 Loading lt to DB
 Loading ct to DB
-building flat table on t
-building table takes 0.000022833s
-building table on ml
-building table takes 0.001856333
-bushy join takes 0.000019625
-building flat table on mk
-building table takes 0.00000325s
-building table on intermediate
-building table takes 0.000004
-building table on mc
-building table takes 0.23053433
-building table on lt
-building table takes 0.000003708
-building table on k
-building table takes 0.000006
-building table on ct
-building table takes 0.000001791
-building table on cn
-building table takes 0.004614208
-bushy join takes 0.6366367
-join takes: 1.124548
-output: Str("Filmlance International AB")Str("follows")Str("The Money Man")
-total takes: 1.1245844
+Building takes 0.001792291
+Running join
+Join took 8.375e-6
+Building takes 0.22900167
+Running join
+Join took 0.63375074
+Bushy join takes 1.1152978
+output [Str("Filmlance International AB"), Str("follows"), Str("The Money Man")]
+Total takes 1.1153474
 running query 11c: IMDBQ040 
 Loading mk to DB
 Loading k to DB
@@ -908,29 +556,15 @@ Loading lt to DB
 Loading mc to DB
 Loading cn to DB
 Loading ct to DB
-building flat table on t
-building table takes 0.000017541s
-building table on ml
-building table takes 0.001900375
-bushy join takes 0.40289837
-building flat table on mk
-building table takes 0.000010583s
-building table on intermediate
-building table takes 0.00232
-building table on mc
-building table takes 0.26209477
-building table on lt
-building table takes 0.0000045
-building table on k
-building table takes 0.000007041
-building table on ct
-building table takes 0.000002166
-building table on cn
-building table takes 0.000012458
-bushy join takes 0.6783801
-join takes: 1.7772727
-output: Str("20th Century Fox Home Entertainment")Str("(1997-2002) (worldwide) (all media)")Str("24")
-total takes: 1.7774913
+Building takes 0.00187
+Running join
+Join took 0.38148865
+Building takes 0.25902352
+Running join
+Join took 0.66395295
+Bushy join takes 1.7339427
+output [Str("20th Century Fox Home Entertainment"), Str("(1997-2002) (worldwide) (all media)"), Str("24")]
+Total takes 1.7340965
 running query 11d: IMDBQ041 
 Loading mk to DB
 Loading mc to DB
@@ -940,29 +574,15 @@ Loading ml to DB
 Loading ct to DB
 Loading t to DB
 Loading lt to DB
-building flat table on t
-building table takes 0.000021541s
-building table on ml
-building table takes 0.002018
-bushy join takes 0.40097064
-building flat table on mk
-building table takes 0.000007291s
-building table on intermediate
-building table takes 0.002320166
-building table on mc
-building table takes 0.26571158
-building table on lt
-building table takes 0.00000675
-building table on k
-building table takes 0.000002583
-building table on ct
-building table takes 0.000002291
-building table on cn
-building table takes 0.021428708
-bushy join takes 0.69469786
-join takes: 1.8379393
-output: Str("13th Street")Str("(1954) (UK) (TV)")Str("...denn sie wissen nicht, was sie tun")
-total takes: 1.8383788
+Building takes 0.001847291
+Running join
+Join took 0.38159567
+Building takes 0.2866283
+Running join
+Join took 0.6791076
+Bushy join takes 1.8008611
+output [Str("13th Street"), Str("(1954) (UK) (TV)"), Str("...denn sie wissen nicht, was sie tun")]
+Total takes 1.8011265
 running query 12a: IMDBQ042 
 Loading mc to DB
 Loading cn to DB
@@ -972,29 +592,15 @@ Loading mi to DB
 Loading it1 to DB
 Loading it2 to DB
 Loading ct to DB
-building flat table on t
-building table takes 0.000025375s
-building table on mi_idx
-building table takes 0.005192375
-bushy join takes 0.08591662
-building flat table on mi
-building table takes 0.000007083s
-building table on intermediate
-building table takes 0.001758708
-building table on mc
-building table takes 0.4567743
-building table on it2
-building table takes 0.00000475
-building table on it1
-building table takes 0.000004333
-building table on ct
-building table takes 0.000003458
-building table on cn
-building table takes 0.007962291
-bushy join takes 0.042460375
-join takes: 1.0040691
-output: Str("10th Grade Reunion Films")Str("8.1")Str("3:20")
-total takes: 1.0041401
+Building takes 0.004985333
+Running join
+Join took 0.07721208
+Building takes 0.46091667
+Running join
+Join took 0.0406435
+Bushy join takes 0.98685247
+output [Str("10th Grade Reunion Films"), Str("8.1"), Str("3:20")]
+Total takes 0.9869193
 running query 12b: IMDBQ043 
 Loading mi to DB
 Loading mi_idx to DB
@@ -1004,29 +610,15 @@ Loading mc to DB
 Loading cn to DB
 Loading ct to DB
 Loading it2 to DB
-building flat table on t
-building table takes 0.000025583s
-building table on mi_idx
-building table takes 0.16145296
-bushy join takes 0.003445833
-building flat table on mi
-building table takes 0.000014083s
-building table on intermediate
-building table takes 0.000260625
-building table on mc
-building table takes 0.5037121
-building table on it2
-building table takes 0.0000035
-building table on it1
-building table takes 0.000002916
-building table on ct
-building table takes 0.000002208
-building table on cn
-building table takes 0.0079325
-bushy join takes 3.3931375
-join takes: 4.5906224
-output: Str("$10,000")Str("Birdemic: Shock and Terror")
-total takes: 4.590655
+Building takes 0.12923628
+Running join
+Join took 0.001953416
+Building takes 0.4655801
+Running join
+Join took 3.2769177
+Bushy join takes 4.3914433
+output [Str("$10,000"), Str("Birdemic: Shock and Terror")]
+Total takes 4.3914924
 running query 12c: IMDBQ044 
 Loading mc to DB
 Loading cn to DB
@@ -1036,29 +628,15 @@ Loading mi_idx to DB
 Loading it2 to DB
 Loading t to DB
 Loading it1 to DB
-building flat table on t
-building table takes 0.000022166s
-building table on mi_idx
-building table takes 0.02004854
-bushy join takes 0.2524735
-building flat table on mi
-building table takes 0.000016333s
-building table on intermediate
-building table takes 0.011025916
-building table on mc
-building table takes 0.45062855
-building table on it2
-building table takes 0.00000325
-building table on it1
-building table takes 0.000007375
-building table on ct
-building table takes 0.000002333
-building table on cn
-building table takes 0.007700166
-bushy join takes 0.072363794
-join takes: 1.2544901
-output: Str("\"Oh That Gus!\"")Str("7.1")Str("$1.11")
-total takes: 1.2548424
+Building takes 0.019586377
+Running join
+Join took 0.19268584
+Building takes 0.47289956
+Running join
+Join took 0.05870483
+Bushy join takes 1.1859152
+output [Str("\"Oh That Gus!\""), Str("7.1"), Str("$1.11")]
+Total takes 1.1862092
 running query 13a: IMDBQ045 
 Loading mi to DB
 Loading it2 to DB
@@ -1069,31 +647,15 @@ Loading ct to DB
 Loading miidx to DB
 Loading it to DB
 Loading cn to DB
-building flat table on t
-building table takes 0.000392583s
-building table on miidx
-building table takes 0.15054788
-bushy join takes 1.5450891
-building flat table on mi
-building table takes 0.000023375s
-building table on intermediate
-building table takes 0.24875388
-building table on mc
-building table takes 0.6239558
-building table on kt
-building table takes 0.000009583
-building table on it2
-building table takes 0.0000045
-building table on it
-building table takes 0.000003375
-building table on ct
-building table takes 0.000004083
-building table on cn
-building table takes 0.001225583
-bushy join takes 6.5097446
-join takes: 9.941423
-output: Str("Afghanistan:24 June 2012")Str("1.0")Str("&Me")
-total takes: 9.956284
+Building takes 0.14746754
+Running join
+Join took 0.6560846
+Building takes 0.7984361
+Running join
+Join took 5.3267803
+Bushy join takes 7.7583756
+output [Str("Afghanistan:24 June 2012"), Str("1.0"), Str("&Me")]
+Total takes 7.766458
 running query 13b: IMDBQ046 
 Loading mi to DB
 Loading miidx to DB
@@ -1104,31 +666,15 @@ Loading cn to DB
 Loading it2 to DB
 Loading t to DB
 Loading kt to DB
-building flat table on t
-building table takes 0.000026083s
-building table on miidx
-building table takes 0.13169034
-bushy join takes 0.001329041
-building flat table on mi
-building table takes 0.000017s
-building table on intermediate
-building table takes 0.000125916
-building table on mc
-building table takes 0.46242487
-building table on kt
-building table takes 0.000004625
-building table on it2
-building table takes 0.000004333
-building table on it
-building table takes 0.000020208
-building table on ct
-building table takes 0.000003375
-building table on cn
-building table takes 0.008841625
-bushy join takes 2.211331
-join takes: 3.345862
-output: Str("501audio")Str("1.8")Str("5 Time Champion")
-total takes: 3.345913
+Building takes 0.12805262
+Running join
+Join took 0.000703291
+Building takes 0.46262175
+Running join
+Join took 2.1755729
+Bushy join takes 3.2960086
+output [Str("501audio"), Str("1.8"), Str("5 Time Champion")]
+Total takes 3.2960672
 running query 13c: IMDBQ047 
 Loading mi to DB
 Loading t to DB
@@ -1139,31 +685,15 @@ Loading it2 to DB
 Loading mc to DB
 Loading cn to DB
 Loading ct to DB
-building flat table on t
-building table takes 0.00002875s
-building table on miidx
-building table takes 0.13269362
-bushy join takes 0.000235041
-building flat table on mi
-building table takes 0.000014458s
-building table on intermediate
-building table takes 0.000029458
-building table on mc
-building table takes 0.44946826
-building table on kt
-building table takes 0.000004458
-building table on it2
-building table takes 0.000004333
-building table on it
-building table takes 0.00000325
-building table on ct
-building table takes 0.000003083
-building table on cn
-building table takes 0.008540625
-bushy join takes 2.1032786
-join takes: 3.2214403
-output: Str("DL Sites")Str("1.8")Str("Champion")
-total takes: 3.2214813
+Building takes 0.13247246
+Running join
+Join took 0.000118625
+Building takes 0.45126432
+Running join
+Join took 2.0706131
+Bushy join takes 3.1858606
+output [Str("DL Sites"), Str("1.8"), Str("Champion")]
+Total takes 3.1859162
 running query 13d: IMDBQ048 
 Loading mi to DB
 Loading it2 to DB
@@ -1174,31 +704,15 @@ Loading kt to DB
 Loading ct to DB
 Loading miidx to DB
 Loading it to DB
-building flat table on t
-building table takes 0.000081166s
-building table on miidx
-building table takes 0.14981917
-bushy join takes 1.5357356
-building flat table on mi
-building table takes 0.000016041s
-building table on intermediate
-building table takes 0.25824594
-building table on mc
-building table takes 0.53089285
-building table on kt
-building table takes 0.000008625
-building table on it2
-building table takes 0.000004375
-building table on it
-building table takes 0.000003125
-building table on ct
-building table takes 0.000003208
-building table on cn
-building table takes 0.009147125
-bushy join takes 6.6635327
-join takes: 9.97825
-output: Str("\"O\" Films")Str("1.0")Str("#54 Meets #47")
-total takes: 9.995374
+Building takes 0.13197662
+Running join
+Join took 0.63506335
+Building takes 0.667234
+Running join
+Join took 4.482345
+Bushy join takes 6.7517853
+output [Str("\"O\" Films"), Str("1.0"), Str("#54 Meets #47")]
+Total takes 6.780811
 running query 14a: IMDBQ049 
 Loading mk to DB
 Loading k to DB
@@ -1208,29 +722,15 @@ Loading mi to DB
 Loading t to DB
 Loading kt to DB
 Loading it1 to DB
-building flat table on mk
-building table takes 0.000029458s
-building table on t
-building table takes 0.05349054
-building table on mi_idx
-building table takes 0.1274105
-bushy join takes 1.2224613
-building flat table on mi
-building table takes 0.000015791s
-building table on intermediate
-building table takes 0.06814341
-building table on kt
-building table takes 0.000005541
-building table on k
-building table takes 0.000004291
-building table on it2
-building table takes 0.000004166
-building table on it1
-building table takes 0.000003666
-bushy join takes 0.11292817
-join takes: 1.8060986
-output: Str("1.0")Str("$lowdown")
-total takes: 1.8061647
+Building takes 0.17761587
+Running join
+Join took 0.7810132
+Building takes 0.06563546
+Running join
+Join took 0.109183714
+Bushy join takes 1.3518574
+output [Str("1.0"), Str("$lowdown")]
+Total takes 1.3519337
 running query 14b: IMDBQ050 
 Loading mk to DB
 Loading k to DB
@@ -1240,29 +740,15 @@ Loading kt to DB
 Loading mi to DB
 Loading it1 to DB
 Loading it2 to DB
-building flat table on mk
-building table takes 0.000021333s
-building table on t
-building table takes 0.000047083
-building table on mi_idx
-building table takes 0.04669371
-bushy join takes 0.7077327
-building flat table on mi
-building table takes 0.000014375s
-building table on intermediate
-building table takes 0.000053583
-building table on kt
-building table takes 0.000003416
-building table on k
-building table takes 0.000003375
-building table on it2
-building table takes 0.000003083
-building table on it1
-building table takes 0.000003083
-bushy join takes 0.09900038
-join takes: 0.9006716
-output: Str("6.4")Str("Of Dolls and Murder")
-total takes: 0.9006864
+Building takes 0.045652084
+Running join
+Join took 0.6915224
+Building takes 0.000050375
+Running join
+Join took 0.096861586
+Bushy join takes 0.87989825
+output [Str("6.4"), Str("Of Dolls and Murder")]
+Total takes 0.87991524
 running query 14c: IMDBQ051 
 Loading mk to DB
 Loading t to DB
@@ -1272,29 +758,15 @@ Loading kt to DB
 Loading k to DB
 Loading mi_idx to DB
 Loading it2 to DB
-building flat table on mk
-building table takes 0.000023s
-building table on t
-building table takes 0.18020828
-building table on mi_idx
-building table takes 0.12735225
-bushy join takes 3.0048506
-building flat table on mi
-building table takes 0.000020666s
-building table on intermediate
-building table takes 0.33957657
-building table on kt
-building table takes 0.000004916
-building table on k
-building table takes 0.000003875
-building table on it2
-building table takes 0.000004
-building table on it1
-building table takes 0.000003291
-bushy join takes 0.14698538
-join takes: 4.294281
-output: Str("1.0")Str("$lowdown")
-total takes: 4.2945085
+Building takes 0.30422556
+Running join
+Join took 0.9369663
+Building takes 0.3132113
+Running join
+Join took 0.13646358
+Bushy join takes 2.1876903
+output [Str("1.0"), Str("$lowdown")]
+Total takes 2.1879115
 running query 15a: IMDBQ052 
 Loading mk to DB
 Loading k to DB
@@ -1305,31 +777,15 @@ Loading mc to DB
 Loading ct to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on mk
-building table takes 0.000024666s
-building table on t
-building table takes 0.26194292
-bushy join takes 2.0485256
-building flat table on mi
-building table takes 0.000022333s
-building table on intermediate
-building table takes 0.22835366
-building table on mc
-building table takes 0.008276583
-building table on at
-building table takes 0.019146167
-building table on k
-building table takes 0.007266166
-building table on it1
-building table takes 0.000005166
-building table on ct
-building table takes 0.00000425
-building table on cn
-building table takes 0.00436975
-bushy join takes 0.001167166
-join takes: 2.9930894
-output: Str("USA:1 June 2007")Str("Battlestar Galactica: The Resistance")
-total takes: 2.993132
+Building takes 0.24703233
+Running join
+Join took 0.96723264
+Building takes 0.25554872
+Running join
+Join took 0.000704416
+Bushy join takes 1.8827779
+output [Str("USA:1 June 2007"), Str("Battlestar Galactica: The Resistance")]
+Total takes 1.8828363
 running query 15b: IMDBQ053 
 Loading mk to DB
 Loading t to DB
@@ -1340,31 +796,15 @@ Loading ct to DB
 Loading it1 to DB
 Loading at to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000014666s
-building table on t
-building table takes 0.115616664
-bushy join takes 1.4747295
-building flat table on mi
-building table takes 0.000012333s
-building table on intermediate
-building table takes 0.133019
-building table on mc
-building table takes 0.008239166
-building table on at
-building table takes 0.020394623
-building table on k
-building table takes 0.007292875
-building table on it1
-building table takes 0.000003541
-building table on ct
-building table takes 0.000002625
-building table on cn
-building table takes 0.000002083
-bushy join takes 0.000709458
-join takes: 1.9801512
-output: Str("USA:27 April 2007")Str("RoboCop vs Terminator")
-total takes: 1.9801798
+Building takes 0.10728729
+Running join
+Join took 0.85666424
+Building takes 0.15478234
+Running join
+Join took 0.000579875
+Bushy join takes 1.337227
+output [Str("USA:27 April 2007"), Str("RoboCop vs Terminator")]
+Total takes 1.337276
 running query 15c: IMDBQ054 
 Loading mk to DB
 Loading k to DB
@@ -1375,31 +815,15 @@ Loading it1 to DB
 Loading cn to DB
 Loading t to DB
 Loading ct to DB
-building flat table on mk
-building table takes 0.000021916s
-building table on t
-building table takes 0.3219614
-bushy join takes 2.558735
-building flat table on mi
-building table takes 0.000022583s
-building table on intermediate
-building table takes 0.32686967
-building table on mc
-building table takes 0.45082012
-building table on at
-building table takes 0.018341457
-building table on k
-building table takes 0.008533625
-building table on it1
-building table takes 0.000004625
-building table on ct
-building table takes 0.000003916
-building table on cn
-building table takes 0.004350125
-bushy join takes 0.004727333
-join takes: 4.6385827
-output: Str("USA:1 April 2003")Str("24: Day Six - Debrief")
-total takes: 4.6386642
+Building takes 0.32543376
+Running join
+Join took 1.066307
+Building takes 0.84437823
+Running join
+Join took 0.00134825
+Bushy join takes 3.1830654
+output [Str("USA:1 April 2003"), Str("24: Day Six - Debrief")]
+Total takes 3.1831522
 running query 15d: IMDBQ055 
 Loading mk to DB
 Loading mc to DB
@@ -1410,31 +834,15 @@ Loading mi to DB
 Loading cn to DB
 Loading t to DB
 Loading it1 to DB
-building flat table on mk
-building table takes 0.000025833s
-building table on t
-building table takes 0.32058734
-bushy join takes 2.5665474
-building flat table on mi
-building table takes 0.000021916s
-building table on intermediate
-building table takes 0.32965973
-building table on mc
-building table takes 0.47280452
-building table on at
-building table takes 0.038015455
-building table on k
-building table takes 0.00881675
-building table on it1
-building table takes 0.000008625
-building table on ct
-building table takes 0.000003708
-building table on cn
-building table takes 0.004527666
-bushy join takes 0.026086124
-join takes: 4.744551
-output: Str("(Not So) Instant Photo")Str("06/05")
-total takes: 4.7447696
+Building takes 0.31531778
+Running join
+Join took 1.0741527
+Building takes 0.8996849
+Running join
+Join took 0.006040833
+Bushy join takes 3.2795854
+output [Str("(Not So) Instant Photo"), Str("06/05")]
+Total takes 3.279824
 running query 16a: IMDBQ056 
 Loading ci to DB
 Loading mk to DB
@@ -1444,29 +852,15 @@ Loading n to DB
 Loading an to DB
 Loading t to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000046166s
-building table on t
-building table takes 0.008609291
-building table on mc
-building table takes 0.4577814
-building table on k
-building table takes 0.000009166
-building table on cn
-building table takes 0.004449416
-bushy join takes 0.6945129
-building flat table on ci
-building table takes 0.000025s
-building table on n
-building table takes 0.5414493
-building table on an
-building table takes 0.12213104
-building table on intermediate
-building table takes 0.000014
-bushy join takes 9.01625
-join takes: 11.129219
-output: Str("Adams, Stan")Str("Carol Burnett vs. Anthony Perkins")
-total takes: 11.129453
+Building takes 0.41924554
+Running join
+Join took 0.632865
+Building takes 0.68036795
+Running join
+Join took 8.242869
+Bushy join takes 10.240242
+output [Str("Adams, Stan"), Str("Carol Burnett vs. Anthony Perkins")]
+Total takes 10.240532
 running query 16b: IMDBQ057 
 Loading ci to DB
 Loading mk to DB
@@ -1476,29 +870,15 @@ Loading cn to DB
 Loading an to DB
 Loading n to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000612625s
-building table on t
-building table takes 0.5329817
-building table on mc
-building table takes 0.40246958
-building table on k
-building table takes 0.000007875
-building table on cn
-building table takes 0.004716833
-bushy join takes 1.2952814
-building flat table on ci
-building table takes 0.000016041s
-building table on n
-building table takes 0.51159704
-building table on an
-building table takes 0.120772704
-building table on intermediate
-building table takes 0.005213625
-bushy join takes 13.188494
-join takes: 16.698643
-output: Str("!!!, Toy")Str("& Teller")
-total takes: 16.754395
+Building takes 0.90797436
+Running join
+Join took 1.0610176
+Building takes 0.60659754
+Running join
+Join took 8.343106
+Bushy join takes 11.553462
+output [Str("!!!, Toy"), Str("& Teller")]
+Total takes 11.617343
 running query 16c: IMDBQ058 
 Loading ci to DB
 Loading mk to DB
@@ -1508,29 +888,15 @@ Loading an to DB
 Loading mc to DB
 Loading cn to DB
 Loading t to DB
-building flat table on mk
-building table takes 0.000405416s
-building table on t
-building table takes 0.18490358
-building table on mc
-building table takes 0.4069469
-building table on k
-building table takes 0.000008
-building table on cn
-building table takes 0.004586833
-bushy join takes 0.7169046
-building flat table on ci
-building table takes 0.001154166s
-building table on n
-building table takes 0.5618835
-building table on an
-building table takes 0.12263291
-building table on intermediate
-building table takes 0.00117925
-bushy join takes 8.9788475
-join takes: 11.379421
-output: Str("\"Brooklyn\" Tony Danza")Str("(#1.5)")
-total takes: 11.386911
+Building takes 0.5612877
+Running join
+Join took 0.67745656
+Building takes 0.6495941
+Running join
+Join took 7.9157844
+Bushy join takes 10.199268
+output [Str("\"Brooklyn\" Tony Danza"), Str("(#1.5)")]
+Total takes 10.205816
 running query 16d: IMDBQ059 
 Loading ci to DB
 Loading t to DB
@@ -1540,29 +906,15 @@ Loading mk to DB
 Loading k to DB
 Loading mc to DB
 Loading cn to DB
-building flat table on mk
-building table takes 0.000366166s
-building table on t
-building table takes 0.12842976
-building table on mc
-building table takes 0.38747707
-building table on k
-building table takes 0.0000075
-building table on cn
-building table takes 0.004765416
-bushy join takes 0.699068
-building flat table on ci
-building table takes 0.000027666s
-building table on n
-building table takes 0.55417114
-building table on an
-building table takes 0.1250489
-building table on intermediate
-building table takes 0.00104325
-bushy join takes 9.010427
-join takes: 11.269129
-output: Str("\"Brooklyn\" Tony Danza")Str("(#1.5)")
-total takes: 11.274842
+Building takes 0.5069017
+Running join
+Join took 0.675341
+Building takes 0.63450617
+Running join
+Join took 8.036332
+Bushy join takes 10.211816
+output [Str("\"Brooklyn\" Tony Danza"), Str("(#1.5)")]
+Total takes 10.2164545
 running query 17a: IMDBQ060 
 Loading ci to DB
 Loading mc to DB
@@ -1571,27 +923,15 @@ Loading t to DB
 Loading n to DB
 Loading mk to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000146708s
-building table on t
-building table takes 0.303327
-building table on mc
-building table takes 0.4037939
-building table on k
-building table takes 0.000007875
-building table on cn
-building table takes 0.004723916
-bushy join takes 1.2728792
-building flat table on ci
-building table takes 0.000022458s
-building table on n
-building table takes 0.044828247
-building table on intermediate
-building table takes 0.004769083
-bushy join takes 5.8689413
-join takes: 8.11451
-output: Str("B, Khaz")
-total takes: 8.117006
+Building takes 0.61093926
+Running join
+Join took 1.0453122
+Building takes 0.046664584
+Running join
+Join took 5.4456267
+Bushy join takes 7.353278
+output [Str("B, Khaz")]
+Total takes 7.3558173
 running query 17b: IMDBQ061 
 Loading ci to DB
 Loading n to DB
@@ -1600,27 +940,15 @@ Loading mk to DB
 Loading mc to DB
 Loading cn to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000029583s
-building table on t
-building table takes 0.29101175
-building table on mc
-building table takes 0.38706237
-building table on k
-building table takes 0.000004333
-building table on cn
-building table takes 0.015115041
-bushy join takes 1.3528169
-building flat table on ci
-building table takes 0.000022416s
-building table on n
-building table takes 0.003615208
-building table on intermediate
-building table takes 0.010558708
-bushy join takes 5.2423553
-join takes: 7.4799237
-output: Str("Z'Dar, Robert")
-total takes: 7.480316
+Building takes 0.6613318
+Running join
+Join took 1.0761644
+Building takes 0.013041625
+Running join
+Join took 4.9761105
+Bushy join takes 6.900575
+output [Str("Z'Dar, Robert")]
+Total takes 6.9011273
 running query 17c: IMDBQ062 
 Loading ci to DB
 Loading n to DB
@@ -1629,27 +957,15 @@ Loading k to DB
 Loading mc to DB
 Loading cn to DB
 Loading t to DB
-building flat table on mk
-building table takes 0.000025333s
-building table on t
-building table takes 0.29541433
-building table on mc
-building table takes 0.410778
-building table on k
-building table takes 0.000008
-building table on cn
-building table takes 0.01514625
-bushy join takes 1.3486954
-building flat table on ci
-building table takes 0.0000235s
-building table on n
-building table takes 0.000253583
-building table on intermediate
-building table takes 0.010121541
-bushy join takes 5.1476235
-join takes: 7.400789
-output: Str("X'Volaitis, John")
-total takes: 7.4008203
+Building takes 0.62973446
+Running join
+Join took 1.0653397
+Building takes 0.009659666
+Running join
+Join took 4.9315524
+Bushy join takes 6.8037024
+output [Str("X'Volaitis, John")]
+Total takes 6.8037496
 running query 17d: IMDBQ063 
 Loading ci to DB
 Loading mk to DB
@@ -1658,27 +974,15 @@ Loading cn to DB
 Loading k to DB
 Loading t to DB
 Loading n to DB
-building flat table on mk
-building table takes 0.000221833s
-building table on t
-building table takes 0.2617088
-building table on mc
-building table takes 0.3831178
-building table on k
-building table takes 0.000004458
-building table on cn
-building table takes 0.016949331
-bushy join takes 1.3480237
-building flat table on ci
-building table takes 0.000023666s
-building table on n
-building table takes 0.000476666
-building table on intermediate
-building table takes 0.0107975
-bushy join takes 5.131609
-join takes: 7.32409
-output: Str("Abrahamsson, Bertil")
-total takes: 7.324177
+Building takes 0.63764465
+Running join
+Join took 1.0721519
+Building takes 0.010772458
+Running join
+Join took 5.134103
+Bushy join takes 7.0257034
+output [Str("Abrahamsson, Bertil")]
+Total takes 7.0258403
 running query 17e: IMDBQ064 
 Loading ci to DB
 Loading mc to DB
@@ -1687,27 +991,15 @@ Loading k to DB
 Loading cn to DB
 Loading n to DB
 Loading t to DB
-building flat table on mk
-building table takes 0.000308958s
-building table on t
-building table takes 0.3024437
-building table on mc
-building table takes 0.39727753
-building table on k
-building table takes 0.000004833
-building table on cn
-building table takes 0.004967541
-bushy join takes 1.2770123
-building flat table on ci
-building table takes 0.000018875s
-building table on n
-building table takes 1.030263
-building table on intermediate
-building table takes 0.005199708
-bushy join takes 13.658822
-join takes: 17.497046
-output: Str("$hort, Too")
-total takes: 17.529245
+Building takes 0.6790916
+Running join
+Join took 1.0546045
+Building takes 1.0211862
+Running join
+Join took 9.216478
+Bushy join takes 12.766621
+output [Str("$hort, Too")]
+Total takes 12.814664
 running query 17f: IMDBQ065 
 Loading ci to DB
 Loading mk to DB
@@ -1716,27 +1008,15 @@ Loading mc to DB
 Loading cn to DB
 Loading n to DB
 Loading t to DB
-building flat table on mk
-building table takes 0.000621375s
-building table on t
-building table takes 0.267479
-building table on mc
-building table takes 0.47657737
-building table on k
-building table takes 0.000004958
-building table on cn
-building table takes 0.015111625
-bushy join takes 1.3603902
-building flat table on ci
-building table takes 0.000022208s
-building table on n
-building table takes 0.08150104
-building table on intermediate
-building table takes 0.010331416
-bushy join takes 6.9433994
-join takes: 9.397194
-output: Str("'El Galgo PornoStar', Blanquito")
-total takes: 9.406574
+Building takes 0.68407524
+Running join
+Join took 1.0649058
+Building takes 0.08885396
+Running join
+Join took 5.8074903
+Bushy join takes 7.885684
+output [Str("'El Galgo PornoStar', Blanquito")]
+Total takes 7.898538
 running query 18a: IMDBQ066 
 Loading mi to DB
 Loading ci to DB
@@ -1745,30 +1025,18 @@ Loading t to DB
 Loading it1 to DB
 Loading mi_idx to DB
 Loading it2 to DB
-building flat table on t
-building table takes 0.000031s
-building table on mi_idx
-building table takes 0.13480815
-bushy join takes 1.4019685
-building flat table on mi
-building table takes 0.000021208s
-building table on intermediate
-building table takes 0.19796774
-building table on it2
-building table takes 0.000005416
-building table on it1
-building table takes 0.000003541
-bushy join takes 5.6675916
-building flat table on ci
-building table takes 0.000020125s
-building table on n
-building table takes 0.000450416
-building table on intermediate
-building table takes 0.005374041
-bushy join takes 0.33582896
-join takes: 8.156699
-output: Str("$1,000")Str("10")Str("40 Days and 40 Nights")
-total takes: 8.156798
+Building takes 0.12635763
+Running join
+Join took 0.6209699
+Building takes 0.18175364
+Running join
+Join took 4.996627
+Building takes 0.005032208
+Running join
+Join took 0.3484441
+Bushy join takes 6.6888576
+output [Str("$1,000"), Str("10"), Str("40 Days and 40 Nights")]
+Total takes 6.6890774
 running query 18b: IMDBQ067 
 Loading ci to DB
 Loading mi to DB
@@ -1777,30 +1045,18 @@ Loading t to DB
 Loading n to DB
 Loading mi_idx to DB
 Loading it2 to DB
-building flat table on t
-building table takes 0.000030416s
-building table on mi_idx
-building table takes 0.00509225
-bushy join takes 0.1478135
-building flat table on mi
-building table takes 0.000007375s
-building table on intermediate
-building table takes 0.002410291
-building table on it2
-building table takes 0.000003666
-building table on it1
-building table takes 0.00000325
-bushy join takes 0.017319832
-building flat table on ci
-building table takes 0.000007833s
-building table on n
-building table takes 0.09087496
-building table on intermediate
-building table takes 0.000047458
-bushy join takes 0.18791404
-join takes: 0.46000776
-output: Str("Horror")Str("8.1")Str("Agorable")
-total takes: 0.4600418
+Building takes 0.004722208
+Running join
+Join took 0.13564616
+Building takes 0.001879166
+Running join
+Join took 0.016221667
+Building takes 0.089669
+Running join
+Join took 0.17981033
+Bushy join takes 0.4361931
+output [Str("Horror"), Str("8.1"), Str("Agorable")]
+Total takes 0.43622798
 running query 18c: IMDBQ068 
 Loading t to DB
 Loading ci to DB
@@ -1809,30 +1065,18 @@ Loading it1 to DB
 Loading n to DB
 Loading mi_idx to DB
 Loading it2 to DB
-building flat table on t
-building table takes 0.000026s
-building table on mi_idx
-building table takes 0.12973046
-bushy join takes 1.393984
-building flat table on mi
-building table takes 0.000015958s
-building table on intermediate
-building table takes 0.19348457
-building table on it2
-building table takes 0.000003625
-building table on it1
-building table takes 0.000002166
-bushy join takes 0.24459605
-building flat table on ci
-building table takes 0.000011958s
-building table on n
-building table takes 0.15282662
-building table on intermediate
-building table takes 0.010964708
-bushy join takes 0.29541722
-join takes: 2.8388567
-output: Str("Action")Str("10")Str("#PostModem")
-total takes: 2.84063
+Building takes 0.12706988
+Running join
+Join took 0.6130891
+Building takes 0.18062696
+Running join
+Join took 0.09976821
+Building takes 0.1611365
+Running join
+Join took 0.23429771
+Bushy join takes 1.834897
+output [Str("Action"), Str("10"), Str("#PostModem")]
+Total takes 1.8362086
 running query 19a: IMDBQ069 
 Loading chn to DB
 Loading an to DB
@@ -1844,33 +1088,15 @@ Loading cn to DB
 Loading t to DB
 Loading mi to DB
 Loading it to DB
-building flat table on mi
-building table takes 0.000020125s
-building table on t
-building table takes 0.09077808
-building table on mc
-building table takes 0.07014038
-building table on it
-building table takes 0.00000325
-building table on cn
-building table takes 0.00499
-bushy join takes 0.28544497
-building flat table on ci
-building table takes 0.000014625s
-building table on n
-building table takes 0.000657416
-building table on an
-building table takes 0.063822374
-building table on intermediate
-building table takes 0.011658166
-building table on rt
-building table takes 0.000003416
-building table on chn
-building table takes 0.29955816
-bushy join takes 0.18478109
-join takes: 1.1505305
-output: Str("Angeline, Moriah")Str("Blue Harvest")
-total takes: 1.150561
+Building takes 0.159528
+Running join
+Join took 0.14689164
+Building takes 0.37895665
+Running join
+Join took 0.18262133
+Bushy join takes 1.0110016
+output [Str("Angeline, Moriah"), Str("Blue Harvest")]
+Total takes 1.0110536
 running query 19b: IMDBQ070 
 Loading chn to DB
 Loading ci to DB
@@ -1882,33 +1108,15 @@ Loading cn to DB
 Loading it to DB
 Loading rt to DB
 Loading t to DB
-building flat table on mi
-building table takes 0.000022333s
-building table on t
-building table takes 0.000003375
-building table on mc
-building table takes 0.020989457
-building table on it
-building table takes 0.000003166
-building table on cn
-building table takes 0.004690791
-bushy join takes 0.00982325
-building flat table on ci
-building table takes 0.000016333s
-building table on n
-building table takes 0.000998541
-building table on an
-building table takes 0.06449996
-building table on intermediate
-building table takes 0.000009166
-building table on rt
-building table takes 0.000002958
-building table on chn
-building table takes 0.2995568
-bushy join takes 0.14772607
-join takes: 0.57326514
-output: Str("Jolie, Angelina")Str("Kung Fu Panda")
-total takes: 0.5732951
+Building takes 0.024003666
+Running join
+Join took 0.009607791
+Building takes 0.36683258
+Running join
+Join took 0.14525016
+Bushy join takes 0.5708978
+output [Str("Jolie, Angelina"), Str("Kung Fu Panda")]
+Total takes 0.5709396
 running query 19c: IMDBQ071 
 Loading chn to DB
 Loading mc to DB
@@ -1920,33 +1128,15 @@ Loading rt to DB
 Loading n to DB
 Loading mi to DB
 Loading it to DB
-building flat table on mi
-building table takes 0.000025458s
-building table on t
-building table takes 0.24604683
-building table on mc
-building table takes 0.36705568
-building table on it
-building table takes 0.000003333
-building table on cn
-building table takes 0.004826791
-bushy join takes 0.66183496
-building flat table on ci
-building table takes 0.00001825s
-building table on n
-building table takes 0.004879875
-building table on an
-building table takes 0.06457217
-building table on intermediate
-building table takes 0.034870084
-building table on rt
-building table takes 0.000005125
-building table on chn
-building table takes 0.30715537
-bushy join takes 0.18741883
-join takes: 2.2728033
-output: Str("Alborg, Ana Esther")Str(".hack//Akusei heni vol. 2")
-total takes: 2.2728775
+Building takes 0.6061143
+Running join
+Join took 0.24102047
+Building takes 0.3998912
+Running join
+Join took 0.18280071
+Bushy join takes 1.8173959
+output [Str("Alborg, Ana Esther"), Str(".hack//Akusei heni vol. 2")]
+Total takes 1.8174782
 running query 19d: IMDBQ072 
 Loading mi to DB
 Loading it to DB
@@ -1958,33 +1148,15 @@ Loading an to DB
 Loading ci to DB
 Loading rt to DB
 Loading n to DB
-building flat table on mi
-building table takes 0.000035083s
-building table on t
-building table takes 0.259648
-building table on mc
-building table takes 0.3985499
-building table on it
-building table takes 0.000006166
-building table on cn
-building table takes 0.004835916
-bushy join takes 5.671918
-building flat table on ci
-building table takes 0.000015208s
-building table on n
-building table takes 0.1774185
-building table on an
-building table takes 0.06741904
-building table on intermediate
-building table takes 0.13292891
-building table on rt
-building table takes 0.000006083
-building table on chn
-building table takes 0.33222306
-bushy join takes 0.9927449
-join takes: 8.619874
-output: Str("Aaron, Caroline")Str("$9.99")
-total takes: 8.627007
+Building takes 0.62868655
+Running join
+Join took 3.7064466
+Building takes 0.69955945
+Running join
+Join took 0.2416135
+Bushy join takes 5.84629
+output [Str("Aaron, Caroline"), Str("$9.99")]
+Total takes 5.854319
 running query 20a: IMDBQ073 
 Loading ci to DB
 Loading n to DB
@@ -1996,36 +1168,18 @@ Loading cct2 to DB
 Loading k to DB
 Loading t to DB
 Loading kt to DB
-building flat table on cc
-building table takes 0.000897875s
-building table on cct1
-building table takes 0.00000475
-building table on cct2
-building table takes 0.00000325
-bushy join takes 0.10778266
-building flat table on mk
-building table takes 0.000008041s
-building table on t
-building table takes 0.64916927
-building table on kt
-building table takes 0.00000525
-building table on k
-building table takes 0.000005625
-bushy join takes 1.5024593
-building flat table on ci
-building table takes 0.00002375s
-building table on n
-building table takes 0.53400916
-building table on intermediate
-building table takes 0.002027125
-building table on intermediate
-building table takes 0.008755541
-building table on chn
-building table takes 0.000009125
-bushy join takes 5.6850877
-join takes: 9.600822
-output: Str("Disaster Movie")
-total takes: 9.600868
+Building takes 0.000002833
+Running join
+Join took 0.039867375
+Building takes 0.6355118
+Running join
+Join took 1.2915747
+Building takes 0.52537036
+Running join
+Join took 5.024155
+Bushy join takes 8.635138
+output [Str("Disaster Movie")]
+Total takes 8.63519
 running query 20b: IMDBQ074 
 Loading ci to DB
 Loading n to DB
@@ -2037,36 +1191,18 @@ Loading cc to DB
 Loading cct1 to DB
 Loading cct2 to DB
 Loading kt to DB
-building flat table on cc
-building table takes 0.000369375s
-building table on cct1
-building table takes 0.000004875
-building table on cct2
-building table takes 0.00000375
-bushy join takes 0.107639335
-building flat table on mk
-building table takes 0.000005041s
-building table on t
-building table takes 0.34876359
-building table on kt
-building table takes 0.000007375
-building table on k
-building table takes 0.000006791
-bushy join takes 1.0527053
-building flat table on ci
-building table takes 0.00002s
-building table on n
-building table takes 0.000003916
-building table on intermediate
-building table takes 0.000539375
-building table on intermediate
-building table takes 0.008073125
-building table on chn
-building table takes 0.000008875
-bushy join takes 3.205764
-join takes: 5.3761153
-output: Str("Iron Man")
-total takes: 5.376141
+Building takes 0.000002958
+Running join
+Join took 0.038423624
+Building takes 0.3019411
+Running join
+Join took 0.9391289
+Building takes 0.009047041
+Running join
+Join took 3.1242943
+Bushy join takes 5.0609612
+output [Str("Iron Man")]
+Total takes 5.061001
 running query 20c: IMDBQ075 
 Loading ci to DB
 Loading chn to DB
@@ -2078,36 +1214,18 @@ Loading n to DB
 Loading cc to DB
 Loading cct2 to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.000329791s
-building table on cct1
-building table takes 0.000004291
-building table on cct2
-building table takes 0.000003833
-bushy join takes 0.10840329
-building flat table on mk
-building table takes 0.000007708s
-building table on t
-building table takes 0.37803853
-building table on kt
-building table takes 0.000005375
-building table on k
-building table takes 0.000008166
-bushy join takes 1.0622327
-building flat table on ci
-building table takes 0.000017958s
-building table on n
-building table takes 1.0662805
-building table on intermediate
-building table takes 0.000586916
-building table on intermediate
-building table takes 0.010507166
-building table on chn
-building table takes 0.009699166
-bushy join takes 5.5751395
-join takes: 9.501337
-output: Str("Abell, Alistair")Str("...And Then I...")
-total takes: 9.505988
+Building takes 0.000002791
+Running join
+Join took 0.039321
+Building takes 0.33172816
+Running join
+Join took 0.9366217
+Building takes 1.0010834
+Running join
+Join took 4.9532094
+Bushy join takes 8.546263
+output [Str("Abell, Alistair"), Str("...And Then I...")]
+Total takes 8.546661
 running query 21a: IMDBQ076 
 Loading mk to DB
 Loading k to DB
@@ -2118,34 +1236,18 @@ Loading t to DB
 Loading mc to DB
 Loading ct to DB
 Loading cn to DB
-building flat table on t
-building table takes 0.000030041s
-building table on ml
-building table takes 0.002045541
-bushy join takes 0.160131
-building flat table on mk
-building table takes 0.000008833s
-building table on intermediate
-building table takes 0.000875291
-bushy join takes 0.8256571
-building flat table on mi
-building table takes 0.000020208s
-building table on intermediate
-building table takes 0.013081875
-building table on mc
-building table takes 0.22869055
-building table on lt
-building table takes 0.000004125
-building table on k
-building table takes 0.000005125
-building table on ct
-building table takes 0.000002125
-building table on cn
-building table takes 0.004913041
-bushy join takes 0.020891707
-join takes: 1.5118794
-output: Str("Det Danske Filminstitut")Str("followed by")Str("Der Serienkiller - Klinge des Todes")
-total takes: 1.5119561
+Building takes 0.001940958
+Running join
+Join took 0.15240963
+Building takes 0.000824708
+Running join
+Join took 0.70361114
+Building takes 0.24556309
+Running join
+Join took 0.0176505
+Bushy join takes 1.3791478
+output [Str("Det Danske Filminstitut"), Str("followed by"), Str("Der Serienkiller - Klinge des Todes")]
+Total takes 1.3792241
 running query 21b: IMDBQ077 
 Loading mk to DB
 Loading mc to DB
@@ -2156,34 +1258,18 @@ Loading t to DB
 Loading ct to DB
 Loading k to DB
 Loading cn to DB
-building flat table on t
-building table takes 0.000021041s
-building table on ml
-building table takes 0.001978083
-bushy join takes 0.18118633
-building flat table on mk
-building table takes 0.00000875s
-building table on intermediate
-building table takes 0.000817458
-bushy join takes 0.7896709
-building flat table on mi
-building table takes 0.000010333s
-building table on intermediate
-building table takes 0.009069416
-building table on mc
-building table takes 0.22790849
-building table on lt
-building table takes 0.000004208
-building table on k
-building table takes 0.000005875
-building table on ct
-building table takes 0.000002083
-building table on cn
-building table takes 0.004936125
-bushy join takes 0.012457708
-join takes: 1.4829166
-output: Str("Filmlance International AB")Str("followed by")Str("Hämndens pris")
-total takes: 1.4829508
+Building takes 0.00193525
+Running join
+Join took 0.17337067
+Building takes 0.000794583
+Running join
+Join took 0.7000541
+Building takes 0.24184966
+Running join
+Join took 0.012038625
+Bushy join takes 1.3849802
+output [Str("Filmlance International AB"), Str("followed by"), Str("Hämndens pris")]
+Total takes 1.3850313
 running query 21c: IMDBQ078 
 Loading mk to DB
 Loading ml to DB
@@ -2194,34 +1280,18 @@ Loading cn to DB
 Loading ct to DB
 Loading k to DB
 Loading mi to DB
-building flat table on t
-building table takes 0.00002s
-building table on ml
-building table takes 0.002355541
-bushy join takes 0.33697584
-building flat table on mk
-building table takes 0.000008416s
-building table on intermediate
-building table takes 0.001587583
-bushy join takes 0.911457
-building flat table on mi
-building table takes 0.000005833s
-building table on intermediate
-building table takes 0.022755457
-building table on mc
-building table takes 0.2301989
-building table on lt
-building table takes 0.0000045
-building table on k
-building table takes 0.00000625
-building table on ct
-building table takes 0.000001916
-building table on cn
-building table takes 0.004607916
-bushy join takes 0.10610187
-join takes: 1.8750782
-output: Str("Churchill Films")Str("followed by")Str("Batman Beyond")
-total takes: 1.8751632
+Building takes 0.001917708
+Running join
+Join took 0.3185383
+Building takes 0.00163175
+Running join
+Join took 0.70771855
+Building takes 0.25779963
+Running join
+Join took 0.099596456
+Bushy join takes 1.6467382
+output [Str("Churchill Films"), Str("followed by"), Str("Batman Beyond")]
+Total takes 1.6468354
 running query 22a: IMDBQ079 
 Loading mk to DB
 Loading k to DB
@@ -2234,41 +1304,21 @@ Loading kt to DB
 Loading mc to DB
 Loading cn to DB
 Loading ct to DB
-building flat table on t
-building table takes 0.000017291s
-building table on mi_idx
-building table takes 0.16210374
-building table on kt
-building table takes 0.0000035
-building table on it2
-building table takes 0.000002416
-bushy join takes 0.24268
-building flat table on mc
-building table takes 0.000012416s
-building table on cn
-building table takes 0.012902958
-building table on ct
-building table takes 0.000004791
-building table on intermediate
-building table takes 0.004567166
-bushy join takes 0.12715225
-building flat table on mk
-building table takes 0.00001125s
-building table on k
-building table takes 0.00000275
-building table on intermediate
-building table takes 0.00057825
-bushy join takes 0.6417492
-building flat table on mi
-building table takes 0.000004958s
-building table on it1
-building table takes 0.000002583
-building table on intermediate
-building table takes 0.000258833
-bushy join takes 0.15617542
-join takes: 1.6203053
-output: Str("01 Distribution")Str("2.1")Str("12 Rounds")
-total takes: 1.62045
+Building takes 0.15558816
+Running join
+Join took 0.1852607
+Building takes 0.016874876
+Running join
+Join took 0.10103304
+Building takes 0.000978708
+Running join
+Join took 0.6250191
+Building takes 0.000266041
+Running join
+Join took 0.13078254
+Bushy join takes 1.487185
+output [Str("01 Distribution"), Str("2.1"), Str("12 Rounds")]
+Total takes 1.48738
 running query 22b: IMDBQ080 
 Loading mk to DB
 Loading k to DB
@@ -2281,41 +1331,21 @@ Loading t to DB
 Loading kt to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on t
-building table takes 0.000018833s
-building table on mi_idx
-building table takes 0.16275525
-building table on kt
-building table takes 0.0000035
-building table on it2
-building table takes 0.0000025
-bushy join takes 0.19288829
-building flat table on mc
-building table takes 0.0000135s
-building table on cn
-building table takes 0.0136215
-building table on ct
-building table takes 0.000004625
-building table on intermediate
-building table takes 0.003818708
-bushy join takes 0.114249
-building flat table on mk
-building table takes 0.000011958s
-building table on k
-building table takes 0.00000275
-building table on intermediate
-building table takes 0.000041291
-bushy join takes 0.63547146
-building flat table on mi
-building table takes 0.000007833s
-building table on it1
-building table takes 0.000003916
-building table on intermediate
-building table takes 0.000012416
-bushy join takes 0.14939591
-join takes: 1.543117
-output: Str("Boll Kino Beteiligungs GmbH & Co. KG")Str("3.0")Str("A Small Act")
-total takes: 1.543148
+Building takes 0.1557958
+Running join
+Join took 0.14763413
+Building takes 0.014684
+Running join
+Join took 0.102990665
+Building takes 0.000053666
+Running join
+Join took 0.6726587
+Building takes 0.000021666
+Running join
+Join took 0.138896
+Bushy join takes 1.5029287
+output [Str("Boll Kino Beteiligungs GmbH & Co. KG"), Str("3.0"), Str("A Small Act")]
+Total takes 1.5029857
 running query 22c: IMDBQ081 
 Loading mk to DB
 Loading k to DB
@@ -2328,41 +1358,21 @@ Loading it2 to DB
 Loading t to DB
 Loading kt to DB
 Loading cn to DB
-building flat table on t
-building table takes 0.000030166s
-building table on mi_idx
-building table takes 0.17586121
-building table on kt
-building table takes 0.000004625
-building table on it2
-building table takes 0.000003541
-bushy join takes 0.43989065
-building flat table on mc
-building table takes 0.000021291s
-building table on cn
-building table takes 0.012416875
-building table on ct
-building table takes 0.00000575
-building table on intermediate
-building table takes 0.011237083
-bushy join takes 0.22216572
-building flat table on mk
-building table takes 0.000019458s
-building table on k
-building table takes 0.000004
-building table on intermediate
-building table takes 0.0052175
-bushy join takes 0.6762445
-building flat table on mi
-building table takes 0.000009625s
-building table on it1
-building table takes 0.000003791
-building table on intermediate
-building table takes 0.001974375
-bushy join takes 0.21265942
-join takes: 2.0607965
-output: Str("01 Distribution")Str("1.9")Str("(#1.1)")
-total takes: 2.0616772
+Building takes 0.17227592
+Running join
+Join took 0.29699954
+Building takes 0.024225459
+Running join
+Join took 0.11174075
+Building takes 0.005491708
+Running join
+Join took 0.62798595
+Building takes 0.001974041
+Running join
+Join took 0.14899187
+Bushy join takes 1.69264
+output [Str("01 Distribution"), Str("1.9"), Str("(#1.1)")]
+Total takes 1.6934489
 running query 22d: IMDBQ082 
 Loading mk to DB
 Loading k to DB
@@ -2375,41 +1385,21 @@ Loading t to DB
 Loading kt to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on t
-building table takes 0.000024875s
-building table on mi_idx
-building table takes 0.17766532
-building table on kt
-building table takes 0.000004916
-building table on it2
-building table takes 0.0000035
-bushy join takes 0.4413906
-building flat table on mc
-building table takes 0.000016s
-building table on cn
-building table takes 0.0135385
-building table on ct
-building table takes 0.000005916
-building table on intermediate
-building table takes 0.011394291
-bushy join takes 1.2335825
-building flat table on mk
-building table takes 0.000020791s
-building table on k
-building table takes 0.000006541
-building table on intermediate
-building table takes 0.022238666
-bushy join takes 0.73416877
-building flat table on mi
-building table takes 0.000019416s
-building table on it1
-building table takes 0.000004
-building table on intermediate
-building table takes 0.004653541
-bushy join takes 0.257538
-join takes: 3.212925
-output: Str("01 Distribution")Str("1.6")Str("(#1.1)")
-total takes: 3.2143338
+Building takes 0.17335764
+Running join
+Join took 0.29781505
+Building takes 0.023766458
+Running join
+Join took 0.7977165
+Building takes 0.020100458
+Running join
+Join took 0.629729
+Building takes 0.00458425
+Running join
+Join took 0.14832738
+Bushy join takes 2.4079432
+output [Str("01 Distribution"), Str("1.6"), Str("(#1.1)")]
+Total takes 2.409178
 running query 23a: IMDBQ083 
 Loading mk to DB
 Loading k to DB
@@ -2422,44 +1412,24 @@ Loading it1 to DB
 Loading ct to DB
 Loading kt to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.000028875s
-building table on cct1
-building table takes 0.000004125
-bushy join takes 0.034370624
-building flat table on t
-building table takes 0.000003791s
-building table on kt
-building table takes 0.000003458
-building table on intermediate
-building table takes 0.002218333
-bushy join takes 0.30609983
-building flat table on mc
-building table takes 0.000010625s
-building table on ct
-building table takes 0.000003833
-building table on cn
-building table takes 0.004504083
-building table on intermediate
-building table takes 0.000214416
-bushy join takes 0.9122486
-building flat table on mk
-building table takes 0.00000625s
-building table on k
-building table takes 0.007984833
-building table on intermediate
-building table takes 0.001110833
-bushy join takes 2.3577561
-building flat table on mi
-building table takes 0.000009208s
-building table on it1
-building table takes 0.0000025
-building table on intermediate
-building table takes 0.06032954
-bushy join takes 0.001581041
-join takes: 3.7171435
-output: Str("movie")Str("The Analysts")
-total takes: 3.7171822
+Building takes 0.000002041
+Running join
+Join took 0.02322925
+Building takes 0.002181
+Running join
+Join took 0.2902406
+Building takes 0.005026541
+Running join
+Join took 0.762494
+Building takes 0.008145208
+Running join
+Join took 1.0341568
+Building takes 0.052510414
+Running join
+Join took 0.000403541
+Bushy join takes 2.207586
+output [Str("movie"), Str("The Analysts")]
+Total takes 2.2076428
 running query 23b: IMDBQ084 
 Loading mk to DB
 Loading k to DB
@@ -2472,44 +1442,24 @@ Loading t to DB
 Loading kt to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on cc
-building table takes 0.000014833s
-building table on cct1
-building table takes 0.00000275
-bushy join takes 0.034437332
-building flat table on t
-building table takes 0.000002416s
-building table on kt
-building table takes 0.000002208
-building table on intermediate
-building table takes 0.001936541
-bushy join takes 0.3149615
-building flat table on mc
-building table takes 0.000006666s
-building table on ct
-building table takes 0.000002583
-building table on cn
-building table takes 0.005494541
-building table on intermediate
-building table takes 0.000134416
-bushy join takes 0.9262502
-building flat table on mk
-building table takes 0.000006541s
-building table on k
-building table takes 0.000002833
-building table on intermediate
-building table takes 0.000494458
-bushy join takes 0.6600811
-building flat table on mi
-building table takes 0.000008125s
-building table on it1
-building table takes 0.000002541
-building table on intermediate
-building table takes 0.0000385
-bushy join takes 0.000467791
-join takes: 1.9473629
-output: Str("movie")Str("The Big Mope")
-total takes: 1.9473773
+Building takes 0.00000225
+Running join
+Join took 0.023585375
+Building takes 0.002527291
+Running join
+Join took 0.3101921
+Building takes 0.005705833
+Running join
+Join took 0.8138676
+Building takes 0.000524041
+Running join
+Join took 0.6689996
+Building takes 0.00005375
+Running join
+Join took 0.000368
+Bushy join takes 1.8286965
+output [Str("movie"), Str("The Big Mope")]
+Total takes 1.8287134
 running query 23c: IMDBQ085 
 Loading mk to DB
 Loading k to DB
@@ -2522,44 +1472,24 @@ Loading cc to DB
 Loading cct1 to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on cc
-building table takes 0.000023208s
-building table on cct1
-building table takes 0.000004208
-bushy join takes 0.034567706
-building flat table on t
-building table takes 0.000004333s
-building table on kt
-building table takes 0.000003708
-building table on intermediate
-building table takes 0.002292541
-bushy join takes 0.4052175
-building flat table on mc
-building table takes 0.000006875s
-building table on ct
-building table takes 0.000003958
-building table on cn
-building table takes 0.0050785
-building table on intermediate
-building table takes 0.000561916
-bushy join takes 0.9427845
-building flat table on mk
-building table takes 0.000009125s
-building table on k
-building table takes 0.008637125
-building table on intermediate
-building table takes 0.002258791
-bushy join takes 4.1781
-building flat table on mi
-building table takes 0.000012875s
-building table on it1
-building table takes 0.000004125
-building table on intermediate
-building table takes 0.15385975
-bushy join takes 0.001619875
-join takes: 5.805922
-output: Str("movie")Str("Dirt Merchant")
-total takes: 5.8059645
+Building takes 0.00000225
+Running join
+Join took 0.02308575
+Building takes 0.002223041
+Running join
+Join took 0.40090778
+Building takes 0.005972625
+Running join
+Join took 0.80736625
+Building takes 0.010941666
+Running join
+Join took 1.1375247
+Building takes 0.12490342
+Running join
+Join took 0.000406958
+Bushy join takes 2.5813017
+output [Str("movie"), Str("Dirt Merchant")]
+Total takes 2.5813556
 running query 24a: IMDBQ086 
 Loading mk to DB
 Loading k to DB
@@ -2573,43 +1503,21 @@ Loading it to DB
 Loading an to DB
 Loading n to DB
 Loading rt to DB
-building flat table on mk
-building table takes 0.000027916s
-building table on t
-building table takes 0.054841664
-bushy join takes 0.9327285
-building flat table on mi
-building table takes 0.000021166s
-building table on intermediate
-building table takes 0.03401083
-building table on mc
-building table takes 0.38212925
-building table on k
-building table takes 0.000007541
-building table on it
-building table takes 0.00000525
-building table on cn
-building table takes 0.004822916
-bushy join takes 0.05765554
-building flat table on n
-building table takes 0.000021583s
-building table on an
-building table takes 0.06549458
-bushy join takes 0.013525541
-building flat table on ci
-building table takes 0.000018916s
-building table on chn
-building table takes 0.63369554
-building table on rt
-building table takes 0.000003708
-building table on intermediate
-building table takes 0.001406875
-building table on intermediate
-building table takes 0.000191333
-bushy join takes 0.3238048
-join takes: 3.207101
-output: Str("Additional Voices")Str("Baker, Andrea")Str("Baiohazâdo 6")
-total takes: 3.2071478
+Building takes 0.051416248
+Running join
+Join took 0.75316185
+Building takes 0.39848086
+Running join
+Join took 0.050979916
+Building takes 0.06311987
+Running join
+Join took 0.009595625
+Building takes 0.614601
+Running join
+Join took 0.28710783
+Bushy join takes 2.920279
+output [Str("Additional Voices"), Str("Baker, Andrea"), Str("Baiohazâdo 6")]
+Total takes 2.920328
 running query 24b: IMDBQ087 
 Loading mk to DB
 Loading k to DB
@@ -2623,43 +1531,21 @@ Loading rt to DB
 Loading mi to DB
 Loading t to DB
 Loading it to DB
-building flat table on mk
-building table takes 0.000021625s
-building table on t
-building table takes 0.000004041
-bushy join takes 0.7057572
-building flat table on mi
-building table takes 0.000008875s
-building table on intermediate
-building table takes 0.000015916
-building table on mc
-building table takes 0.37090486
-building table on k
-building table takes 0.000003833
-building table on it
-building table takes 0.000006
-building table on cn
-building table takes 0.000001958
-bushy join takes 0.042536248
-building flat table on n
-building table takes 0.000017708s
-building table on an
-building table takes 0.06515471
-bushy join takes 0.013471541
-building flat table on ci
-building table takes 0.000015833s
-building table on chn
-building table takes 0.6299922
-building table on rt
-building table takes 0.000004
-building table on intermediate
-building table takes 0.001433
-building table on intermediate
-building table takes 0.000012708
-bushy join takes 0.32319176
-join takes: 2.7774
-output: Str("Tigress")Str("Jolie, Angelina")Str("Kung Fu Panda 2")
-total takes: 2.777439
+Building takes 0.00000325
+Running join
+Join took 0.68660676
+Building takes 0.36625913
+Running join
+Join took 0.042506207
+Building takes 0.06308721
+Running join
+Join took 0.009839125
+Building takes 0.6186567
+Running join
+Join took 0.28446546
+Bushy join takes 2.687439
+output [Str("Tigress"), Str("Jolie, Angelina"), Str("Kung Fu Panda 2")]
+Total takes 2.6874847
 running query 25a: IMDBQ088 
 Loading mk to DB
 Loading ci to DB
@@ -2670,34 +1556,18 @@ Loading it2 to DB
 Loading mi to DB
 Loading it1 to DB
 Loading k to DB
-building flat table on mk
-building table takes 0.000016625s
-building table on t
-building table takes 0.5245902
-building table on mi_idx
-building table takes 0.13705641
-bushy join takes 9.325298
-building flat table on mi
-building table takes 0.000018916s
-building table on intermediate
-building table takes 1.5522895
-building table on k
-building table takes 0.000009125
-building table on it2
-building table takes 0.000003458
-building table on it1
-building table takes 0.000006291
-bushy join takes 0.055288333
-building flat table on ci
-building table takes 0.000021708s
-building table on n
-building table takes 0.3297878
-building table on intermediate
-building table takes 0.001747541
-bushy join takes 0.26193005
-join takes: 13.964127
-output: Str("Horror")Str("10")Str("Abdallah, Damon")Str("-- And Now the Screaming Starts!")
-total takes: 13.966808
+Building takes 0.6350183
+Running join
+Join took 1.608607
+Building takes 1.4207978
+Running join
+Join took 0.033796247
+Building takes 0.31670725
+Running join
+Join took 0.22602941
+Bushy join takes 6.0049934
+output [Str("Horror"), Str("10"), Str("Abdallah, Damon"), Str("-- And Now the Screaming Starts!")]
+Total takes 6.005965
 running query 25b: IMDBQ089 
 Loading mk to DB
 Loading k to DB
@@ -2708,34 +1578,18 @@ Loading it1 to DB
 Loading ci to DB
 Loading t to DB
 Loading n to DB
-building flat table on mk
-building table takes 0.000026333s
-building table on t
-building table takes 0.000015541
-building table on mi_idx
-building table takes 0.13227876
-bushy join takes 0.73138726
-building flat table on mi
-building table takes 0.000016625s
-building table on intermediate
-building table takes 0.00003525
-building table on k
-building table takes 0.000003791
-building table on it2
-building table takes 0.000003125
-building table on it1
-building table takes 0.000003208
-bushy join takes 0.006138958
-building flat table on ci
-building table takes 0.000005458s
-building table on n
-building table takes 0.32029504
-building table on intermediate
-building table takes 0.000013791
-bushy join takes 0.24228683
-join takes: 1.807401
-output: Str("Horror")Str("138")Str("Campbell, Jeremiah")Str("Vampire Boys")
-total takes: 1.8074441
+Building takes 0.1276383
+Running join
+Join took 0.69115055
+Building takes 0.00005325
+Running join
+Join took 0.006181583
+Building takes 0.31329516
+Running join
+Join took 0.21876875
+Bushy join takes 1.7280439
+output [Str("Horror"), Str("138"), Str("Campbell, Jeremiah"), Str("Vampire Boys")]
+Total takes 1.7280996
 running query 25c: IMDBQ090 
 Loading mk to DB
 Loading k to DB
@@ -2746,34 +1600,18 @@ Loading ci to DB
 Loading t to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on mk
-building table takes 0.000023291s
-building table on t
-building table takes 0.5353687
-building table on mi_idx
-building table takes 0.13361055
-bushy join takes 10.8384695
-building flat table on mi
-building table takes 0.000023333s
-building table on intermediate
-building table takes 1.5255429
-building table on k
-building table takes 0.000005541
-building table on it2
-building table takes 0.0000035
-building table on it1
-building table takes 0.000003666
-bushy join takes 0.26671872
-building flat table on ci
-building table takes 0.000017708s
-building table on n
-building table takes 0.31825638
-building table on intermediate
-building table takes 0.006386875
-bushy join takes 0.3079483
-join takes: 15.678097
-output: Str("Action")Str("10")Str("Aakeson, Kim Fupz")Str("$")
-total takes: 15.680254
+Building takes 0.6578682
+Running join
+Join took 1.6246278
+Building takes 1.387294
+Running join
+Join took 0.13077171
+Building takes 0.3191851
+Running join
+Join took 0.2340038
+Bushy join takes 6.0936723
+output [Str("Action"), Str("10"), Str("Aakeson, Kim Fupz"), Str("$")]
+Total takes 6.097617
 running query 26a: IMDBQ091 
 Loading ci to DB
 Loading n to DB
@@ -2787,46 +1625,24 @@ Loading it2 to DB
 Loading cc to DB
 Loading cct2 to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.0003415s
-building table on cct1
-building table takes 0.0000045
-building table on cct2
-building table takes 0.000003125
-bushy join takes 0.10953049
-building flat table on mi_idx
-building table takes 0.000007125s
-building table on it2
-building table takes 0.000003416
-building table on intermediate
-building table takes 0.011089583
-bushy join takes 0.07860804
-building flat table on t
-building table takes 0.0000115s
-building table on kt
-building table takes 0.000003583
-building table on intermediate
-building table takes 0.001923833
-bushy join takes 0.3129363
-building flat table on mk
-building table takes 0.000007375s
-building table on k
-building table takes 0.000005
-building table on intermediate
-building table takes 0.000067
-bushy join takes 0.6500911
-building flat table on ci
-building table takes 0.000005666s
-building table on n
-building table takes 1.0795693
-building table on chn
-building table takes 0.019443875
-building table on intermediate
-building table takes 0.000047583
-bushy join takes 5.9155965
-join takes: 8.883643
-output: Str("'Agua' Man")Str("7.1")Str("Acereda, Hermie")Str("3:10 to Yuma")
-total takes: 8.885086
+Building takes 0.000003083
+Running join
+Join took 0.041770454
+Building takes 0.009171708
+Running join
+Join took 0.053452916
+Building takes 0.002134291
+Running join
+Join took 0.29263103
+Building takes 0.000077666
+Running join
+Join took 0.63622326
+Building takes 1.0188307
+Running join
+Join took 5.141616
+Bushy join takes 7.8461757
+output [Str("'Agua' Man"), Str("7.1"), Str("Acereda, Hermie"), Str("3:10 to Yuma")]
+Total takes 7.8468275
 running query 26b: IMDBQ092 
 Loading ci to DB
 Loading n to DB
@@ -2840,46 +1656,24 @@ Loading cct2 to DB
 Loading cct1 to DB
 Loading mi_idx to DB
 Loading it2 to DB
-building flat table on cc
-building table takes 0.001315708s
-building table on cct1
-building table takes 0.000004541
-building table on cct2
-building table takes 0.000003083
-bushy join takes 0.10734275
-building flat table on mi_idx
-building table takes 0.000007166s
-building table on it2
-building table takes 0.000003583
-building table on intermediate
-building table takes 0.008795791
-bushy join takes 0.01562075
-building flat table on t
-building table takes 0.000012375s
-building table on kt
-building table takes 0.000003541
-building table on intermediate
-building table takes 0.00111325
-bushy join takes 0.22418329
-building flat table on mk
-building table takes 0.000005583s
-building table on k
-building table takes 0.000008333
-building table on intermediate
-building table takes 0.0000195
-bushy join takes 0.6352757
-building flat table on ci
-building table takes 0.000011958s
-building table on n
-building table takes 0.49090895
-building table on chn
-building table takes 0.020382665
-building table on intermediate
-building table takes 0.000016333
-bushy join takes 5.7119675
-join takes: 7.253008
-output: Str("Bank Manager")Str("8.2")Str("Inception")
-total takes: 7.2530484
+Building takes 0.00000325
+Running join
+Join took 0.039711084
+Building takes 0.008790708
+Running join
+Join took 0.012006208
+Building takes 0.000531083
+Running join
+Join took 0.2124063
+Building takes 0.000014291
+Running join
+Join took 0.6220484
+Building takes 0.5751786
+Running join
+Join took 4.9628816
+Bushy join takes 6.4715805
+output [Str("Bank Manager"), Str("8.2"), Str("Inception")]
+Total takes 6.471631
 running query 26c: IMDBQ093 
 Loading ci to DB
 Loading n to DB
@@ -2893,46 +1687,24 @@ Loading it2 to DB
 Loading cc to DB
 Loading cct1 to DB
 Loading cct2 to DB
-building flat table on cc
-building table takes 0.000029166s
-building table on cct1
-building table takes 0.000004291
-building table on cct2
-building table takes 0.000003125
-bushy join takes 0.106638335
-building flat table on mi_idx
-building table takes 0.000006916s
-building table on it2
-building table takes 0.000003375
-building table on intermediate
-building table takes 0.00849675
-bushy join takes 0.420315
-building flat table on t
-building table takes 0.000011083s
-building table on kt
-building table takes 0.000003833
-building table on intermediate
-building table takes 0.006601166
-bushy join takes 0.3143225
-building flat table on mk
-building table takes 0.000011583s
-building table on k
-building table takes 0.000004875
-building table on intermediate
-building table takes 0.000407041
-bushy join takes 0.63963634
-building flat table on ci
-building table takes 0.000009208s
-building table on n
-building table takes 0.47113726
-building table on chn
-building table takes 0.019584
-building table on intermediate
-building table takes 0.00014575
-bushy join takes 5.624838
-join takes: 7.6552057
-output: Str("'Agua' Man")Str("1.9")Str("12 Rounds")
-total takes: 7.655533
+Building takes 0.00000275
+Running join
+Join took 0.039227456
+Building takes 0.008370333
+Running join
+Join took 0.3281512
+Building takes 0.006189625
+Running join
+Join took 0.2934469
+Building takes 0.00051475
+Running join
+Join took 0.6236407
+Building takes 0.5419763
+Running join
+Join took 4.9527364
+Bushy join takes 6.8383794
+output [Str("'Agua' Man"), Str("1.9"), Str("12 Rounds")]
+Total takes 6.838715
 running query 27a: IMDBQ094 
 Loading mk to DB
 Loading k to DB
@@ -2946,49 +1718,27 @@ Loading cct1 to DB
 Loading mi to DB
 Loading ml to DB
 Loading lt to DB
-building flat table on ml
-building table takes 0.000027458s
-building table on lt
-building table takes 0.000004541
-bushy join takes 0.006228541
-building flat table on cc
-building table takes 0.000003833s
-building table on cct1
-building table takes 0.000003208
-building table on cct2
-building table takes 0.000003083
-building table on intermediate
-building table takes 0.000178166
-bushy join takes 0.05110675
-building flat table on t
-building table takes 0.000004333s
-building table on intermediate
-building table takes 0.000023875
-bushy join takes 0.15624689
-building flat table on mc
-building table takes 0.000007333s
-building table on ct
-building table takes 0.000004958
-building table on cn
-building table takes 0.005341208
-building table on intermediate
-building table takes 0.000031291
-bushy join takes 0.40196377
-building flat table on mk
-building table takes 0.000011875s
-building table on k
-building table takes 0.000003916
-building table on intermediate
-building table takes 0.000037
-bushy join takes 0.6588652
-building flat table on mi
-building table takes 0.000006125s
-building table on intermediate
-building table takes 0.000037916
-bushy join takes 0.015292333
-join takes: 1.3000264
-output: Str("Det Danske Filminstitut")Str("followed by")Str("Spår i mörker")
-total takes: 1.3000636
+Building takes 0.000002583
+Running join
+Join took 0.004790375
+Building takes 0.000165166
+Running join
+Join took 0.045496125
+Building takes 0.000020583
+Running join
+Join took 0.15737863
+Building takes 0.00508525
+Running join
+Join took 0.36108258
+Building takes 0.000034166
+Running join
+Join took 0.67162716
+Building takes 0.000038125
+Running join
+Join took 0.014915875
+Bushy join takes 1.2646241
+output [Str("Det Danske Filminstitut"), Str("followed by"), Str("Spår i mörker")]
+Total takes 1.2646693
 running query 27b: IMDBQ095 
 Loading mk to DB
 Loading k to DB
@@ -3002,49 +1752,27 @@ Loading cct2 to DB
 Loading t to DB
 Loading mi to DB
 Loading lt to DB
-building flat table on ml
-building table takes 0.000023833s
-building table on lt
-building table takes 0.000004458
-bushy join takes 0.006211708
-building flat table on cc
-building table takes 0.000003791s
-building table on cct1
-building table takes 0.00000325
-building table on cct2
-building table takes 0.000002916
-building table on intermediate
-building table takes 0.00015625
-bushy join takes 0.051055
-building flat table on t
-building table takes 0.000006583s
-building table on intermediate
-building table takes 0.000018375
-bushy join takes 0.00774125
-building flat table on mc
-building table takes 0.00000325s
-building table on ct
-building table takes 0.000003166
-building table on cn
-building table takes 0.004605416
-building table on intermediate
-building table takes 0.000010208
-bushy join takes 0.38932142
-building flat table on mk
-building table takes 0.000006s
-building table on k
-building table takes 0.000003416
-building table on intermediate
-building table takes 0.000019083
-bushy join takes 0.63110584
-building flat table on mi
-building table takes 0.0000105s
-building table on intermediate
-building table takes 0.000029708
-bushy join takes 0.01427475
-join takes: 1.1089338
-output: Str("Filmlance International AB")Str("followed by")Str("Vita nätter")
-total takes: 1.1089673
+Building takes 0.00000275
+Running join
+Join took 0.004781166
+Building takes 0.000163291
+Running join
+Join took 0.043218665
+Building takes 0.000020166
+Running join
+Join took 0.007511333
+Building takes 0.004313625
+Running join
+Join took 0.33514073
+Building takes 0.000021375
+Running join
+Join took 0.6209993
+Building takes 0.000022458
+Running join
+Join took 0.013386291
+Bushy join takes 1.0334952
+output [Str("Filmlance International AB"), Str("followed by"), Str("Vita nätter")]
+Total takes 1.0335242
 running query 27c: IMDBQ096 
 Loading mk to DB
 Loading k to DB
@@ -3058,49 +1786,27 @@ Loading ml to DB
 Loading cct2 to DB
 Loading cct1 to DB
 Loading lt to DB
-building flat table on ml
-building table takes 0.000023541s
-building table on lt
-building table takes 0.000004208
-bushy join takes 0.006190166
-building flat table on cc
-building table takes 0.000003541s
-building table on cct1
-building table takes 0.000003166
-building table on cct2
-building table takes 0.000003208
-building table on intermediate
-building table takes 0.000160666
-bushy join takes 0.042740166
-building flat table on t
-building table takes 0.0000075s
-building table on intermediate
-building table takes 0.000023208
-bushy join takes 0.29936385
-building flat table on mc
-building table takes 0.000008166s
-building table on ct
-building table takes 0.000005333
-building table on cn
-building table takes 0.00521925
-building table on intermediate
-building table takes 0.000036125
-bushy join takes 0.39142913
-building flat table on mk
-building table takes 0.000007083s
-building table on k
-building table takes 0.0000035
-building table on intermediate
-building table takes 0.000035208
-bushy join takes 0.6358767
-building flat table on mi
-building table takes 0.000007166s
-building table on intermediate
-building table takes 0.000025
-bushy join takes 0.09755408
-join takes: 1.4833784
-output: Str("Det Danske Filminstitut")Str("followed by")Str("Spår i mörker")
-total takes: 1.4834342
+Building takes 0.0000025
+Running join
+Join took 0.004776833
+Building takes 0.000160958
+Running join
+Join took 0.03733
+Building takes 0.0000185
+Running join
+Join took 0.2931263
+Building takes 0.004676375
+Running join
+Join took 0.33466935
+Building takes 0.000035875
+Running join
+Join took 0.6208217
+Building takes 0.000026625
+Running join
+Join took 0.09414296
+Bushy join takes 1.3936352
+output [Str("Det Danske Filminstitut"), Str("followed by"), Str("Spår i mörker")]
+Total takes 1.3936715
 running query 28a: IMDBQ097 
 Loading mk to DB
 Loading k to DB
@@ -3116,53 +1822,27 @@ Loading cn to DB
 Loading cc to DB
 Loading cct1 to DB
 Loading cct2 to DB
-building flat table on cc
-building table takes 0.000027958s
-building table on cct1
-building table takes 0.00000425
-building table on cct2
-building table takes 0.000003458
-bushy join takes 0.06721987
-building flat table on mi_idx
-building table takes 0.000004291s
-building table on it2
-building table takes 0.000003416
-building table on intermediate
-building table takes 0.003978416
-bushy join takes 0.3617749
-building flat table on t
-building table takes 0.000007166s
-building table on kt
-building table takes 0.000003875
-building table on intermediate
-building table takes 0.0024535
-bushy join takes 0.42497876
-building flat table on mc
-building table takes 0.000006541s
-building table on cn
-building table takes 0.012826
-building table on ct
-building table takes 0.000006125
-building table on intermediate
-building table takes 0.001029583
-bushy join takes 0.13511267
-building flat table on mk
-building table takes 0.000019666s
-building table on k
-building table takes 0.000004
-building table on intermediate
-building table takes 0.000898416
-bushy join takes 0.64636004
-building flat table on mi
-building table takes 0.0000075s
-building table on it1
-building table takes 0.000003708
-building table on intermediate
-building table takes 0.000435625
-bushy join takes 0.17006825
-join takes: 1.8465424
-output: Str("01 Distribuzione")Str("2.9")Str("(#1.1)")
-total takes: 1.84672
+Building takes 0.000002791
+Running join
+Join took 0.033043668
+Building takes 0.00382675
+Running join
+Join took 0.30988702
+Building takes 0.003054916
+Running join
+Join took 0.37251094
+Building takes 0.01429675
+Running join
+Join took 0.10027345
+Building takes 0.000867458
+Running join
+Join took 0.6240415
+Building takes 0.000417583
+Running join
+Join took 0.13782512
+Bushy join takes 1.6183985
+output [Str("01 Distribuzione"), Str("2.9"), Str("(#1.1)")]
+Total takes 1.6185541
 running query 28b: IMDBQ098 
 Loading mk to DB
 Loading k to DB
@@ -3178,53 +1858,27 @@ Loading cct2 to DB
 Loading cct1 to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on cc
-building table takes 0.00002575s
-building table on cct1
-building table takes 0.000004708
-building table on cct2
-building table takes 0.00000325
-bushy join takes 0.06698462
-building flat table on mi_idx
-building table takes 0.000006916s
-building table on it2
-building table takes 0.000003708
-building table on intermediate
-building table takes 0.003938125
-bushy join takes 0.104600415
-building flat table on t
-building table takes 0.000009791s
-building table on kt
-building table takes 0.000003666
-building table on intermediate
-building table takes 0.001411666
-bushy join takes 0.29828292
-building flat table on mc
-building table takes 0.000006291s
-building table on cn
-building table takes 0.012194
-building table on ct
-building table takes 0.000005458
-building table on intermediate
-building table takes 0.000339916
-bushy join takes 0.1236645
-building flat table on mk
-building table takes 0.000014208s
-building table on k
-building table takes 0.000004166
-building table on intermediate
-building table takes 0.000394041
-bushy join takes 0.64026886
-building flat table on mi
-building table takes 0.000014541s
-building table on it1
-building table takes 0.000004125
-building table on intermediate
-building table takes 0.000155125
-bushy join takes 0.024755208
-join takes: 1.2942756
-output: Str("20th Century Fox")Str("6.6")Str("(#1.1)")
-total takes: 1.2943082
+Building takes 0.000002833
+Running join
+Join took 0.032872874
+Building takes 0.003914583
+Running join
+Join took 0.07943096
+Building takes 0.001374541
+Running join
+Join took 0.25896734
+Building takes 0.013021
+Running join
+Join took 0.09978425
+Building takes 0.000371583
+Running join
+Join took 0.6242084
+Building takes 0.000148
+Running join
+Join took 0.022144793
+Bushy join takes 1.152588
+output [Str("20th Century Fox"), Str("6.6"), Str("(#1.1)")]
+Total takes 1.1526192
 running query 28c: IMDBQ099 
 Loading mk to DB
 Loading k to DB
@@ -3240,53 +1894,27 @@ Loading mc to DB
 Loading cn to DB
 Loading ct to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.000024416s
-building table on cct1
-building table takes 0.00000425
-building table on cct2
-building table takes 0.00000325
-bushy join takes 0.09282775
-building flat table on mi_idx
-building table takes 0.000007166s
-building table on it2
-building table takes 0.000003791
-building table on intermediate
-building table takes 0.00663675
-bushy join takes 0.3855345
-building flat table on t
-building table takes 0.000009916s
-building table on kt
-building table takes 0.000003875
-building table on intermediate
-building table takes 0.004146916
-bushy join takes 0.3082716
-building flat table on mc
-building table takes 0.000008s
-building table on cn
-building table takes 0.01201975
-building table on ct
-building table takes 0.000006375
-building table on intermediate
-building table takes 0.00058725
-bushy join takes 0.14283954
-building flat table on mk
-building table takes 0.000014708s
-building table on k
-building table takes 0.000004166
-building table on intermediate
-building table takes 0.001178208
-bushy join takes 0.6542994
-building flat table on mi
-building table takes 0.000014875s
-building table on it1
-building table takes 0.000004041
-building table on intermediate
-building table takes 0.000768916
-bushy join takes 0.1825149
-join takes: 1.8154602
-output: Str("01 Distribuzione")Str("1.9")Str("(#1.1)")
-total takes: 1.8157449
+Building takes 0.000002708
+Running join
+Join took 0.037986
+Building takes 0.006312583
+Running join
+Join took 0.31372204
+Building takes 0.004595916
+Running join
+Join took 0.2660869
+Building takes 0.012743
+Running join
+Join took 0.10102713
+Building takes 0.001096208
+Running join
+Join took 0.6237369
+Building takes 0.000705083
+Running join
+Join took 0.14222892
+Bushy join takes 1.5327466
+output [Str("01 Distribuzione"), Str("1.9"), Str("(#1.1)")]
+Total takes 1.5329859
 running query 29a: IMDBQ100 
 Loading mk to DB
 Loading k to DB
@@ -3305,65 +1933,33 @@ Loading cc to DB
 Loading t to DB
 Loading cct2 to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.000021291s
-building table on cct1
-building table takes 0.000004333
-building table on cct2
-building table takes 0.000003
-bushy join takes 0.050865456
-building flat table on t
-building table takes 0.000006083s
-building table on intermediate
-building table takes 0.001656458
-bushy join takes 0.000003916
-building flat table on mc
-building table takes 0.000006375s
-building table on cn
-building table takes 0.004283958
-building table on intermediate
-building table takes 0.0000075
-bushy join takes 0.5157462
-building flat table on mk
-building table takes 0.000010125s
-building table on k
-building table takes 0.000003333
-building table on intermediate
-building table takes 0.000005125
-bushy join takes 0.6315819
-building flat table on mi
-building table takes 0.000005416s
-building table on it
-building table takes 0.000003625
-building table on intermediate
-building table takes 0.000006458
-bushy join takes 0.105830126
-building flat table on pi
-building table takes 0.000005208s
-building table on an
-building table takes 0.06639166
-building table on it3
-building table takes 0.00000475
-bushy join takes 0.9736293
-building flat table on n
-building table takes 0.000017458s
-building table on intermediate
-building table takes 0.03395071
-bushy join takes 0.014478416
-building flat table on ci
-building table takes 0.000019583s
-building table on chn
-building table takes 0.000004375
-building table on rt
-building table takes 0.000003041
-building table on intermediate
-building table takes 0.000808333
-building table on intermediate
-building table takes 0.0000115
-bushy join takes 0.17769828
-join takes: 2.6021016
-output: Str("Queen")Str("Andrews, Julie")Str("Shrek 2")
-total takes: 2.6021476
+Building takes 0.000002958
+Running join
+Join took 0.033748917
+Building takes 0.00186775
+Running join
+Join took 1.708e-6
+Building takes 0.004130958
+Running join
+Join took 0.4705728
+Building takes 0.000006875
+Running join
+Join took 0.6186619
+Building takes 0.000009791
+Running join
+Join took 0.09016662
+Building takes 0.067086205
+Running join
+Join took 0.64080596
+Building takes 0.03337733
+Running join
+Join took 0.010121125
+Building takes 0.001279791
+Running join
+Join took 0.17196879
+Bushy join takes 2.1682901
+output [Str("Queen"), Str("Andrews, Julie"), Str("Shrek 2")]
+Total takes 2.1683378
 running query 29b: IMDBQ101 
 Loading mk to DB
 Loading k to DB
@@ -3382,65 +1978,33 @@ Loading it to DB
 Loading cc to DB
 Loading cct1 to DB
 Loading cct2 to DB
-building flat table on cc
-building table takes 0.000029666s
-building table on cct1
-building table takes 0.000003958
-building table on cct2
-building table takes 0.000003291
-bushy join takes 0.05077554
-building flat table on t
-building table takes 0.000006666s
-building table on intermediate
-building table takes 0.001647
-bushy join takes 0.000003208
-building flat table on mc
-building table takes 0.000004166s
-building table on cn
-building table takes 0.0048635
-building table on intermediate
-building table takes 0.000006916
-bushy join takes 0.51413584
-building flat table on mk
-building table takes 0.000009333s
-building table on k
-building table takes 0.000003625
-building table on intermediate
-building table takes 0.000005541
-bushy join takes 0.6307074
-building flat table on mi
-building table takes 0.000018875s
-building table on it
-building table takes 0.000007833
-building table on intermediate
-building table takes 0.000007416
-bushy join takes 0.090817
-building flat table on pi
-building table takes 0.00000425s
-building table on an
-building table takes 0.06547666
-building table on it3
-building table takes 0.000005333
-bushy join takes 0.7249217
-building flat table on n
-building table takes 0.000017625s
-building table on intermediate
-building table takes 0.007848791
-bushy join takes 0.009424875
-building flat table on ci
-building table takes 0.000009541s
-building table on chn
-building table takes 0.000004083
-building table on rt
-building table takes 0.000003083
-building table on intermediate
-building table takes 0.000538708
-building table on intermediate
-building table takes 0.000007083
-bushy join takes 0.17345595
-join takes: 2.284356
-output: Str("Queen")Str("Andrews, Julie")Str("Shrek 2")
-total takes: 2.2843854
+Building takes 0.000002708
+Running join
+Join took 0.033554625
+Building takes 0.001715375
+Running join
+Join took 1.5e-6
+Building takes 0.004184791
+Running join
+Join took 0.47082457
+Building takes 0.000006583
+Running join
+Join took 0.6519348
+Building takes 0.000014375
+Running join
+Join took 0.08546683
+Building takes 0.06798575
+Running join
+Join took 0.6441867
+Building takes 0.0085705
+Running join
+Join took 0.008786041
+Building takes 0.000701875
+Running join
+Join took 0.18337987
+Bushy join takes 2.171443
+output [Str("Queen"), Str("Andrews, Julie"), Str("Shrek 2")]
+Total takes 2.1714692
 running query 29c: IMDBQ102 
 Loading mk to DB
 Loading k to DB
@@ -3459,65 +2023,33 @@ Loading it to DB
 Loading cc to DB
 Loading cct2 to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.000029416s
-building table on cct1
-building table takes 0.000004208
-building table on cct2
-building table takes 0.00000375
-bushy join takes 0.050666664
-building flat table on t
-building table takes 0.000007875s
-building table on intermediate
-building table takes 0.002024916
-bushy join takes 0.16797158
-building flat table on mc
-building table takes 0.000008916s
-building table on cn
-building table takes 0.004161708
-building table on intermediate
-building table takes 0.000217666
-bushy join takes 0.5278254
-building flat table on mk
-building table takes 0.000007416s
-building table on k
-building table takes 0.000006291
-building table on intermediate
-building table takes 0.000505
-bushy join takes 0.6299316
-building flat table on mi
-building table takes 0.000025083s
-building table on it
-building table takes 0.000004583
-building table on intermediate
-building table takes 0.000024583
-bushy join takes 0.106376
-building flat table on pi
-building table takes 0.000009166s
-building table on an
-building table takes 0.06767013
-building table on it3
-building table takes 0.000004875
-bushy join takes 0.9747017
-building flat table on n
-building table takes 0.000012666s
-building table on intermediate
-building table takes 0.03433117
-bushy join takes 0.014755166
-building flat table on ci
-building table takes 0.000020208s
-building table on chn
-building table takes 0.6226143
-building table on rt
-building table takes 0.000005291
-building table on intermediate
-building table takes 0.000833083
-building table on intermediate
-building table takes 0.000034916
-bushy join takes 0.3349753
-join takes: 4.0322204
-output: Str("Lola")Str("Andrews, Julie")Str("Hoodwinked!")
-total takes: 4.0323477
+Building takes 0.000002958
+Running join
+Join took 0.03381079
+Building takes 0.001683083
+Running join
+Join took 0.16308434
+Building takes 0.004610416
+Running join
+Join took 0.47441626
+Building takes 0.00048175
+Running join
+Join took 0.61866534
+Building takes 0.000020958
+Running join
+Join took 0.09017317
+Building takes 0.06760321
+Running join
+Join took 0.6397635
+Building takes 0.033648707
+Running join
+Join took 0.009962291
+Building takes 0.61226714
+Running join
+Join took 0.28711864
+Bushy join takes 3.5212398
+output [Str("Lola"), Str("Andrews, Julie"), Str("Hoodwinked!")]
+Total takes 3.5213819
 running query 30a: IMDBQ103 
 Loading mk to DB
 Loading k to DB
@@ -3531,49 +2063,27 @@ Loading cct1 to DB
 Loading cct2 to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on cc
-building table takes 0.000026625s
-building table on cct1
-building table takes 0.000004
-building table on cct2
-building table takes 0.000003333
-bushy join takes 0.06141604
-building flat table on mi_idx
-building table takes 0.000007s
-building table on it2
-building table takes 0.000003166
-building table on intermediate
-building table takes 0.001910708
-bushy join takes 0.36272225
-building flat table on t
-building table takes 0.000006708s
-building table on intermediate
-building table takes 0.0020995
-bushy join takes 0.22311096
-building flat table on mk
-building table takes 0.000005625s
-building table on k
-building table takes 0.000004125
-building table on intermediate
-building table takes 0.000475166
-bushy join takes 0.65347356
-building flat table on mi
-building table takes 0.0000055s
-building table on it1
-building table takes 0.000003958
-building table on intermediate
-building table takes 0.0001695
-bushy join takes 0.0244095
-building flat table on ci
-building table takes 0.000004291s
-building table on n
-building table takes 0.3171069
-building table on intermediate
-building table takes 0.000121875
-bushy join takes 0.24499068
-join takes: 2.14483
-output: Str("Horror")Str("100356")Str("Abrams, J.J.")Str("16 Blocks")
-total takes: 2.144938
+Building takes 0.000002541
+Running join
+Join took 0.037439454
+Building takes 0.002454208
+Running join
+Join took 0.3157341
+Building takes 0.003402041
+Running join
+Join took 0.218429
+Building takes 0.001281166
+Running join
+Join took 0.6364061
+Building takes 0.000191541
+Running join
+Join took 0.019664416
+Building takes 0.31851614
+Running join
+Join took 0.22169587
+Bushy join takes 2.02632
+output [Str("Horror"), Str("100356"), Str("Abrams, J.J."), Str("16 Blocks")]
+Total takes 2.0264304
 running query 30b: IMDBQ104 
 Loading mk to DB
 Loading k to DB
@@ -3587,49 +2097,27 @@ Loading cct1 to DB
 Loading t to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on cc
-building table takes 0.000019833s
-building table on cct1
-building table takes 0.000004333
-building table on cct2
-building table takes 0.000003
-bushy join takes 0.06119383
-building flat table on mi_idx
-building table takes 0.000004041s
-building table on it2
-building table takes 0.000003625
-building table on intermediate
-building table takes 0.001950583
-bushy join takes 0.36350277
-building flat table on t
-building table takes 0.000007833s
-building table on intermediate
-building table takes 0.002133291
-bushy join takes 0.000092375
-building flat table on mk
-building table takes 0.000007s
-building table on k
-building table takes 0.000006
-building table on intermediate
-building table takes 0.000005791
-bushy join takes 0.6442743
-building flat table on mi
-building table takes 0.000007541s
-building table on it1
-building table takes 0.000004125
-building table on intermediate
-building table takes 0.000007416
-bushy join takes 0.021690957
-building flat table on ci
-building table takes 0.000005416s
-building table on n
-building table takes 0.32471105
-building table on intermediate
-building table takes 0.000013083
-bushy join takes 0.24204646
-join takes: 1.9154457
-output: Str("Horror")Str("194782")Str("Shannon, Damian")Str("Freddy vs. Jason")
-total takes: 1.9154978
+Building takes 0.000002791
+Running join
+Join took 0.037561122
+Building takes 0.001888583
+Running join
+Join took 0.31429127
+Building takes 0.002888875
+Running join
+Join took 8.5333e-5
+Building takes 0.000006041
+Running join
+Join took 0.6318242
+Building takes 0.000009916
+Running join
+Join took 0.0187065
+Building takes 0.31432927
+Running join
+Join took 0.2197722
+Bushy join takes 1.7902825
+output [Str("Horror"), Str("194782"), Str("Shannon, Damian"), Str("Freddy vs. Jason")]
+Total takes 1.790323
 running query 30c: IMDBQ105 
 Loading mk to DB
 Loading k to DB
@@ -3643,49 +2131,27 @@ Loading it1 to DB
 Loading cc to DB
 Loading cct2 to DB
 Loading cct1 to DB
-building flat table on cc
-building table takes 0.000023291s
-building table on cct1
-building table takes 0.000004
-building table on cct2
-building table takes 0.000003291
-bushy join takes 0.050803084
-building flat table on mi_idx
-building table takes 0.000007333s
-building table on it2
-building table takes 0.000003333
-building table on intermediate
-building table takes 0.001673458
-bushy join takes 0.35503584
-building flat table on t
-building table takes 0.000007916s
-building table on intermediate
-building table takes 0.001626083
-bushy join takes 0.4259382
-building flat table on mk
-building table takes 0.000009041s
-building table on k
-building table takes 0.000004208
-building table on intermediate
-building table takes 0.001766541
-bushy join takes 0.6665064
-building flat table on mi
-building table takes 0.000006s
-building table on it1
-building table takes 0.000003666
-building table on intermediate
-building table takes 0.001076541
-bushy join takes 0.08663421
-building flat table on ci
-building table takes 0.000006s
-building table on n
-building table takes 0.31761587
-building table on intermediate
-building table takes 0.001537333
-bushy join takes 0.2616094
-join takes: 2.4273114
-output: Str("Action")Str("100356")Str("Abernathy, Lewis")Str("$")
-total takes: 2.4281304
+Building takes 0.0000025
+Running join
+Join took 0.03340554
+Building takes 0.001871583
+Running join
+Join took 0.31322122
+Building takes 0.001682041
+Running join
+Join took 0.3954961
+Building takes 0.001738083
+Running join
+Join took 0.6331225
+Building takes 0.001169958
+Running join
+Join took 0.053433
+Building takes 0.31431183
+Running join
+Join took 0.22268884
+Bushy join takes 2.2232094
+output [Str("Action"), Str("100356"), Str("Abernathy, Lewis"), Str("$")]
+Total takes 2.2239835
 running query 31a: IMDBQ106 
 Loading mk to DB
 Loading k to DB
@@ -3698,38 +2164,18 @@ Loading it2 to DB
 Loading ci to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on mk
-building table takes 0.000030583s
-building table on t
-building table takes 0.49516267
-building table on mi_idx
-building table takes 0.1314442
-bushy join takes 9.459511
-building flat table on mi
-building table takes 0.000022083s
-building table on intermediate
-building table takes 1.5514674
-building table on mc
-building table takes 0.49644616
-building table on k
-building table takes 0.000005458
-building table on it2
-building table takes 0.000004541
-building table on it1
-building table takes 0.000003416
-building table on cn
-building table takes 0.000004041
-bushy join takes 0.10022775
-building flat table on ci
-building table takes 0.000021791s
-building table on n
-building table takes 0.32223532
-building table on intermediate
-building table takes 0.00012175
-bushy join takes 0.25885734
-join takes: 14.881676
-output: Str("Horror")Str("1040")Str("Agnew, Jim")Str("2001 Maniacs")
-total takes: 14.882261
+Building takes 0.61392057
+Running join
+Join took 1.5577939
+Building takes 1.822073
+Running join
+Join took 0.062237665
+Building takes 0.3110582
+Running join
+Join took 0.23511817
+Bushy join takes 6.518975
+output [Str("Horror"), Str("1040"), Str("Agnew, Jim"), Str("2001 Maniacs")]
+Total takes 6.5195613
 running query 31b: IMDBQ107 
 Loading mk to DB
 Loading k to DB
@@ -3742,38 +2188,18 @@ Loading it1 to DB
 Loading mc to DB
 Loading t to DB
 Loading cn to DB
-building flat table on mk
-building table takes 0.000030625s
-building table on t
-building table takes 0.000061916
-building table on mi_idx
-building table takes 0.13153803
-bushy join takes 0.7409836
-building flat table on mi
-building table takes 0.000019791s
-building table on intermediate
-building table takes 0.000452666
-building table on mc
-building table takes 0.000612791
-building table on k
-building table takes 0.000003708
-building table on it2
-building table takes 0.000006041
-building table on it1
-building table takes 0.000003083
-building table on cn
-building table takes 0.000003541
-bushy join takes 0.014675833
-building flat table on ci
-building table takes 0.000007958s
-building table on n
-building table takes 0.31958038
-building table on intermediate
-building table takes 0.000017375
-bushy join takes 0.24344379
-join takes: 1.8277538
-output: Str("Horror")Str("129755")Str("Bousman, Darren Lynn")Str("Saw")
-total takes: 1.8278046
+Building takes 0.12972504
+Running join
+Join took 0.7471432
+Building takes 0.001007791
+Running join
+Join took 0.014308375
+Building takes 0.32675546
+Running join
+Join took 0.23025437
+Bushy join takes 1.8225412
+output [Str("Horror"), Str("129755"), Str("Bousman, Darren Lynn"), Str("Saw")]
+Total takes 1.8225917
 running query 31c: IMDBQ108 
 Loading mk to DB
 Loading k to DB
@@ -3786,38 +2212,18 @@ Loading it2 to DB
 Loading ci to DB
 Loading mi to DB
 Loading it1 to DB
-building flat table on mk
-building table takes 0.000335916s
-building table on t
-building table takes 0.5439577
-building table on mi_idx
-building table takes 0.13991751
-bushy join takes 9.287777
-building flat table on mi
-building table takes 0.000023291s
-building table on intermediate
-building table takes 1.5683563
-building table on mc
-building table takes 0.46632308
-building table on k
-building table takes 0.000009083
-building table on it2
-building table takes 0.000005416
-building table on it1
-building table takes 0.000003208
-building table on cn
-building table takes 0.000008416
-bushy join takes 0.15855592
-building flat table on ci
-building table takes 0.000025875s
-building table on n
-building table takes 1.0258439
-building table on intermediate
-building table takes 0.00020075
-bushy join takes 0.34720635
-join takes: 16.154768
-output: Str("Action")Str("1008")Str("Abraham, Brad")Str("11:14")
-total takes: 16.155785
+Building takes 0.68230987
+Running join
+Join took 1.6248317
+Building takes 1.8404714
+Running join
+Join took 0.12259408
+Building takes 0.9857494
+Running join
+Join took 0.3044863
+Bushy join takes 8.070716
+output [Str("Action"), Str("1008"), Str("Abraham, Brad"), Str("11:14")]
+Total takes 8.071407
 running query 32b: IMDBQ110 
 Loading mk to DB
 Loading k to DB
@@ -3825,25 +2231,15 @@ Loading t1 to DB
 Loading t2 to DB
 Loading ml to DB
 Loading lt to DB
-building flat table on t1
-building table takes 0.000028333s
-building table on ml
-building table takes 0.003164166
-building table on t2
-building table takes 0.50010496
-bushy join takes 0.47336388
-building flat table on mk
-building table takes 0.00002225s
-building table on intermediate
-building table takes 0.002618
-building table on lt
-building table takes 0.000009875
-building table on k
-building table takes 0.000003125
-bushy join takes 0.66898334
-join takes: 2.0239236
-output: Str("alternate language version of")Str("12 oz. Mouse")Str("'Angel': Season 2 Overview")
-total takes: 2.0244553
+Building takes 0.49181134
+Running join
+Join took 0.4359146
+Building takes 0.002443333
+Running join
+Join took 0.6440868
+Bushy join takes 1.9474424
+output [Str("alternate language version of"), Str("12 oz. Mouse"), Str("'Angel': Season 2 Overview")]
+Total takes 1.9476583
 running query 33a: IMDBQ111 
 Loading mc2 to DB
 Loading mc1 to DB
@@ -3859,56 +2255,30 @@ Loading t2 to DB
 Loading kt2 to DB
 Loading ml to DB
 Loading lt to DB
-building flat table on ml
-building table takes 0.00001975s
-building table on lt
-building table takes 0.000007458
-bushy join takes 0.006238791
-building flat table on mi_idx1
-building table takes 0.000006375s
-building table on it1
-building table takes 0.000003541
-building table on intermediate
-building table takes 0.000187083
-bushy join takes 0.3375135
-building flat table on mi_idx2
-building table takes 0.000007541s
-building table on it2
-building table takes 0.000003958
-building table on intermediate
-building table takes 0.0001645
-bushy join takes 0.13842654
-building flat table on t1
-building table takes 0.000005958s
-building table on kt1
-building table takes 0.000003916
-building table on intermediate
-building table takes 0.000008416
-bushy join takes 0.517029
-building flat table on t2
-building table takes 0.00000925s
-building table on kt2
-building table takes 0.000003416
-building table on intermediate
-building table takes 0.00001175
-bushy join takes 0.09050342
-building flat table on mc1
-building table takes 0.000011083s
-building table on cn1
-building table takes 0.009589208
-building table on intermediate
-building table takes 0.00001575
-bushy join takes 0.5163756
-building flat table on mc2
-building table takes 0.000010916s
-building table on cn2
-building table takes 0.028075123
-building table on intermediate
-building table takes 0.000015791
-bushy join takes 0.66274464
-join takes: 2.3418946
-output: Str("495 Productions")Str("495 Productions")Str("3.3")Str("2.7")Str("A Double Shot at Love")Str("A Shot at Love with Tila Tequila")
-total takes: 2.3419456
+Building takes 0.000002625
+Running join
+Join took 0.004815041
+Building takes 0.000180916
+Running join
+Join took 0.3097078
+Building takes 0.000161208
+Running join
+Join took 0.13345613
+Building takes 0.000012208
+Running join
+Join took 0.49777335
+Building takes 0.000009541
+Running join
+Join took 0.08775242
+Building takes 0.009078833
+Running join
+Join took 0.47200412
+Building takes 0.02921875
+Running join
+Join took 0.57755846
+Bushy join takes 2.1557634
+output [Str("495 Productions"), Str("495 Productions"), Str("3.3"), Str("2.7"), Str("A Double Shot at Love"), Str("A Shot at Love with Tila Tequila")]
+Total takes 2.1558022
 running query 33b: IMDBQ112 
 Loading mc2 to DB
 Loading mc1 to DB
@@ -3924,56 +2294,30 @@ Loading t2 to DB
 Loading kt2 to DB
 Loading ml to DB
 Loading lt to DB
-building flat table on ml
-building table takes 0.000027541s
-building table on lt
-building table takes 0.000004333
-bushy join takes 0.006186
-building flat table on mi_idx1
-building table takes 0.000003833s
-building table on it1
-building table takes 0.000003125
-building table on intermediate
-building table takes 0.000163166
-bushy join takes 0.3325367
-building flat table on mi_idx2
-building table takes 0.000006416s
-building table on it2
-building table takes 0.000004083
-building table on intermediate
-building table takes 0.000213125
-bushy join takes 0.13720283
-building flat table on t1
-building table takes 0.000006333s
-building table on kt1
-building table takes 0.000003875
-building table on intermediate
-building table takes 0.000008833
-bushy join takes 0.51164776
-building flat table on t2
-building table takes 0.00000575s
-building table on kt2
-building table takes 0.000004333
-building table on intermediate
-building table takes 0.000008208
-bushy join takes 0.024146125
-building flat table on mc1
-building table takes 0.000011375s
-building table on cn1
-building table takes 0.000304166
-building table on intermediate
-building table takes 0.000006791
-bushy join takes 0.3760763
-building flat table on mc2
-building table takes 0.000005s
-building table on cn2
-building table takes 0.030465623
-building table on intermediate
-building table takes 0.000014958
-bushy join takes 0.6643699
-join takes: 2.1109276
-output: Str("MTV Netherlands")Str("495 Productions")Str("3.3")Str("2.7")Str("A Double Shot at Love")Str("A Shot at Love with Tila Tequila")
-total takes: 2.1109776
+Building takes 0.0000025
+Running join
+Join took 0.004830208
+Building takes 0.000214125
+Running join
+Join took 0.30888692
+Building takes 0.000176666
+Running join
+Join took 0.13275455
+Building takes 0.000013125
+Running join
+Join took 0.4957985
+Building takes 0.000012458
+Running join
+Join took 0.023793375
+Building takes 0.00023325
+Running join
+Join took 0.3653295
+Building takes 0.031043958
+Running join
+Join took 0.58761895
+Bushy join takes 1.9776828
+output [Str("MTV Netherlands"), Str("495 Productions"), Str("3.3"), Str("2.7"), Str("A Double Shot at Love"), Str("A Shot at Love with Tila Tequila")]
+Total takes 1.9777365
 running query 33c: IMDBQ113 
 Loading mc2 to DB
 Loading mc1 to DB
@@ -3989,53 +2333,27 @@ Loading mi_idx2 to DB
 Loading it2 to DB
 Loading ml to DB
 Loading lt to DB
-building flat table on ml
-building table takes 0.000025125s
-building table on lt
-building table takes 0.00000425
-bushy join takes 0.006189708
-building flat table on mi_idx1
-building table takes 0.00000375s
-building table on it1
-building table takes 0.000003041
-building table on intermediate
-building table takes 0.000186458
-bushy join takes 0.3333901
-building flat table on mi_idx2
-building table takes 0.000008875s
-building table on it2
-building table takes 0.000004583
-building table on intermediate
-building table takes 0.000179166
-bushy join takes 0.14207345
-building flat table on t1
-building table takes 0.000007666s
-building table on kt1
-building table takes 0.000003791
-building table on intermediate
-building table takes 0.000012083
-bushy join takes 0.66136396
-building flat table on t2
-building table takes 0.000006166s
-building table on kt2
-building table takes 0.000003583
-building table on intermediate
-building table takes 0.000010333
-bushy join takes 0.28294522
-building flat table on mc1
-building table takes 0.000023416s
-building table on cn1
-building table takes 0.015365458
-building table on intermediate
-building table takes 0.000018166
-bushy join takes 0.54222184
-building flat table on mc2
-building table takes 0.000015041s
-building table on cn2
-building table takes 0.027449958
-building table on intermediate
-building table takes 0.000027458
-bushy join takes 0.66604173
-join takes: 2.7181597
-output: Str("2BE")Str("495 Productions")Str("1.3")Str("1.0")Str("A Double Shot at Love")Str("A Double Shot at Love")
-total takes: 2.7182403
+Building takes 0.000002708
+Running join
+Join took 0.0048195
+Building takes 0.000166375
+Running join
+Join took 0.3145472
+Building takes 0.000151708
+Running join
+Join took 0.13859317
+Building takes 0.000012625
+Running join
+Join took 0.59755033
+Building takes 0.000011291
+Running join
+Join took 0.25365993
+Building takes 0.01603154
+Running join
+Join took 0.49504712
+Building takes 0.029327
+Running join
+Join took 0.5788457
+Bushy join takes 2.4682386
+output [Str("2BE"), Str("495 Productions"), Str("1.3"), Str("1.0"), Str("A Double Shot at Love"), Str("A Double Shot at Love")]
+Total takes 2.4683018
