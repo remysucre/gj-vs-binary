@@ -142,7 +142,16 @@ pub fn bushy_join_inner<'a>(
 ) {
     if compiled_plan.is_empty() {
         let payload = Vec::new();
-        materialize(relations, tuple, plan, &payload, out_vars, out, view_len, new_columns);
+        materialize(
+            relations,
+            tuple,
+            plan,
+            &payload,
+            out_vars,
+            out,
+            view_len,
+            new_columns,
+        );
     } else {
         let js = &compiled_plan[0];
 
@@ -199,7 +208,6 @@ fn materialize<'a>(
 ) {
     if relations.is_empty() {
         for (id, attrs) in tuple.iter().zip(plan.iter()) {
-
             // let idx = out
             //     .get(attrs[0]).copied()
             //     .unwrap_or_else(|| {
@@ -207,7 +215,7 @@ fn materialize<'a>(
             //         out.insert(attrs[0].clone(), l);
             //         l
             //     }) - view_len;
-            
+
             let idx = *out
                 .entry(attrs[0].clone())
                 .or_insert(view_len + new_columns.len())

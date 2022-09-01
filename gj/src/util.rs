@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path;
 use std::time::Instant;
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
     file::reader::{FileReader, SerializedFileReader},
@@ -70,6 +70,93 @@ pub fn compile_gj_plan<'a>(
 //         }
 //     }
 // }
+
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+pub enum TableID<'a> {
+    Name(String),
+    Node(&'a TreeOp),
+}
+
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+pub enum ColID {
+    Id(usize),
+    Name(String),
+}
+
+pub type ViewSchema = Vec<Vec<Attribute>>;
+
+pub type BuildPlan<'a> = Vec<(TableID<'a>, Vec<ColID>)>;
+
+pub fn compute_full_plan<'a>(
+    db: &DB,
+    plan: &[Vec<&Attribute>],
+    provides: &HashMap<&'a TreeOp, Vec<Vec<Attribute>>>,
+    in_view: &HashMap<&str, &'a TreeOp>,
+) -> (ViewSchema, BuildPlan<'a>) {
+    let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::new();
+
+    for attrs in plan {
+        for a in attrs {
+
+            let col_id;
+            let table_id;
+
+            if let Some(node) = in_view.get(a.table_name.as_str()) {
+                table_id = TableID::Node(&**node);
+                col_id = ColID::Id(provides[node].iter().position(|attrs| attrs.contains(a)).unwrap());
+            } else {
+                table_id = TableID::Name(a.table_name.clone());
+                col_id = ColID::Name(a.attr_name.clone());
+            };
+
+            build_plan.entry(table_id).or_default().insert(col_id, vec![]);
+        }
+    }
+
+    for (table_id, column_ids) in build_plan.iter_mut() {
+        match table_id {
+            TableID::Name(table_name) => {
+                let table = &db[table_name];
+                for attr in table.keys() {
+                    let cid = ColID::Name(attr.attr_name.clone());
+                    if !column_ids.contains_key(&cid) {
+                        column_ids.insert(cid, vec![attr.clone()]);
+                    }
+                }
+            }
+            TableID::Node(node) => {
+                let attr_sets = &provides[node];
+                for (i, attrs) in attr_sets.iter().enumerate() {
+                    let cid = ColID::Id(i);
+                    if !column_ids.contains_key(&cid) {
+                        column_ids.insert(cid, attrs.to_vec());
+                    }
+                }
+            }
+        }
+    }
+
+    let build_plan_out = build_plan
+        .iter()
+        .map(|(t, m)| {
+            let cols: Vec<_> = m.keys().cloned().collect();
+            (t.clone(), cols)
+        }).collect();
+
+    let mut out_schema: Vec<Vec<Attribute>> = Vec::new();
+
+    for attrs in plan {
+        out_schema.push(attrs.iter().copied().cloned().collect());
+    }
+
+    for attrs in build_plan.values().flat_map(|m| m.values()) {
+        if !attrs.is_empty() {
+            out_schema.push(attrs.to_vec());
+        }
+    }
+
+    (out_schema, build_plan_out)
+}
 
 pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> RawDB {
     let tables = scan

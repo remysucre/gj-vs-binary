@@ -6,7 +6,7 @@ pub mod util;
 use std::collections::HashMap;
 
 use sql::Attribute;
-use trie::{Value, RawValue};
+use trie::{RawValue, Value};
 
 pub type Col<'a> = Vec<Value<'a>>;
 pub type Relation<'a> = HashMap<Attribute, Col<'a>>;
