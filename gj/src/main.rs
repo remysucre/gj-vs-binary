@@ -252,7 +252,7 @@ fn main() {
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
 
-    let queries = vec![("33c", "IMDBQ113")];
+    // let queries = vec![("33c", "IMDBQ113")];
 
     // let queries = vec![
     //     ("31c", "IMDBQ108"),
@@ -266,8 +266,8 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     //     ("6f", "IMDBQ023"),
     // ];
 
-    /*
-    let bushy = false;
+    // /*
+    let bushy = true;
     let linear = true;
 
     let mut queries = vec![];
