@@ -95,6 +95,7 @@ pub fn compute_full_plan<'a>(
 ) -> (ViewSchema, BuildPlan<'a>) {
     let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::new();
 
+    // traverse plan bottom up to collect table and column ordering
     for attrs in plan {
         for a in attrs {
 
@@ -113,6 +114,9 @@ pub fn compute_full_plan<'a>(
         }
     }
 
+    // collect data columns to the back of building order
+    // collect attributes attached to each column 
+    // a view column can have more than 1 attributes if it was a join column
     for (table_id, column_ids) in build_plan.iter_mut() {
         match table_id {
             TableID::Name(table_name) => {
@@ -136,6 +140,7 @@ pub fn compute_full_plan<'a>(
         }
     }
 
+    // collect build plans into a table ordering, each with a column ordering
     let build_plan_out = build_plan
         .iter()
         .map(|(t, m)| {
@@ -143,6 +148,7 @@ pub fn compute_full_plan<'a>(
             (t.clone(), cols)
         }).collect();
 
+    // the output schema for this materialized view
     let mut out_schema: Vec<Vec<Attribute>> = Vec::new();
 
     for attrs in plan {
