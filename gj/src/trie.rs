@@ -7,18 +7,23 @@ use crate::sql::Attribute;
 type Id = i32;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
-pub enum Value {
+pub enum Value<'a> {
+    Str(&'a str),
+    Num(i32),
+}
+
+pub enum RawValue {
     Str(String),
     Num(i32),
 }
 
-#[derive(Clone)]
-pub enum ValRef<'a> {
-    Id(i32),
-    Val(&'a Value),
-}
+// #[derive(Clone)]
+// pub enum ValRef<'a> {
+//     Id(i32),
+//     Val(&'a Value),
+// }
 
-impl Value {
+impl Value<'_> {
     pub fn as_num(&self) -> i32 {
         match self {
             Value::Num(n) => *n,
@@ -28,39 +33,39 @@ impl Value {
 }
 
 #[derive(Debug, Clone)]
-pub enum Trie<'a, T> {
+pub enum Trie<T> {
     Node(HashMap<Id, Self>),
-    Data(Vec<Vec<&'a T>>),
+    Data(Vec<Vec<T>>),
 }
 
 pub type Schema = Vec<Attribute>;
 
-pub struct Table<'a, T> {
-    pub schema: Schema,
-    pub data: Tb<'a, T>,
+// pub struct Table<'a, T> {
+//     pub schema: Schema,
+//     pub data: Tb<'a, T>,
+// }
+
+pub enum Tb<'a, 'b, T> {
+    Trie(Trie<T>),
+    Arr((Vec<&'b [Value<'a>]>, Vec<&'b [T]>)),
 }
 
-pub enum Tb<'a, T> {
-    Trie(Trie<'a, T>),
-    Arr((Vec<&'a [Value]>, Vec<&'a [T]>)),
-}
+// impl<'a, T> Table<'a, T> {
+//     pub fn get_data(&self) -> Result<&[Vec<&'a T>], NotAData> {
+//         match &self.data {
+//             Tb::Trie(Trie::Data(data)) => Ok(data),
+//             // Table::Single((_, data)) => Ok(&data),
+//             _ => Err(NotAData),
+//         }
+//     }
 
-impl<'a, T> Table<'a, T> {
-    pub fn get_data(&self) -> Result<&[Vec<&'a T>], NotAData> {
-        match &self.data {
-            Tb::Trie(Trie::Data(data)) => Ok(data),
-            // Table::Single((_, data)) => Ok(&data),
-            _ => Err(NotAData),
-        }
-    }
-
-    pub fn get_map(&self) -> Result<&HashMap<Id, Trie<T>>, NotANode> {
-        match &self.data {
-            Tb::Trie(Trie::Node(map)) => Ok(map),
-            _ => Err(NotANode),
-        }
-    }
-}
+//     pub fn get_map(&self) -> Result<&HashMap<Id, Trie<T>>, NotANode> {
+//         match &self.data {
+//             Tb::Trie(Trie::Node(map)) => Ok(map),
+//             _ => Err(NotANode),
+//         }
+//     }
+// }
 
 #[derive(Debug, Clone, Copy)]
 pub struct NotAData;
@@ -84,13 +89,13 @@ impl Display for NotANode {
 
 impl std::error::Error for NotANode {}
 
-impl<'a, T> Default for Trie<'a, T> {
+impl<T> Default for Trie<T> {
     fn default() -> Self {
         Trie::Node(HashMap::default())
     }
 }
 
-impl<'a, T> Trie<'a, T> {
+impl<T> Trie<T> {
     pub fn get_map(&self) -> Result<&HashMap<Id, Self>, NotANode> {
         if let Trie::Node(ref map) = *self {
             Ok(map)
@@ -107,7 +112,7 @@ impl<'a, T> Trie<'a, T> {
         }
     }
 
-    pub fn get_data(&self) -> Result<&[Vec<&'a T>], NotAData> {
+    pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
         if let Trie::Data(ref data) = *self {
             Ok(data)
         } else {
@@ -115,7 +120,7 @@ impl<'a, T> Trie<'a, T> {
         }
     }
 
-    pub fn get_data_mut(&mut self) -> Result<&mut Vec<Vec<&'a T>>, NotAData> {
+    pub fn get_data_mut(&mut self) -> Result<&mut Vec<Vec<T>>, NotAData> {
         if let Trie::Data(ref mut data) = *self {
             Ok(data)
         } else {
@@ -123,7 +128,7 @@ impl<'a, T> Trie<'a, T> {
         }
     }
 
-    pub fn insert(&mut self, ids: &[Id], data: Vec<&'a T>) {
+    pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
         let mut trie = self;
         for id in &ids[..ids.len() - 1] {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();

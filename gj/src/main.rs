@@ -6,7 +6,7 @@ use gj::{
         get_join_tree, get_payload, get_scans, to_gj_plan, to_left_deep_plan, to_materialize,
         update_materialize_map,
     },
-    util::*,
+    util::*, trie::{RawValue, Value},
 };
 
 fn main() {
@@ -20,8 +20,29 @@ fn main() {
         let payload = get_payload(&plan_tree);
         let plan = to_gj_plan(&plan_tree);
 
-        let db = load_db(q, &scan, &plan);
+        let raw_db = load_db(q, &scan, &plan);
 
+        let db: HashMap<_, _> = raw_db
+            .iter()
+            .map(|(name, table)| {
+                let t: HashMap<_, _> = table
+                    .iter()
+                    .map(|(attr, col)| {
+                        let c: Vec<_> = col
+                            .iter()
+                            .map(|val| {
+                                match val {
+                                    RawValue::Num(id) => Value::Num(*id),
+                                    RawValue::Str(s) => Value::Str(s.as_str()),
+                                }
+                            }).collect();
+                        (attr.clone(), c)
+                    })
+                    .collect();
+                (name.clone(), t)
+            })
+            .collect();
+        
         let mut materialized_columns = Vec::new();
         let mut views = HashMap::new();
         let mut in_view = HashMap::new();
@@ -45,7 +66,11 @@ fn main() {
             bushy_join(
                 &tables,
                 &compiled_plan,
-                &mut tuple,
+                &tuple,
+                &plan,
+                &out_vars,
+                &mut out,
+                view_len,
                 &mut new_columns,
             );
 
@@ -53,7 +78,7 @@ fn main() {
 
             views.insert(node, out);
 
-            // materialized_columns.extend(new_columns);
+            materialized_columns.extend(new_columns);
             update_materialize_map(node, &mut in_view);
         }
 
@@ -86,19 +111,19 @@ fn main() {
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> Vec<(&'static str, &'static str)> {
-    let queries = vec![
-        ("31c", "IMDBQ108"),
-        ("31b", "IMDBQ107"),
-        ("25c", "IMDBQ090"),
-        ("25a", "IMDBQ088"),
-        ("8c", "IMDBQ029"),
-        ("17e", "IMDBQ064"),
-        ("16b", "IMDBQ057"),
-        ("8d", "IMDBQ030"),
-        ("6f", "IMDBQ023"),
-    ];
+    // let queries = vec![
+    //     ("31c", "IMDBQ108"),
+    //     ("31b", "IMDBQ107"),
+    //     ("25c", "IMDBQ090"),
+    //     ("25a", "IMDBQ088"),
+    //     ("8c", "IMDBQ029"),
+    //     ("17e", "IMDBQ064"),
+    //     ("16b", "IMDBQ057"),
+    //     ("8d", "IMDBQ030"),
+    //     ("6f", "IMDBQ023"),
+    // ];
 
-    /*
+    // /*
     let bushy = false;
     let linear = true;
 
