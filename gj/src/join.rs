@@ -1,5 +1,5 @@
 use crate::trie::*;
-use smallvec::{SmallVec, ToSmallVec};
+use smallvec::SmallVec;
 
 // pub fn bushy_join<'a>(
 //     tables: &[Tb<'a, '_, Value<'a>>],
