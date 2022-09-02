@@ -79,30 +79,26 @@ fn singleton_join_inner<'a>(
         }
     } else {
         let js = &compiled_plan[0];
-        if js.contains(&0) {
+        if js[0] == 0 {
             let id = singleton[0].as_num();
 
-            if let Some(tries) = js
-                .iter()
-                .filter(|&j| j != &0)
-                .map(|&j| {
-                    relations[j - 1]
-                        .get_map()
-                        .unwrap()
-                        .get(&id)
-                        .map(|trie| (j, trie))
-                })
-                .collect::<Option<SmallVec<[_; 8]>>>()
-            {
-                // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
-                let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
-                for (j, trie) in tries {
-                    rels[j - 1] = trie;
+            let mut tries: SmallVec<[_; 8]> = SmallVec::new();
+
+            for j in &js[1..] {
+                if let Some(trie) = relations[j-1].get_map().unwrap().get(&id) {
+                    tries.push((j, trie));
+                } else {
+                    return;
                 }
-                tuple.push(Value::Num(id));
-                singleton_join_inner(&singleton[1..], &rels, &compiled_plan[1..], tuple, out);
-                tuple.pop();
             }
+
+            let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
+            for (j, trie) in tries {
+                rels[j - 1] = trie;
+            }
+            tuple.push(Value::Num(id));
+            singleton_join_inner(&singleton[1..], &rels, &compiled_plan[1..], tuple, out);
+            tuple.pop();
         } else {
             let j_min = js
                 .iter()
