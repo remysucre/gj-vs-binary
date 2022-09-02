@@ -33,7 +33,7 @@ use smallvec::SmallVec;
 pub fn bushy_join<'a>(
     tables: &[Tb<'a, '_, Value<'a>>],
     compiled_plan: &[Vec<usize>],
-    tuple: &mut Vec<Value<'a>>,
+    tuple: &mut Vec<i32>,
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
@@ -45,17 +45,41 @@ pub fn bushy_join<'a>(
                 })
                 .collect();
 
-        for i in 0..id_cols[0].len() {
-            let singleton: SmallVec<[_; 4]> = id_cols
-                .iter()
-                .map(|c| &c[i])
-                .chain(
-                    data_cols
-                        .iter()
-                        .map(|c| &c[i])
-                ).collect();
+        let mut id_iters: Vec<_> = id_cols.iter().map(|c| c.iter()).collect();
+        let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.iter()).collect();
+
+
+        loop {
+            let mut singleton: SmallVec<[_; 4]> = SmallVec::new();
+
+            if let Some(v) = id_iters[0].next() {
+                singleton.push(v);
+            } else {
+                break;
+            }
+
+            for id_iter in &mut id_iters[1..] {
+                singleton.push(id_iter.next().unwrap());
+            }
+
+            for data_iter in &mut data_iters {
+                singleton.push(data_iter.next().unwrap());
+            }
+
             singleton_join_inner(&singleton,&rels, compiled_plan, tuple, out);
         }
+
+        // for i in 0..id_cols[0].len() {
+        //     let singleton: SmallVec<[_; 4]> = id_cols
+        //         .iter()
+        //         .map(|c| &c[i])
+        //         .chain(
+        //             data_cols
+        //                 .iter()
+        //                 .map(|c| &c[i])
+        //         ).collect();
+        //     singleton_join_inner(&singleton,&rels, compiled_plan, tuple, out);
+        // }
     } else {
         unreachable!("The first table must be flat");
     }
@@ -65,18 +89,12 @@ fn singleton_join_inner<'a>(
     singleton: &[&Value<'a>],
     relations: &[&Trie<Value<'a>>],
     compiled_plan: &[Vec<usize>],
-    tuple: &mut Vec<Value<'a>>,
+    tuple: &mut Vec<i32>,
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     if compiled_plan.is_empty() {
-
-        for &v in singleton {
-            tuple.push(v.clone());
-        }
-        materialize(relations, tuple, out);
-        for _v in singleton {
-            tuple.pop();
-        }
+        let mut data: Vec<_> = singleton.iter().map(|&v| v.clone()).collect();
+        materialize(relations, tuple, &mut data, out);
     } else {
         let js = &compiled_plan[0];
         if js[0] == 0 {
@@ -96,7 +114,7 @@ fn singleton_join_inner<'a>(
             for (j, trie) in tries {
                 rels[j - 1] = trie;
             }
-            tuple.push(Value::Num(id));
+            tuple.push(id);
             singleton_join_inner(&singleton[1..], &rels, &compiled_plan[1..], tuple, out);
             tuple.pop();
         } else {
@@ -125,7 +143,7 @@ fn singleton_join_inner<'a>(
                     for (j, trie) in tries {
                         rels[j - 1] = trie;
                     }
-                    tuple.push(Value::Num(*id));
+                    tuple.push(*id);
                     singleton_join_inner(singleton, &rels, &compiled_plan[1..], tuple, out);
                     tuple.pop();
                 }
@@ -201,21 +219,23 @@ fn singleton_join_inner<'a>(
 
 fn materialize<'a>(
     relations: &[&Trie<Value<'a>>],
-    tuple: &mut Vec<Value<'a>>,
+    tuple: &mut Vec<i32>,
+    data: &mut Vec<Value<'a>>,
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     if relations.is_empty() {
-        out.push(tuple.to_vec());
+        let t: Vec<_> = tuple.iter().map(|i| Value::Num(*i)).chain(data.iter().cloned()).collect();
+        out.push(t);
     } else if relations[0].get_data().unwrap().is_empty() {
-        materialize(&relations[1..], tuple, out);
+        materialize(&relations[1..], tuple, data, out);
     } else {
         for vs in relations[0].get_data().unwrap() {
             for v in vs {
-                tuple.push(v.clone());
+                data.push(v.clone());
             }
-            materialize(&relations[1..], tuple, out);
+            materialize(&relations[1..], tuple, data, out);
             for _v in vs {
-                tuple.pop();
+                data.pop();
             }
         }
     }
