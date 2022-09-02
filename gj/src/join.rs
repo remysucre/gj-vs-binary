@@ -1,4 +1,5 @@
 use crate::trie::*;
+use smallvec::{SmallVec, ToSmallVec};
 
 // pub fn bushy_join<'a>(
 //     tables: &[Tb<'a, '_, Value<'a>>],
@@ -37,10 +38,17 @@ pub fn bushy_join<'a>(
 ) {
     if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
         for i in 0..id_cols[0].len() {
-            let mut singleton: Vec<_> = id_cols.iter().map(|c| &c[i]).collect();
-            singleton.extend(data_cols.iter().map(|c| &c[i]));
+            // let mut singleton: Vec<_> = id_cols.iter().map(|c| &c[i]).collect();
+            let singleton: SmallVec<[_; 4]> = id_cols
+                .iter()
+                .map(|c| &c[i])
+                .chain(
+                    data_cols
+                        .iter()
+                        .map(|c| &c[i])
+                ).collect();
 
-            let rels: Vec<_> = tables[1..]
+            let rels: SmallVec<[_; 8]> = tables[1..]
                 .iter()
                 .map(|t| match &t {
                     Tb::Arr(_) => unreachable!("Only left table can be flat"),
@@ -62,7 +70,11 @@ fn singleton_join_inner<'a>(
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     if compiled_plan.is_empty() {
-        tuple.extend(singleton.iter().map(|v| (*v).clone()));
+
+        for &v in singleton {
+            tuple.push(v.clone());
+        }
+        // tuple.extend(singleton.iter().map(|v| (*v).clone()));
         materialize(relations, tuple, out);
         for _v in singleton {
             tuple.pop();
@@ -82,9 +94,10 @@ fn singleton_join_inner<'a>(
                         .get(&id)
                         .map(|trie| (j, trie))
                 })
-                .collect::<Option<Vec<_>>>()
+                .collect::<Option<SmallVec<[_; 8]>>>()
             {
-                let mut rels = relations.to_vec();
+                // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
+                let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                 for (j, trie) in tries {
                     rels[j - 1] = trie;
                 }
@@ -110,9 +123,10 @@ fn singleton_join_inner<'a>(
                             .get(id)
                             .map(|trie| (j, trie))
                     })
-                    .collect::<Option<Vec<_>>>()
+                    .collect::<Option<SmallVec<[_; 8]>>>()
                 {
-                    let mut rels = relations.to_vec();
+                    // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
+                    let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                     rels[j_min - 1] = trie_min;
                     for (j, trie) in tries {
                         rels[j - 1] = trie;
