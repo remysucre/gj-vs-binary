@@ -40,10 +40,13 @@ fn main() {
 
         let mut views = HashMap::new();
 
+        let mut tables_buf = Vec::new();
+
         let start = Instant::now();
 
         // TODO hash treeop by address
         for (node, compiled_plan) in &compiled_plans {
+            let loop_start = Instant::now();
             let build_plan = &build_plans[node];
 
             let build_start = Instant::now();
@@ -59,6 +62,8 @@ fn main() {
             println!("Join took {:?}", join_start.elapsed().as_secs_f32());
 
             views.insert(node, intermediate);
+            tables_buf.push(tables);
+            println!("Iter takes {:?}", loop_start.elapsed().as_secs_f32());
         }
 
         println!("Bushy join takes {:?}", start.elapsed().as_secs_f32());
@@ -103,14 +108,14 @@ fn queries() -> Vec<(&'static str, &'static str)> {
 
     let queries = vec![
         ("15d", "IMDBQ055"),
-        // ("8c", "IMDBQ029"),
-        // ("8d", "IMDBQ030"),
-        // ("17e", "IMDBQ064"),
-        // ("6f", "IMDBQ023"),
-        // ("16b", "IMDBQ057"),
-        // ("16a", "IMDBQ056"),
-        // ("16d", "IMDBQ059"),
-        // ("16c", "IMDBQ058"),
+        ("8c", "IMDBQ029"),
+        ("8d", "IMDBQ030"),
+        ("17e", "IMDBQ064"),
+        ("6f", "IMDBQ023"),
+        ("16b", "IMDBQ057"),
+        ("16a", "IMDBQ056"),
+        ("16d", "IMDBQ059"),
+        ("16c", "IMDBQ058"),
     ];
 
     /*
