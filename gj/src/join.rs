@@ -37,8 +37,15 @@ pub fn bushy_join<'a>(
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
+        let rels: SmallVec<[_; 8]> = tables[1..]
+                .iter()
+                .map(|t| match &t {
+                    Tb::Arr(_) => unreachable!("Only left table can be flat"),
+                    Tb::Trie(trie) => trie,
+                })
+                .collect();
+
         for i in 0..id_cols[0].len() {
-            // let mut singleton: Vec<_> = id_cols.iter().map(|c| &c[i]).collect();
             let singleton: SmallVec<[_; 4]> = id_cols
                 .iter()
                 .map(|c| &c[i])
@@ -47,14 +54,6 @@ pub fn bushy_join<'a>(
                         .iter()
                         .map(|c| &c[i])
                 ).collect();
-
-            let rels: SmallVec<[_; 8]> = tables[1..]
-                .iter()
-                .map(|t| match &t {
-                    Tb::Arr(_) => unreachable!("Only left table can be flat"),
-                    Tb::Trie(trie) => trie,
-                })
-                .collect();
             singleton_join_inner(&singleton,&rels, compiled_plan, tuple, out);
         }
     } else {
@@ -74,7 +73,6 @@ fn singleton_join_inner<'a>(
         for &v in singleton {
             tuple.push(v.clone());
         }
-        // tuple.extend(singleton.iter().map(|v| (*v).clone()));
         materialize(relations, tuple, out);
         for _v in singleton {
             tuple.pop();

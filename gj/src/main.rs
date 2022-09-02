@@ -107,15 +107,15 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     // let queries = vec![("33c", "IMDBQ113")];
 
     let queries = vec![
-        ("15d", "IMDBQ055"),
-        ("8c", "IMDBQ029"),
-        ("8d", "IMDBQ030"),
-        ("17e", "IMDBQ064"),
-        ("6f", "IMDBQ023"),
-        ("16b", "IMDBQ057"),
+        // ("15d", "IMDBQ055"),
+        // ("8c", "IMDBQ029"),
+        // ("8d", "IMDBQ030"),
+        // ("17e", "IMDBQ064"),
+        // ("6f", "IMDBQ023"),
         ("16a", "IMDBQ056"),
-        ("16d", "IMDBQ059"),
+        // ("16b", "IMDBQ057"),
         ("16c", "IMDBQ058"),
+        ("16d", "IMDBQ059"),
     ];
 
     /*
