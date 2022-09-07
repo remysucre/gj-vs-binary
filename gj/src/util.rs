@@ -85,8 +85,6 @@ pub fn compile_plan<'a>(
     let mut view_ids = HashMap::new();
     let mut groups: Vec<HashSet<Attribute>> = vec![];
 
-    let mut found_left_table = false;
-
     let mut left_table = None;
     traverse_left(node, &mut |node: &TreeOp| {
         if let Some(NodeAttr::Join(join)) = &node.attr {
@@ -117,28 +115,12 @@ pub fn compile_plan<'a>(
             assert_eq!(node.children.len(), 2);
 
             for eq in &join.equalizers {
-                // if !found_left_table {
-                //     for group in &mut groups {
-                //         *group = group
-                //             .iter()
-                //             .cloned()
-                //             .map(|mut a| {
-                //                 a.table_name = eq.left_attr.table_name.clone();
-                //                 a
-                //             })
-                //             .collect();
-                //     }
-
-                //     found_left_table = true;
-                // }
 
                 let l = groups.iter().position(|g| g.contains(&eq.left_attr));
                 let r = groups.iter().position(|g| g.contains(&eq.right_attr));
                 match (l, r) {
                     (Some(_), Some(_)) => (), // already accounted for
-                    (Some(i), None) | (None, Some(i)) => {
-                        let child = &*node.children[1];
-                        // let table_i = table_ids.insert_full(child).0;
+                    (None, Some(i)) => {
                         let len = table_ids.len() + view_ids.len();
                         let table_i = views
                             .get(eq.left_attr.table_name.as_str())
@@ -153,6 +135,21 @@ pub fn compile_plan<'a>(
                             relation: *table_i,
                         }]));
                         groups[i].insert(eq.left_attr.clone());
+                    }
+                    (Some(i), None) => {
+                        let len = table_ids.len() + view_ids.len();
+                        let table_i = views
+                            .get(eq.right_attr.table_name.as_str())
+                            .map(|tree_op| view_ids.entry(tree_op).or_insert(len))
+                            .unwrap_or_else(|| {
+                                table_ids
+                                    .entry(eq.right_attr.table_name.as_str())
+                                    .or_insert(len)
+                            });
+                        compiled_plan.push(Instruction::Lookup(vec![Lookup {
+                            key: i,
+                            relation: *table_i,
+                        }]));
                         groups[i].insert(eq.right_attr.clone());
                     }
                     (None, None) => {
@@ -171,11 +168,11 @@ pub fn compile_plan<'a>(
 
                         let len = table_ids.len() + view_ids.len();
                         let ri = *views
-                            .get(eq.left_attr.table_name.as_str())
+                            .get(eq.right_attr.table_name.as_str())
                             .map(|tree_op| view_ids.entry(tree_op).or_insert(len))
                             .unwrap_or_else(|| {
                                 table_ids
-                                    .entry(eq.left_attr.table_name.as_str())
+                                    .entry(eq.right_attr.table_name.as_str())
                                     .or_insert(len)
                             });
 
@@ -193,8 +190,9 @@ pub fn compile_plan<'a>(
         _ => (),
     });
 
-    dbg!(groups);
+    // dbg!(groups);
 
+    compiled_plan.dedup_by(|a, b| a == b);
     compiled_plan
 }
 

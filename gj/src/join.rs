@@ -30,14 +30,14 @@ use smallvec::SmallVec;
 //     }
 // }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
     Scan,
     Intersect { relations: Vec<usize> },
     Lookup(Vec<Lookup>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Lookup {
     pub key: usize, // index into the tuple
     pub relation: usize,
