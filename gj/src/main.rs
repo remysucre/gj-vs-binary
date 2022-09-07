@@ -27,9 +27,9 @@ fn main() {
         let root = tm[tm.len() - 1];
 
         for node in to_materialize(&plan_tree) {
-            let plan = to_left_deep_plan(node);
-            let compiled_plan = compile_plan(&plan, &in_view);
-            let (out_schema, build_plan) = compute_full_plan(&db, &plan, &provides, &in_view);
+            let groups = to_left_deep_plan(node);
+            let compiled_plan = compile_plan(&groups, node, &in_view);
+            let (out_schema, build_plan) = compute_full_plan(&db, &groups, &provides, &in_view);
 
             build_plans.insert(node, build_plan);
             provides.insert(node, out_schema);
@@ -54,11 +54,10 @@ fn main() {
             println!("Building takes {}", build_start.elapsed().as_secs_f32());
 
             let mut intermediate = Vec::new();
-            let mut tuple = vec![];
 
             println!("Running join");
             let join_start = Instant::now();
-            bushy_join(&tables, compiled_plan, &mut tuple, &mut intermediate);
+            free_join(&tables, compiled_plan, &mut intermediate);
             println!("Join took {:?}", join_start.elapsed().as_secs_f32());
 
             views.insert(node, intermediate);
@@ -107,13 +106,13 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     // let queries = vec![("33c", "IMDBQ113")];
 
     let queries = vec![
-        // ("15d", "IMDBQ055"),
-        // ("8c", "IMDBQ029"),
-        // ("8d", "IMDBQ030"),
-        // ("17e", "IMDBQ064"),
-        // ("6f", "IMDBQ023"),
+        ("15d", "IMDBQ055"),
+        ("8c", "IMDBQ029"),
+        ("8d", "IMDBQ030"),
+        ("17e", "IMDBQ064"),
+        ("6f", "IMDBQ023"),
         ("16a", "IMDBQ056"),
-        // ("16b", "IMDBQ057"),
+        ("16b", "IMDBQ057"),
         ("16c", "IMDBQ058"),
         ("16d", "IMDBQ059"),
     ];

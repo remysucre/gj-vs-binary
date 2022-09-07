@@ -18,14 +18,14 @@ pub struct Attribute {
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct Equalizer {
-    left_attr: Attribute,
-    right_attr: Attribute,
+    pub left_attr: Attribute,
+    pub right_attr: Attribute,
 }
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct JoinAttr {
-    join_type: JoinType,
-    equalizers: Vec<Equalizer>,
+    pub join_type: JoinType,
+    pub equalizers: Vec<Equalizer>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Hash, PartialEq, Eq)]
@@ -251,6 +251,7 @@ pub fn to_gj_plan(root: &TreeOp) -> Vec<Vec<&Attribute>> {
     to_plan(root, postorder_traverse)
 }
 
+// TODO: undo occurence merging
 pub fn to_left_deep_plan(root: &TreeOp) -> Vec<Vec<&Attribute>> {
     to_plan(root, traverse_left)
 }
@@ -336,7 +337,7 @@ pub fn to_semijoin_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
     plan
 }
 
-fn traverse_left<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp)) {
+pub fn traverse_left<'a>(node: &'a TreeOp, func: &mut dyn FnMut(&'a TreeOp)) {
     if !node.children.is_empty() {
         traverse_left(&node.children[0], func);
     }

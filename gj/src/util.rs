@@ -2,7 +2,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path;
 
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
     file::reader::{FileReader, SerializedFileReader},
@@ -13,6 +13,7 @@ use parquet::{
 use std::fs::File;
 use std::sync::Arc;
 
+use crate::join::{Instruction, Lookup};
 use crate::trie::Tb;
 use crate::{
     sql::*,
@@ -73,29 +74,127 @@ pub fn debug_build_plans<'a>(
 }
 
 pub fn compile_plan<'a>(
-    plan: &[Vec<&'a Attribute>],
+    _plan: &[Vec<&'a Attribute>],
+    node: &TreeOp,
+    // which tree node provides which table
     views: &HashMap<&str, &TreeOp>,
-) -> Vec<Vec<usize>> {
+) -> Vec<Instruction> {
     let mut compiled_plan = Vec::new();
+    // let mut table_ids = IndexSet::<&TreeOp>::new();
     let mut table_ids = HashMap::new();
     let mut view_ids = HashMap::new();
+    let mut groups: Vec<HashSet<Attribute>> = vec![];
 
-    for node in plan {
-        let mut node_ids = vec![];
-        for a in node {
-            let l = table_ids.len() + view_ids.len();
+    let mut found_left_table = false;
 
-            let id = views
-                .get(a.table_name.as_str())
-                .map(|tree_op| view_ids.entry(tree_op).or_insert(l))
-                .unwrap_or_else(|| table_ids.entry(a.table_name.as_str()).or_insert(l));
+    let mut left_table = None;
+    traverse_left(node, &mut |node: &TreeOp| {
+        if let Some(NodeAttr::Join(join)) = &node.attr {
+            assert_eq!(join.join_type, JoinType::Inner);
+            assert_eq!(node.children.len(), 2);
 
-            if !node_ids.contains(id) {
-                node_ids.push(*id);
+            for eq in &join.equalizers {
+                if left_table.is_none() {
+                    left_table = Some(&eq.left_attr.table_name);
+                    groups.push(HashSet::from([eq.left_attr.clone()]));
+                } else if left_table.unwrap() == &eq.left_attr.table_name
+                    && !groups.iter().any(|g| g.contains(&eq.left_attr))
+                {
+                    groups.push(HashSet::from([eq.left_attr.clone()]));
+                }
             }
         }
-        compiled_plan.push(node_ids);
-    }
+    });
+
+    dbg!(&groups);
+
+    traverse_left(node, &mut |node: &TreeOp| match &node.attr {
+        Some(NodeAttr::Scan(scan)) => {
+            compiled_plan.push(Instruction::Scan);
+        }
+        Some(NodeAttr::Join(join)) => {
+            assert_eq!(join.join_type, JoinType::Inner);
+            assert_eq!(node.children.len(), 2);
+
+            for eq in &join.equalizers {
+                // if !found_left_table {
+                //     for group in &mut groups {
+                //         *group = group
+                //             .iter()
+                //             .cloned()
+                //             .map(|mut a| {
+                //                 a.table_name = eq.left_attr.table_name.clone();
+                //                 a
+                //             })
+                //             .collect();
+                //     }
+
+                //     found_left_table = true;
+                // }
+
+                let l = groups.iter().position(|g| g.contains(&eq.left_attr));
+                let r = groups.iter().position(|g| g.contains(&eq.right_attr));
+                match (l, r) {
+                    (Some(_), Some(_)) => (), // already accounted for
+                    (Some(i), None) | (None, Some(i)) => {
+                        let child = &*node.children[1];
+                        // let table_i = table_ids.insert_full(child).0;
+                        let len = table_ids.len() + view_ids.len();
+                        let table_i = views
+                            .get(eq.left_attr.table_name.as_str())
+                            .map(|tree_op| view_ids.entry(tree_op).or_insert(len))
+                            .unwrap_or_else(|| {
+                                table_ids
+                                    .entry(eq.left_attr.table_name.as_str())
+                                    .or_insert(len)
+                            });
+                        compiled_plan.push(Instruction::Lookup(vec![Lookup {
+                            key: i,
+                            relation: *table_i,
+                        }]));
+                        groups[i].insert(eq.left_attr.clone());
+                        groups[i].insert(eq.right_attr.clone());
+                    }
+                    (None, None) => {
+                        // let li = table_ids.insert_full(&*node.children[0]).0;
+                        // let ri = table_ids.insert_full(&*node.children[1]).0;
+
+                        let len = table_ids.len() + view_ids.len();
+                        let li = *views
+                            .get(eq.left_attr.table_name.as_str())
+                            .map(|tree_op| view_ids.entry(tree_op).or_insert(len))
+                            .unwrap_or_else(|| {
+                                table_ids
+                                    .entry(eq.left_attr.table_name.as_str())
+                                    .or_insert(len)
+                            });
+
+                        let len = table_ids.len() + view_ids.len();
+                        let ri = *views
+                            .get(eq.left_attr.table_name.as_str())
+                            .map(|tree_op| view_ids.entry(tree_op).or_insert(len))
+                            .unwrap_or_else(|| {
+                                table_ids
+                                    .entry(eq.left_attr.table_name.as_str())
+                                    .or_insert(len)
+                            });
+
+                        compiled_plan.push(Instruction::Intersect {
+                            relations: vec![li, ri],
+                        });
+                        let mut new_group = HashSet::new();
+                        new_group.insert(eq.left_attr.clone());
+                        new_group.insert(eq.right_attr.clone());
+                        groups.push(new_group)
+                    }
+                }
+            }
+        }
+        _ => (),
+    });
+
+    dbg!(groups);
+
     compiled_plan
 }
 
