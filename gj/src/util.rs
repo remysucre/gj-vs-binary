@@ -212,6 +212,122 @@ pub type ViewSchema = Vec<Vec<Attribute>>;
 
 pub type BuildPlan<'a> = Vec<(TableID<'a>, Vec<ColID>, Vec<ColID>)>;
 
+// pub fn compute_build_plan<'a>(
+//     db: &DB,
+//     root: &TreeOp,
+//     provides: &IndexMap<&'a TreeOp, Vec<Vec<Attribute>>>,
+//     in_view: &HashMap<&str, &'a TreeOp>,
+// ) -> (ViewSchema, BuildPlan<'a>) {
+//     let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::new();
+
+//     // traverse plan bottom up to collect table and column ordering
+//     for attrs in plan {
+//         for a in attrs {
+//             let col_id;
+//             let table_id;
+
+//             if let Some(node) = in_view.get(a.table_name.as_str()) {
+//                 table_id = TableID::Node(&**node);
+//                 col_id = ColID::Id(
+//                     provides[node]
+//                         .iter()
+//                         .position(|attrs| attrs.contains(a))
+//                         .unwrap(),
+//                 );
+//             } else {
+//                 table_id = TableID::Name(a.table_name.clone());
+//                 col_id = ColID::Name(a.attr_name.clone());
+//             };
+
+//             build_plan
+//                 .entry(table_id)
+//                 .or_default()
+//                 .insert(col_id, vec![]);
+//         }
+//     }
+
+//     // collect data columns to the back of building order
+//     // collect attributes attached to each column
+//     // a view column can have more than 1 attributes if it was a join column
+//     for (table_id, column_ids) in build_plan.iter_mut() {
+//         match table_id {
+//             TableID::Name(table_name) => {
+//                 let table = &db[table_name];
+//                 for attr in table.keys() {
+//                     let cid = ColID::Name(attr.attr_name.clone());
+//                     if !column_ids.contains_key(&cid) {
+//                         column_ids.insert(cid, vec![attr.clone()]);
+//                     }
+//                 }
+//             }
+//             TableID::Node(node) => {
+//                 let attr_sets = &provides[node];
+//                 for (i, attrs) in attr_sets.iter().enumerate() {
+//                     let cid = ColID::Id(i);
+//                     if !column_ids.contains_key(&cid) {
+//                         column_ids.insert(cid, attrs.to_vec());
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     // collect build plans into a table ordering, each with a column ordering
+//     let mut build_plan_out = Vec::new();
+
+//     for (t_id, col_id_map) in &build_plan {
+//         let mut id_cols = Vec::new();
+//         let mut data_cols = Vec::new();
+
+//         for (col_id, attrs) in col_id_map {
+//             if attrs.is_empty() {
+//                 id_cols.push(col_id.clone());
+//             } else {
+//                 data_cols.push(col_id.clone());
+//             }
+//         }
+
+//         build_plan_out.push((t_id.clone(), id_cols, data_cols));
+//     }
+
+//     // the output schema for this materialized view
+//     let mut out_schema: Vec<Vec<Attribute>> = Vec::new();
+
+//     let mut left_table = None;
+
+//     // first pass: push all left table variables to the front
+//     for attrs in plan {
+//         if left_table.is_none() {
+//             left_table = Some(&attrs[0].table_name);
+//             out_schema.push(attrs.iter().copied().cloned().collect());
+//         } else if attrs.iter().any(|a| &a.table_name == left_table.unwrap()) {
+//             out_schema.push(attrs.iter().copied().cloned().collect());
+//         }
+//     }
+
+//     // then push other variables in order
+
+//     for attrs in plan {
+//         if !attrs.iter().any(|a| &a.table_name == left_table.unwrap()) {
+//             out_schema.push(attrs.iter().copied().cloned().collect());
+//         }
+//     }
+
+//     // for attrs in plan {
+//     //     out_schema.push(attrs.iter().copied().cloned().collect());
+//     // }
+
+//     // collect data columns from the build plan
+//     for attrs in build_plan.values().flat_map(|m| m.values()) {
+//         // join columns have empty attrs
+//         if !attrs.is_empty() {
+//             out_schema.push(attrs.to_vec());
+//         }
+//     }
+
+//     (out_schema, build_plan_out)
+// }
+
 pub fn compute_full_plan<'a>(
     db: &DB,
     plan: &[Vec<&Attribute>],
@@ -293,11 +409,33 @@ pub fn compute_full_plan<'a>(
     // the output schema for this materialized view
     let mut out_schema: Vec<Vec<Attribute>> = Vec::new();
 
+    let mut left_table = None;
+
+    // first pass: push all left table variables to the front
     for attrs in plan {
-        out_schema.push(attrs.iter().copied().cloned().collect());
+        if left_table.is_none() {
+            left_table = Some(&attrs[0].table_name);
+            out_schema.push(attrs.iter().copied().cloned().collect());
+        } else if attrs.iter().any(|a| &a.table_name == left_table.unwrap()) {
+            out_schema.push(attrs.iter().copied().cloned().collect());
+        }
     }
 
+    // then push other variables in order
+
+    for attrs in plan {
+        if !attrs.iter().any(|a| &a.table_name == left_table.unwrap()) {
+            out_schema.push(attrs.iter().copied().cloned().collect());
+        }
+    }
+
+    // for attrs in plan {
+    //     out_schema.push(attrs.iter().copied().cloned().collect());
+    // }
+
+    // collect data columns from the build plan
     for attrs in build_plan.values().flat_map(|m| m.values()) {
+        // join columns have empty attrs
         if !attrs.is_empty() {
             out_schema.push(attrs.to_vec());
         }

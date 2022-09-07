@@ -27,9 +27,12 @@ fn main() {
         let root = tm[tm.len() - 1];
 
         for node in to_materialize(&plan_tree) {
-            let groups = to_left_deep_plan(node);
+            // let groups = to_left_deep_plan(node);
+            let groups = to_binary_plan(node);
             let compiled_plan = compile_plan(&groups, node, &in_view);
             let (out_schema, build_plan) = compute_full_plan(&db, &groups, &provides, &in_view);
+
+            dbg!(&out_schema);
 
             build_plans.insert(node, build_plan);
             provides.insert(node, out_schema);
@@ -37,6 +40,8 @@ fn main() {
 
             map_tables_to_node(node, &mut in_view);
         }
+
+        debug_build_plans(&build_plans, &provides);
 
         let mut views = HashMap::new();
 
@@ -59,6 +64,8 @@ fn main() {
             let join_start = Instant::now();
             free_join(&tables, compiled_plan, &mut intermediate);
             println!("Join took {:?}", join_start.elapsed().as_secs_f32());
+
+            dbg!(intermediate.len());
 
             views.insert(node, intermediate);
             tables_buf.push(tables);
@@ -86,15 +93,27 @@ fn main() {
 
         for row in final_view {
             if result.is_empty() {
-                result = payload_ids.iter().map(|i| &row[*i]).collect();
+                result = row.to_vec();
             } else {
-                for (j, i) in payload_ids.iter().enumerate() {
-                    if result[j] > &row[*i] {
-                        result[j] = &row[*i];
+                for (i, v) in row.iter().enumerate() {
+                    if &result[i] > v {
+                        result[i] = v.clone();
                     }
                 }
             }
         }
+
+        // for row in final_view {
+        //     if result.is_empty() {
+        //         result = payload_ids.iter().map(|i| &row[*i]).collect();
+        //     } else {
+        //         for (j, i) in payload_ids.iter().enumerate() {
+        //             if result[j] > &row[*i] {
+        //                 result[j] = &row[*i];
+        //             }
+        //         }
+        //     }
+        // }
 
         println!("{:?}", result);
         println!("Total takes {}", start.elapsed().as_secs_f32());
@@ -106,6 +125,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     // let queries = vec![("33c", "IMDBQ113")];
 
     let queries = vec![
+        ("15a", "IMDBQ052"),
         ("15d", "IMDBQ055"),
         ("8c", "IMDBQ029"),
         ("8d", "IMDBQ030"),
@@ -118,7 +138,7 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     ];
 
     /*
-    let bushy = true;
+    let bushy = false;
     let linear = true;
 
     let mut queries = vec![];

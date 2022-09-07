@@ -1,6 +1,9 @@
 use std::{collections::HashMap, error::Error, fs, path};
 
+use indexmap::{Equivalent, IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
+
+use crate::trie::NotAData;
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum JoinType {
@@ -282,6 +285,29 @@ where
     };
 
     traverse(root, &mut collect_plan);
+
+    plan
+}
+
+pub fn to_binary_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>>
+{
+    let mut plan: Vec<Vec<&'a Attribute>> = vec![];
+
+    let mut collect_plan = |node: &'a TreeOp| {
+        if let Some(NodeAttr::Join(attr)) = &node.attr {
+            let mut attrs = IndexSet::new();
+            for equalizer in &attr.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
+
+                attrs.insert(lattr);
+                attrs.insert(rattr);
+            }
+            plan.push(attrs.into_iter().collect());
+        }
+    };
+
+    traverse_left(root, &mut collect_plan);
 
     plan
 }
