@@ -1,8 +1,11 @@
-imdb_plain.db: import.sh import.sql imdb.tgz
+imdb_plain.db: import.sh import.sql title.csv
 	bash $<
 
+title.csv: imdb.tgz
+	cp -p $< temp.tgz && tar -xf temp.tgz && rm temp.tgz
+
 imdb.tgz:
-	wget -nc http://homepages.cwi.nl/~boncz/job/imdb.tgz && tar -xf imdb.tgz --keep-old-files
+	wget -nc http://homepages.cwi.nl/~boncz/job/imdb.tgz
 
 clean:
 	rm -f *.db
