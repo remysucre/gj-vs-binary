@@ -107,7 +107,7 @@ pub fn compile_plan<'a>(
     dbg!(&groups);
 
     traverse_left(node, &mut |node: &TreeOp| match &node.attr {
-        Some(NodeAttr::Scan(scan)) => {
+        Some(NodeAttr::Scan(_)) => {
             compiled_plan.push(Instruction::Scan);
         }
         Some(NodeAttr::Join(join)) => {

@@ -10,6 +10,14 @@ fn main() {
         let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
         let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", i)).unwrap();
 
+        let total_time = plan_tree.timing;
+        let filter_time = get_filter_cost(&plan_tree);
+        let join_time = total_time - filter_time;
+
+        println!("DUCKDB total time: {}", total_time);
+        println!("DUCKDB filter time: {}", filter_time);
+        println!("DUCKDB join time: {}", join_time);
+
         let scan = get_scans(&scan_tree);
         let payload = get_payload(&plan_tree);
         let plan = to_gj_plan(&plan_tree);
@@ -93,29 +101,29 @@ fn main() {
 
         let mut result = Vec::new();
 
-        for row in final_view {
-            if result.is_empty() {
-                result = row.to_vec();
-            } else {
-                for (i, v) in row.iter().enumerate() {
-                    if &result[i] > v {
-                        result[i] = v.clone();
-                    }
-                }
-            }
-        }
-
         // for row in final_view {
         //     if result.is_empty() {
-        //         result = payload_ids.iter().map(|i| &row[*i]).collect();
+        //         result = row.to_vec();
         //     } else {
-        //         for (j, i) in payload_ids.iter().enumerate() {
-        //             if result[j] > &row[*i] {
-        //                 result[j] = &row[*i];
+        //         for (i, v) in row.iter().enumerate() {
+        //             if &result[i] > v {
+        //                 result[i] = v.clone();
         //             }
         //         }
         //     }
         // }
+
+        for row in final_view {
+            if result.is_empty() {
+                result = payload_ids.iter().map(|i| &row[*i]).collect();
+            } else {
+                for (j, i) in payload_ids.iter().enumerate() {
+                    if result[j] > &row[*i] {
+                        result[j] = &row[*i];
+                    }
+                }
+            }
+        }
 
         println!("{:?}", result);
         println!("Total takes {}", start.elapsed().as_secs_f32());

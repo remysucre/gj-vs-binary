@@ -1,12 +1,10 @@
 use std::{collections::HashMap, error::Error, fs, path};
 
-use indexmap::{Equivalent, IndexMap, IndexSet};
+use derivative::Derivative;
+use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    join::{Instruction, Instruction2, Intersection2, Lookup2},
-    trie::NotAData,
-};
+use crate::join::{Instruction2, Intersection2, Lookup2};
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum JoinType {
@@ -52,13 +50,32 @@ pub enum NodeAttr {
     Project(ProjectAttr),
 }
 
-#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
+#[derive(Derivative)]
+#[derivative(Debug, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 pub struct TreeOp {
     pub name: String,
+    #[derivative(PartialEq="ignore")]
+    #[derivative(Hash="ignore")]
+    pub timing: f64,
     pub cardinality: u32,
     pub extra_info: String,
     pub children: Vec<Box<TreeOp>>,
     pub attr: Option<NodeAttr>,
+}
+
+pub fn get_filter_cost(root: &TreeOp) -> f64 {
+    let mut cost = 0.0;
+
+    postorder_traverse(root, &mut|node| {
+        if let Some(NodeAttr::Scan(_)) = &node.attr {
+            if node.extra_info.contains("Filters") {
+                cost += node.timing;
+            }
+        }
+    });
+
+    cost
 }
 
 // fn preorder_traverse_mut<T>(node: &mut TreeOp, func: &mut T)
