@@ -28,15 +28,17 @@ fn main() {
 
         for node in to_materialize(&plan_tree) {
             // let groups = to_left_deep_plan(node);
-            let groups = to_binary_plan(node);
-            let compiled_plan = compile_plan(&groups, node, &in_view);
-            let (out_schema, build_plan) = compute_full_plan(&db, &groups, &provides, &in_view);
+            let mut plan = to_binary_plan2(node);
+            // let compiled_plan = compile_plan(&groups, node, &in_view);
+            let (out_schema, build_plan) =
+                compute_full_plan(&db, node, &mut plan, &provides, &in_view);
+            // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
             dbg!(&out_schema);
 
             build_plans.insert(node, build_plan);
             provides.insert(node, out_schema);
-            compiled_plans.insert(node, compiled_plan);
+            compiled_plans.insert(node, plan);
 
             map_tables_to_node(node, &mut in_view);
         }
@@ -60,7 +62,7 @@ fn main() {
 
             let mut intermediate = Vec::new();
 
-            println!("Running join");
+            println!("Running join with {} tables", tables.len());
             let join_start = Instant::now();
             free_join(&tables, compiled_plan, &mut intermediate);
             println!("Join took {:?}", join_start.elapsed().as_secs_f32());

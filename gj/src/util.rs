@@ -13,7 +13,7 @@ use parquet::{
 use std::fs::File;
 use std::sync::Arc;
 
-use crate::join::{Instruction, Lookup};
+use crate::join::{Instruction, Instruction2, Lookup};
 use crate::trie::Tb;
 use crate::{
     sql::*,
@@ -115,7 +115,6 @@ pub fn compile_plan<'a>(
             assert_eq!(node.children.len(), 2);
 
             for eq in &join.equalizers {
-
                 let l = groups.iter().position(|g| g.contains(&eq.left_attr));
                 let r = groups.iter().position(|g| g.contains(&eq.right_attr));
                 match (l, r) {
@@ -330,35 +329,67 @@ pub type BuildPlan<'a> = Vec<(TableID<'a>, Vec<ColID>, Vec<ColID>)>;
 
 pub fn compute_full_plan<'a>(
     db: &DB,
-    plan: &[Vec<&Attribute>],
+    // plan: &[Vec<&Attribute>],
+    root: &'a TreeOp,
+    plan: &mut [Instruction2],
     provides: &IndexMap<&'a TreeOp, Vec<Vec<Attribute>>>,
     in_view: &HashMap<&str, &'a TreeOp>,
 ) -> (ViewSchema, BuildPlan<'a>) {
     let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::new();
 
+    let mut tables = IndexSet::<TableID>::new();
+    let mut get_table_idx = |a: &Attribute| -> usize {
+        // dbg!(a);
+        let col_id;
+        let table_id;
+
+        if let Some(node) = in_view.get(a.table_name.as_str()) {
+            table_id = TableID::Node(&**node);
+            col_id = ColID::Id(
+                provides[node]
+                    .iter()
+                    .position(|attrs| attrs.contains(a))
+                    .unwrap(),
+            );
+        } else {
+            table_id = TableID::Name(a.table_name.clone());
+            col_id = ColID::Name(a.attr_name.clone());
+        };
+
+        build_plan
+            .entry(table_id.clone())
+            .or_default()
+            .insert(col_id, vec![]);
+
+        let idx = tables.insert_full(table_id).0;
+        idx - 1 // account for the scan table being present
+    };
+
+    let mut attr_positions = HashMap::<Attribute, usize>::new();
+    for a in get_scan_join_attrs(root) {
+        get_table_idx(&a);
+        attr_positions.insert(a, attr_positions.len());
+    }
+    let mut n_vars = attr_positions.len();
+
     // traverse plan bottom up to collect table and column ordering
-    for attrs in plan {
-        for a in attrs {
-            let col_id;
-            let table_id;
-
-            if let Some(node) = in_view.get(a.table_name.as_str()) {
-                table_id = TableID::Node(&**node);
-                col_id = ColID::Id(
-                    provides[node]
-                        .iter()
-                        .position(|attrs| attrs.contains(a))
-                        .unwrap(),
-                );
-            } else {
-                table_id = TableID::Name(a.table_name.clone());
-                col_id = ColID::Name(a.attr_name.clone());
-            };
-
-            build_plan
-                .entry(table_id)
-                .or_default()
-                .insert(col_id, vec![]);
+    for instruction in plan {
+        match instruction {
+            Instruction2::Intersect(relations) => {
+                for r in relations {
+                    attr_positions.insert(r.attr.clone(), n_vars);
+                    r.relation = get_table_idx(&r.attr);
+                }
+                n_vars += 1;
+            }
+            Instruction2::Lookup(lookups) => {
+                for lookup in lookups {
+                    let i = attr_positions[&lookup.left];
+                    attr_positions.insert(lookup.right.clone(), i);
+                    lookup.key = i;
+                    lookup.relation = get_table_idx(&lookup.right);
+                }
+            }
         }
     }
 
@@ -388,6 +419,8 @@ pub fn compute_full_plan<'a>(
         }
     }
 
+    dbg!(&build_plan);
+
     // collect build plans into a table ordering, each with a column ordering
     let mut build_plan_out = Vec::new();
 
@@ -409,29 +442,28 @@ pub fn compute_full_plan<'a>(
     // the output schema for this materialized view
     let mut out_schema: Vec<Vec<Attribute>> = Vec::new();
 
-    let mut left_table = None;
-
-    // first pass: push all left table variables to the front
-    for attrs in plan {
-        if left_table.is_none() {
-            left_table = Some(&attrs[0].table_name);
-            out_schema.push(attrs.iter().copied().cloned().collect());
-        } else if attrs.iter().any(|a| &a.table_name == left_table.unwrap()) {
-            out_schema.push(attrs.iter().copied().cloned().collect());
+    for (attr, pos) in &attr_positions {
+        if *pos >= out_schema.len() {
+            out_schema.resize_with(pos + 1, Default::default);
         }
+        out_schema[*pos].push(attr.clone());
     }
 
-    // then push other variables in order
+    // dbg!(&attr_positions);
+    // dbg!(&out_schema);
 
-    for attrs in plan {
-        if !attrs.iter().any(|a| &a.table_name == left_table.unwrap()) {
-            out_schema.push(attrs.iter().copied().cloned().collect());
-        }
-    }
+    // let scan_attrs = get_scan_join_attrs(root);
+    // let scan_data_attrs = db
+    //     .get(&scan_attrs[0].table_name)
+    //     .unwrap()
+    //     .keys()
+    //     .filter(|a| !scan_attrs.contains(&**a))
+    //     .cloned();
 
-    // for attrs in plan {
-    //     out_schema.push(attrs.iter().copied().cloned().collect());
-    // }
+    // // splice in data columns from scan table
+    // let tail = out_schema.split_off(scan_attrs.len());
+    // out_schema.extend(scan_data_attrs.into_iter().map(|a| vec![a]));
+    // out_schema.extend(tail);
 
     // collect data columns from the build plan
     for attrs in build_plan.values().flat_map(|m| m.values()) {

@@ -3,7 +3,10 @@ use std::{collections::HashMap, error::Error, fs, path};
 use indexmap::{Equivalent, IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
 
-use crate::trie::NotAData;
+use crate::{
+    join::{Instruction, Instruction2, Intersection2, Lookup2},
+    trie::NotAData,
+};
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum JoinType {
@@ -289,8 +292,7 @@ where
     plan
 }
 
-pub fn to_binary_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>>
-{
+pub fn to_binary_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
     let mut plan: Vec<Vec<&'a Attribute>> = vec![];
 
     let mut collect_plan = |node: &'a TreeOp| {
@@ -310,6 +312,74 @@ pub fn to_binary_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>>
     traverse_left(root, &mut collect_plan);
 
     plan
+}
+
+pub fn get_scan_join_attrs<'a>(root: &'a TreeOp) -> IndexSet<Attribute> {
+    let mut left_table = None;
+    let mut scan_join_attrs = IndexSet::new();
+
+    traverse_left(root, &mut |node: &'a TreeOp| {
+        if let Some(NodeAttr::Join(join)) = &node.attr {
+            let eql = &join.equalizers[0];
+            let l = &eql.left_attr;
+
+            if left_table.is_none() {
+                left_table = Some(&l.table_name);
+            }
+            if &l.table_name == left_table.unwrap() {
+                scan_join_attrs.insert(Attribute {
+                    table_name: l.table_name.clone(),
+                    attr_name: l.attr_name.clone(),
+                });
+            }
+        }
+    });
+
+    scan_join_attrs
+}
+
+pub fn to_binary_plan2<'a>(root: &'a TreeOp) -> Vec<Instruction2> {
+    let mut program = vec![];
+
+    let mut attrs = get_scan_join_attrs(root);
+
+    traverse_left(root, &mut |node: &'a TreeOp| {
+        if let Some(NodeAttr::Join(join)) = &node.attr {
+            let lattr = &join.equalizers[0].left_attr;
+            let rattr = &join.equalizers[0].right_attr;
+
+            assert!(!attrs.contains(rattr));
+
+            let instr = if attrs.contains(lattr) {
+                Instruction2::Lookup(vec![Lookup2 {
+                    key: usize::MAX,
+                    relation: usize::MAX,
+                    left: lattr.clone(),
+                    right: rattr.clone(),
+                }])
+            } else {
+                Instruction2::Intersect(vec![
+                    Intersection2 {
+                        relation: usize::MAX,
+                        attr: lattr.clone(),
+                    },
+                    Intersection2 {
+                        relation: usize::MAX,
+                        attr: rattr.clone(),
+                    },
+                ])
+            };
+
+            for eq in &join.equalizers {
+                attrs.insert(eq.left_attr.clone());
+                attrs.insert(eq.right_attr.clone());
+            }
+
+            program.push(instr);
+        }
+    });
+
+    program
 }
 
 // fn traverse_lr<'a, T>(node: &'a TreeOp, func: &mut T)

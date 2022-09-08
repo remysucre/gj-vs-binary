@@ -1,4 +1,4 @@
-use crate::trie::*;
+use crate::{sql::Attribute, trie::*};
 use smallvec::SmallVec;
 
 // pub fn bushy_join<'a>(
@@ -38,6 +38,26 @@ pub enum Instruction {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub enum Instruction2 {
+    Intersect(Vec<Intersection2>),
+    Lookup(Vec<Lookup2>),
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Intersection2 {
+    pub relation: usize,
+    pub attr: Attribute,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct Lookup2 {
+    pub key: usize,
+    pub relation: usize,
+    pub left: Attribute,
+    pub right: Attribute,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct Lookup {
     pub key: usize, // index into the tuple
     pub relation: usize,
@@ -46,7 +66,7 @@ pub struct Lookup {
 // Assumes that the first table is a scan
 pub fn free_join<'a>(
     tables: &[Tb<'a, '_, Value<'a>>],
-    compiled_plan: &[Instruction],
+    compiled_plan: &[Instruction2],
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     dbg!(compiled_plan);
@@ -62,7 +82,7 @@ pub fn free_join<'a>(
         let mut id_iters: Vec<_> = id_cols.iter().map(|c| c.iter()).collect();
         let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.iter()).collect();
 
-        assert!(matches!(&compiled_plan[0], Instruction::Scan));
+        // assert!(matches!(&compiled_plan[0], Instruction::Scan));
 
         // unroll the outer scan
         loop {
@@ -84,7 +104,7 @@ pub fn free_join<'a>(
                 data.push(data_iter.next().unwrap().clone());
             }
 
-            join_inner(&mut data, &rels, &compiled_plan[1..], &mut tuple, out);
+            join_inner(&mut data, &rels, compiled_plan, &mut tuple, out);
         }
 
         // for i in 0..id_cols[0].len() {
@@ -106,7 +126,7 @@ pub fn free_join<'a>(
 fn join_inner<'a>(
     singleton: &mut Vec<Value<'a>>,
     relations: &[&Trie<Value<'a>>],
-    compiled_plan: &[Instruction],
+    compiled_plan: &[Instruction2],
     tuple: &mut Vec<i32>,
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
@@ -117,19 +137,19 @@ fn join_inner<'a>(
     };
 
     match instr {
-        Instruction::Intersect { relations: js } => {
+        Instruction2::Intersect(js) => {
             let j_min = js
                 .iter()
-                .copied()
-                .min_by_key(|&j| relations[j].get_map().unwrap().len())
-                .unwrap();
+                .min_by_key(|&j| relations[j.relation].get_map().unwrap().len())
+                .unwrap()
+                .relation;
 
             for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
                 if let Some(tries) = js
                     .iter()
-                    .filter(|&j| j != &j_min)
-                    .map(|&j| {
-                        relations[j]
+                    .filter(|&j| j.relation != j_min)
+                    .map(|j| {
+                        relations[j.relation]
                             .get_map()
                             .unwrap()
                             .get(id)
@@ -141,7 +161,7 @@ fn join_inner<'a>(
                     let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                     rels[j_min] = trie_min;
                     for (j, trie) in tries {
-                        rels[j] = trie;
+                        rels[j.relation] = trie;
                     }
                     tuple.push(*id);
                     join_inner(singleton, &rels, rest, tuple, out);
@@ -149,7 +169,7 @@ fn join_inner<'a>(
                 }
             }
         }
-        Instruction::Lookup(lookups) => {
+        Instruction2::Lookup(lookups) => {
             // TODO sort the lookups
             let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
             for lookup in lookups {
@@ -162,9 +182,6 @@ fn join_inner<'a>(
             }
 
             join_inner(singleton, &rels, rest, tuple, out)
-        }
-        Instruction::Scan => {
-            panic!("Should have handled in free_join")
         }
     }
 }
