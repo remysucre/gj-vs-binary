@@ -5,10 +5,13 @@ PREPROCESSOR=preprocessor/target/release/preprocessor
 IMDB=data/imdb/imdb_plain.db
 DATA=queries/preprocessed/join-order-benchmark/data
 
+IMDB_JSON_NAMES=$(shell for i in $$(seq 113); do printf 'IMDBQ%03d.json\n' $$i; done)
+IMDB_JSONS=$(addprefix logs/plan-profiles/,$(IMDB_JSON_NAMES))
+
 all: $(DATA)
 
 $(DUCKDB): duckdb/src
-	$(MAKE) -C duckdb -j
+	BUILD_BENCHMARK=1 $(MAKE) -C duckdb -j
 
 duckdb/src: .gitmodules
 	git submodule update --init
@@ -18,6 +21,17 @@ $(PREPROCESSOR):
 
 $(IMDB): duckdb
 	$(MAKE) -C data/imdb
+
+.PHONY: imdb_jsons
+imdb_jsons: $(IMDB_JSONS)
+	echo $(IMDB_JSONS)
+	echo $(IMDB_JSON_NAMES)
+
+.PRECIOUS: $(IMDB_JSONS)
+$(IMDB_JSONS) &: $(DUCKDB) $(IMDB)
+	(cd duckdb && \
+	 GJ_TABLE=1 build/release/benchmark/benchmark_runner --threads=1 'IMDBQ.*' && \
+	 mv IMDB*.json ../logs/plan-profiles/)
 
 $(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(PREPROCESSOR)
 	cd preprocessor && bash run.sh join-order-benchmark imdb && touch ../$@
