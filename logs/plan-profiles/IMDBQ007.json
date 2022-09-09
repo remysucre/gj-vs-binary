@@ -1,25 +1,25 @@
 {
    "name":  "Query", 
-   "result": 0.184988,
-   "timing": 0.184988,
+   "result": 0.869690,
+   "timing": 0.869690,
    "cardinality": 0,
    "extra_info": "SELECT MIN(t.title) AS movie_title\nFROM company_name AS cn,\n     keyword AS k,\n     movie_companies AS mc,\n     movie_keyword AS mk,\n     title AS t\nWHERE cn.country_code ='[sm]'\n  AND k.keyword ='character-name-in-title'\n  AND cn.id = mc.company_id\n  AND mc.movie_id = t.id\n  AND t.id = mk.movie_id\n  AND mk.keyword_id = k.id\n  AND mc.movie_id = mk.movie_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.000342
+   "timing": 0.000238
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000004
+   "timing": 0.000003
    },
    {
    "annotation": "optimizer > common_aggregate", 
-   "timing": 0.000002
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > common_subexpressions", 
-   "timing": 0.000002
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > deliminator", 
@@ -27,7 +27,7 @@
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000035
+   "timing": 0.000023
    },
    {
    "annotation": "optimizer > filter_pullup", 
@@ -35,7 +35,7 @@
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000082
+   "timing": 0.000057
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -43,7 +43,7 @@
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.000102
+   "timing": 0.000074
    },
    {
    "annotation": "optimizer > regex_range", 
@@ -55,7 +55,7 @@
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000095
+   "timing": 0.000060
    },
    {
    "annotation": "optimizer > top_n", 
@@ -67,33 +67,33 @@
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000052
+   "timing": 0.000037
    },
    {
    "annotation": "physical_planner > column_binding", 
-   "timing": 0.000005
+   "timing": 0.000004
    },
    {
    "annotation": "physical_planner > create_plan", 
-   "timing": 0.000039
+   "timing": 0.000025
    },
    {
    "annotation": "physical_planner > resolve_types", 
-   "timing": 0.000002
+   "timing": 0.000003
    },
    {
    "annotation": "planner", 
-   "timing": 0.000168
+   "timing": 0.000144
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000165
+   "timing": 0.000141
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000017,
+      "timing":0.000003,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -101,7 +101,7 @@
       "children": [
        {
          "name": "SIMPLE_AGGREGATE",
-         "timing":0.000003,
+         "timing":0.000001,
          "cardinality":1,
          "extra_info": "min(#0)",
          "timings": [
@@ -117,7 +117,7 @@
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.002244,
+               "timing":0.000631,
                "cardinality":0,
                "extra_info": "INNER\nmc.company_id = cn.id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.333161,
+                  "timing":0.080102,
                   "cardinality":148552,
                   "extra_info": "INNER\nmk.keyword_id = k.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":1.252102,
+                     "timing":0.441944,
                      "cardinality":34863638,
                      "extra_info": "INNER\nt.id = mc.movie_id\nmk.movie_id = mc.movie_id\n",
                      "timings": [
@@ -141,7 +141,7 @@
                      "children": [
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.402876,
+                        "timing":0.108140,
                         "cardinality":4523930,
                         "extra_info": "INNER\nmk.movie_id = t.id\n",
                         "timings": [
@@ -149,7 +149,7 @@
                         "children": [
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.008623,
+                           "timing":0.002413,
                            "cardinality":4523930,
                            "extra_info": "movie_keyword\n[INFOSEPARATOR]\nmovie_id\nkeyword_id",
                            "timings": [
@@ -160,7 +160,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.076601,
+                           "timing":0.039490,
                            "cardinality":2528312,
                            "extra_info": "title\n[INFOSEPARATOR]\nid\ntitle",
                            "timings": [
@@ -173,7 +173,7 @@
 ,
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.004255,
+                        "timing":0.001215,
                         "cardinality":2609129,
                         "extra_info": "movie_companies\n[INFOSEPARATOR]\ncompany_id\nmovie_id",
                         "timings": [
@@ -186,7 +186,7 @@
 ,
                    {
                      "name": "SEQ_SCAN",
-                     "timing":0.004458,
+                     "timing":0.002552,
                      "cardinality":1,
                      "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid\n[INFOSEPARATOR]\nFilters: keyword=character-name-in-title AND keyword IS NOT NULL\n",
                      "timings": [
@@ -199,7 +199,7 @@
 ,
                 {
                   "name": "SEQ_SCAN",
-                  "timing":0.005398,
+                  "timing":0.005788,
                   "cardinality":1,
                   "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid\n[INFOSEPARATOR]\nFilters: country_code=[sm] AND country_code IS NOT NULL\n",
                   "timings": [

@@ -1,41 +1,41 @@
 {
    "name":  "Query", 
-   "result": 0.144316,
-   "timing": 0.144316,
+   "result": 0.335365,
+   "timing": 0.335365,
    "cardinality": 0,
    "extra_info": "SELECT MIN(lt.link) AS link_type,\n       MIN(t1.title) AS first_movie,\n       MIN(t2.title) AS second_movie\nFROM keyword AS k,\n     link_type AS lt,\n     movie_keyword AS mk,\n     movie_link AS ml,\n     title AS t1,\n     title AS t2\nWHERE k.keyword ='10,000-mile-club'\n  AND mk.keyword_id = k.id\n  AND t1.id = mk.movie_id\n  AND ml.movie_id = t1.id\n  AND ml.linked_movie_id = t2.id\n  AND lt.id = ml.link_type_id\n  AND mk.movie_id = t1.id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.000563
+   "timing": 0.000280
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000011
+   "timing": 0.000005
    },
    {
    "annotation": "optimizer > common_aggregate", 
-   "timing": 0.000003
-   },
-   {
-   "annotation": "optimizer > common_subexpressions", 
    "timing": 0.000002
    },
    {
-   "annotation": "optimizer > deliminator", 
+   "annotation": "optimizer > common_subexpressions", 
    "timing": 0.000001
    },
    {
+   "annotation": "optimizer > deliminator", 
+   "timing": 0.000000
+   },
+   {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000036
+   "timing": 0.000019
    },
    {
    "annotation": "optimizer > filter_pullup", 
-   "timing": 0.000003
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000105
+   "timing": 0.000053
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -43,7 +43,7 @@
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.000249
+   "timing": 0.000121
    },
    {
    "annotation": "optimizer > regex_range", 
@@ -51,11 +51,11 @@
    },
    {
    "annotation": "optimizer > reorder_filter", 
-   "timing": 0.000004
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000129
+   "timing": 0.000063
    },
    {
    "annotation": "optimizer > top_n", 
@@ -63,37 +63,37 @@
    },
    {
    "annotation": "optimizer > unused_columns", 
-   "timing": 0.000007
+   "timing": 0.000005
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000067
+   "timing": 0.000037
    },
    {
    "annotation": "physical_planner > column_binding", 
-   "timing": 0.000009
-   },
-   {
-   "annotation": "physical_planner > create_plan", 
-   "timing": 0.000047
-   },
-   {
-   "annotation": "physical_planner > resolve_types", 
    "timing": 0.000004
    },
    {
+   "annotation": "physical_planner > create_plan", 
+   "timing": 0.000024
+   },
+   {
+   "annotation": "physical_planner > resolve_types", 
+   "timing": 0.000003
+   },
+   {
    "annotation": "planner", 
-   "timing": 0.000222
+   "timing": 0.000112
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000219
+   "timing": 0.000110
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000009,
+      "timing":0.000005,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -101,7 +101,7 @@
       "children": [
        {
          "name": "SIMPLE_AGGREGATE",
-         "timing":0.000004,
+         "timing":0.000002,
          "cardinality":1,
          "extra_info": "min(#0)\nmin(#1)\nmin(#2)",
          "timings": [
@@ -117,7 +117,7 @@
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.003647,
+               "timing":0.001298,
                "cardinality":0,
                "extra_info": "INNER\nmk.keyword_id = k.id\n",
                "timings": [
@@ -125,7 +125,7 @@
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.001839,
+                  "timing":0.000759,
                   "cardinality":288192,
                   "extra_info": "INNER\nml.link_type_id = lt.id\n",
                   "timings": [
@@ -133,7 +133,7 @@
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.335375,
+                     "timing":0.102760,
                      "cardinality":288192,
                      "extra_info": "INNER\nmk.movie_id = t1.id\nmk.movie_id = ml.movie_id\n",
                      "timings": [
@@ -141,7 +141,7 @@
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.006301,
+                        "timing":0.002131,
                         "cardinality":4523930,
                         "extra_info": "movie_keyword\n[INFOSEPARATOR]\nkeyword_id\nmovie_id",
                         "timings": [
@@ -152,7 +152,7 @@
 ,
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.264329,
+                        "timing":0.057840,
                         "cardinality":29997,
                         "extra_info": "INNER\nml.linked_movie_id = t2.id\n",
                         "timings": [
@@ -160,7 +160,7 @@
                         "children": [
                          {
                            "name": "HASH_JOIN",
-                           "timing":0.041672,
+                           "timing":0.017439,
                            "cardinality":29997,
                            "extra_info": "INNER\nt1.id = ml.movie_id\n",
                            "timings": [
@@ -168,7 +168,7 @@
                            "children": [
                             {
                               "name": "SEQ_SCAN",
-                              "timing":0.074553,
+                              "timing":0.040161,
                               "cardinality":2528312,
                               "extra_info": "title\n[INFOSEPARATOR]\nid\ntitle",
                               "timings": [
@@ -179,7 +179,7 @@
 ,
                             {
                               "name": "SEQ_SCAN",
-                              "timing":0.000070,
+                              "timing":0.000027,
                               "cardinality":29997,
                               "extra_info": "movie_link\n[INFOSEPARATOR]\nmovie_id\nlinked_movie_id\nlink_type_id",
                               "timings": [
@@ -192,7 +192,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.078640,
+                           "timing":0.040518,
                            "cardinality":2528312,
                            "extra_info": "title\n[INFOSEPARATOR]\nid\ntitle",
                            "timings": [
@@ -220,7 +220,7 @@
 ,
                 {
                   "name": "SEQ_SCAN",
-                  "timing":0.005698,
+                  "timing":0.002617,
                   "cardinality":1,
                   "extra_info": "keyword\n[INFOSEPARATOR]\nkeyword\nid\n[INFOSEPARATOR]\nFilters: keyword=10,000-mile-club AND keyword IS NOT NULL\n",
                   "timings": [
