@@ -343,6 +343,7 @@ pub fn compute_full_plan<'a>(
         let table_id;
 
         if let Some(node) = in_view.get(a.table_name.as_str()) {
+            log::debug!("table {} provides: {:?}", a.table_name, &provides[node]);
             table_id = TableID::Node(&**node);
             col_id = ColID::Id(
                 provides[node]
@@ -387,6 +388,18 @@ pub fn compute_full_plan<'a>(
                     attr_positions.insert(lookup.right.clone(), i);
                     lookup.key = i;
                     lookup.relation = get_table_idx(&lookup.right);
+                }
+            }
+        }
+    }
+
+    // put the rest of the attributes from provides into the attribute ordering
+    for groups in provides.values() {
+        for group in groups {
+            if let Some(pos) = group.iter().flat_map(|a| attr_positions.get(a)).next() {
+                let pos = *pos;
+                for a in group {
+                    attr_positions.insert(a.clone(), pos);
                 }
             }
         }

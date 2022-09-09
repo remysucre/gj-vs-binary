@@ -1,6 +1,9 @@
 use std::{collections::HashSet, mem::take};
 
-use crate::{sql::Attribute, trie::*};
+use crate::{
+    sql::{Attribute, FAKE},
+    trie::*,
+};
 use smallvec::SmallVec;
 
 pub fn optimize(plan: Vec<Instruction2>) -> Vec<Instruction2> {
@@ -95,18 +98,42 @@ pub enum Instruction2 {
     Lookup(Vec<Lookup2>),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Intersection2 {
     pub relation: usize,
     pub attr: Attribute,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl std::fmt::Debug for Intersection2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.relation == FAKE {
+            write!(f, "{:?}", self.attr)
+        } else {
+            write!(f, "{:?} @ {:?})", self.attr, self.relation)
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq)]
 pub struct Lookup2 {
     pub key: usize,
     pub relation: usize,
     pub left: Attribute,
     pub right: Attribute,
+}
+
+impl std::fmt::Debug for Lookup2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.relation == FAKE {
+            write!(f, "{:?} = {:?})", self.left, self.right)
+        } else {
+            write!(
+                f,
+                "{:?} @ {:?} = {:?} @ {:?})",
+                self.key, self.left, self.relation, self.right
+            )
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

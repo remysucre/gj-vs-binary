@@ -14,10 +14,16 @@ pub enum JoinType {
     FullOuter,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct Attribute {
     pub table_name: String,
     pub attr_name: String,
+}
+
+impl std::fmt::Debug for Attribute {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}", self.table_name, self.attr_name)
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
@@ -55,8 +61,8 @@ pub enum NodeAttr {
 #[derive(Serialize, Deserialize)]
 pub struct TreeOp {
     pub name: String,
-    #[derivative(PartialEq="ignore")]
-    #[derivative(Hash="ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(Hash = "ignore")]
     pub timing: f64,
     pub cardinality: u32,
     pub extra_info: String,
@@ -67,7 +73,7 @@ pub struct TreeOp {
 pub fn get_filter_cost(root: &TreeOp) -> f64 {
     let mut cost = 0.0;
 
-    postorder_traverse(root, &mut|node| {
+    postorder_traverse(root, &mut |node| {
         if let Some(NodeAttr::Scan(_)) = &node.attr {
             if node.extra_info.contains("Filters") {
                 cost += node.timing;
@@ -355,6 +361,8 @@ pub fn get_scan_join_attrs<'a>(root: &'a TreeOp) -> IndexSet<Attribute> {
     scan_join_attrs
 }
 
+pub const FAKE: usize = 9999;
+
 pub fn to_binary_plan2<'a>(root: &'a TreeOp) -> Vec<Instruction2> {
     let mut program = vec![];
 
@@ -369,19 +377,19 @@ pub fn to_binary_plan2<'a>(root: &'a TreeOp) -> Vec<Instruction2> {
 
             let instr = if attrs.contains(lattr) {
                 Instruction2::Lookup(vec![Lookup2 {
-                    key: usize::MAX,
-                    relation: usize::MAX,
+                    key: FAKE,
+                    relation: FAKE,
                     left: lattr.clone(),
                     right: rattr.clone(),
                 }])
             } else {
                 Instruction2::Intersect(vec![
                     Intersection2 {
-                        relation: usize::MAX,
+                        relation: FAKE,
                         attr: lattr.clone(),
                     },
                     Intersection2 {
-                        relation: usize::MAX,
+                        relation: FAKE,
                         attr: rattr.clone(),
                     },
                 ])

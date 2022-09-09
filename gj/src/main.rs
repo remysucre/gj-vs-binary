@@ -6,6 +6,7 @@ use clap::Parser;
 use indexmap::IndexMap;
 
 fn main() {
+    env_logger::init();
     let args = Args::parse();
 
     let mut queries = queries();
@@ -47,8 +48,11 @@ fn main() {
             // let groups = to_left_deep_plan(node);
             let mut plan = to_binary_plan2(node);
             // let compiled_plan = compile_plan(&groups, node, &in_view);
+            log::debug!("binary plan: {:?}", plan);
+
             let (out_schema, build_plan) =
                 compute_full_plan(&db, node, &mut plan, &provides, &in_view);
+            log::debug!("out schema: {:?}", out_schema);
 
             if args.optimize > 0 {
                 plan = optimize(plan);
