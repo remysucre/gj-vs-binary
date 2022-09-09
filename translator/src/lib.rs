@@ -1,5 +1,6 @@
-use serde::{Deserialize, Serialize};
+#![allow(warnings)]
 use crate::JoinType::Inner;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub enum JoinType {
@@ -99,9 +100,10 @@ pub fn parse_tree_extra_info(root: &mut TreeOp, filename: &str) {
 
             let join_type = match &extra_info[0] {
                 &"INNER" => JoinType::Inner,
-                &"MARK" => {eprintln!("{} contains MARK Join", filename);
-                JoinType::Mark
-                },
+                &"MARK" => {
+                    eprintln!("{} contains MARK Join", filename);
+                    JoinType::Mark
+                }
                 _ => panic!("Fail to parse Join Type {}", extra_info[0]),
             };
 

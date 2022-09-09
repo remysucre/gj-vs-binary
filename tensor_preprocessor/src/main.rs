@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use sqlparser::ast::*;
 use sqlparser::dialect::GenericDialect;
 use sqlparser::parser::Parser;
@@ -55,7 +56,13 @@ fn main() {
                 for (filter_alias, parsed_filters) in &filter_aliases {
                     for (from_alias, parsed_from) in &from_aliases {
                         if filter_alias == from_alias {
-                            if let TableFactor::Table{name: _, alias, args: _, with_hints: _} = &parsed_from.relation {
+                            if let TableFactor::Table {
+                                name: _,
+                                alias,
+                                args: _,
+                                with_hints: _,
+                            } = &parsed_from.relation
+                            {
                                 if let Some(a) = &alias {
                                     let alias_string = a.to_string();
                                     if let Some(columns) = join_aliases.get(&alias_string) {
@@ -67,7 +74,7 @@ fn main() {
                     }
                 }
             }
-            
+
             if mode == "joins" {
                 println!("SELECT COUNT(*)");
 
@@ -76,7 +83,13 @@ fn main() {
                     let mut was_filtered = false;
                     for (filter_alias, _) in &filter_aliases {
                         if filter_alias == from_alias {
-                            if let TableFactor::Table{name: _, alias, args: _, with_hints: _} = &parsed_from.relation {
+                            if let TableFactor::Table {
+                                name: _,
+                                alias,
+                                args: _,
+                                with_hints: _,
+                            } = &parsed_from.relation
+                            {
                                 if let Some(a) = &alias {
                                     print!("{}, ", a.to_string());
                                     was_filtered = true;
@@ -109,7 +122,13 @@ fn main() {
 // maps table aliases (ie. cn) to their full from statements (ie. company_name AS cn)
 fn map_from_aliases(froms: &Vec<TableWithJoins>, aliases: &mut HashMap<String, TableWithJoins>) {
     for from in froms {
-        if let TableFactor::Table{name: _, alias, args: _, with_hints: _} = &from.relation {
+        if let TableFactor::Table {
+            name: _,
+            alias,
+            args: _,
+            with_hints: _,
+        } = &from.relation
+        {
             if let Some(a) = &alias {
                 let alias_string = a.to_string();
                 aliases.entry(alias_string).or_insert(from.clone());
@@ -135,42 +154,53 @@ fn get_filter_alias(filter: &Expr) -> String {
         Expr::CompoundIdentifier(identifier) => {
             let alias_string = (&identifier[0]).to_string();
             return alias_string;
-        },
+        }
         Expr::Nested(nest) => {
             return get_filter_alias(nest);
-        },
+        }
         Expr::IsNull(is_null) => {
             return get_filter_alias(is_null);
-        },
+        }
         Expr::IsNotNull(is_not_null) => {
             return get_filter_alias(is_not_null);
-        },
-        Expr::InList{expr, list: _, negated: _} => {
+        }
+        Expr::InList {
+            expr,
+            list: _,
+            negated: _,
+        } => {
             return get_filter_alias(expr);
-        },
-        Expr::Between{expr, negated: _, low: _, high: _} => {
+        }
+        Expr::Between {
+            expr,
+            negated: _,
+            low: _,
+            high: _,
+        } => {
             return get_filter_alias(expr);
-        },
-        Expr::UnaryOp{op: _, expr} => {
+        }
+        Expr::UnaryOp { op: _, expr } => {
             return get_filter_alias(expr);
-        },
-        Expr::BinaryOp{left: l, op: o, right: r} => {
-            match (&**l, o, &**r) {
-                (Expr::CompoundIdentifier(l), _, _) => {
-                    let alias_string = (&l[0]).to_string();
-                    return alias_string;
+        }
+        Expr::BinaryOp {
+            left: l,
+            op: o,
+            right: r,
+        } => match (&**l, o, &**r) {
+            (Expr::CompoundIdentifier(l), _, _) => {
+                let alias_string = (&l[0]).to_string();
+                return alias_string;
+            }
+            (_, _, Expr::CompoundIdentifier(r)) => {
+                let alias_string = (&r[0]).to_string();
+                return alias_string;
+            }
+            (e_1, _, e_2) => {
+                let left_branch = get_filter_alias(e_1);
+                if left_branch.is_empty() {
+                    return get_filter_alias(e_2);
                 }
-                (_, _, Expr::CompoundIdentifier(r)) => {
-                    let alias_string = (&r[0]).to_string();
-                    return alias_string;
-                }
-                (e_1, _, e_2) => {
-                    let left_branch = get_filter_alias(e_1);
-                    if left_branch.is_empty() {
-                        return get_filter_alias(e_2);
-                    }
-                    return left_branch;
-                }
+                return left_branch;
             }
         },
         _ => return String::new(),
@@ -181,8 +211,12 @@ fn get_filter_alias(filter: &Expr) -> String {
 fn map_join_aliases(joins: &Vec<Expr>, aliases: &mut HashMap<String, Vec<String>>) {
     for join in joins {
         let aliases_and_columns = get_join_aliases_and_columns(join);
-        aliases.entry(aliases_and_columns[0].clone()).or_insert(vec![]);
-        aliases.entry(aliases_and_columns[2].clone()).or_insert(vec![]);
+        aliases
+            .entry(aliases_and_columns[0].clone())
+            .or_insert(vec![]);
+        aliases
+            .entry(aliases_and_columns[2].clone())
+            .or_insert(vec![]);
         if let Some(js) = aliases.get_mut(&aliases_and_columns[0]) {
             if !js.contains(&aliases_and_columns[1].clone()) {
                 js.push(aliases_and_columns[1].clone());
@@ -204,12 +238,18 @@ fn get_join_aliases_and_columns(join: &Expr) -> Vec<String> {
         right: r,
     } = join
     {
-        match(&**l, o, &**r) {
-            (Expr::CompoundIdentifier(left_ident), BinaryOperator::Eq, Expr::CompoundIdentifier(right_ident)) => {
-                return vec![(&left_ident[0]).to_string(), 
-                            (&left_ident[1]).to_string(),
-                            (&right_ident[0]).to_string(),
-                            (&right_ident[1]).to_string()];
+        match (&**l, o, &**r) {
+            (
+                Expr::CompoundIdentifier(left_ident),
+                BinaryOperator::Eq,
+                Expr::CompoundIdentifier(right_ident),
+            ) => {
+                return vec![
+                    (&left_ident[0]).to_string(),
+                    (&left_ident[1]).to_string(),
+                    (&right_ident[0]).to_string(),
+                    (&right_ident[1]).to_string(),
+                ];
             }
             _ => return vec![String::new(), String::new(), String::new(), String::new()],
         }
