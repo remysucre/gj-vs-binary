@@ -2,4 +2,5 @@ temp
 temp.sql
 .vscode
 gj/*.log
-plot.p*
+plot.png
+plot.pdf
