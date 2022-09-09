@@ -1,5 +1,57 @@
+use std::{collections::HashSet, mem::take};
+
 use crate::{sql::Attribute, trie::*};
 use smallvec::SmallVec;
+
+pub fn optimize(plan: Vec<Instruction2>) -> Vec<Instruction2> {
+    let mut new_plan = vec![];
+    let mut current_lookups: Vec<Lookup2> = vec![];
+
+    for instr in plan.clone() {
+        if let Instruction2::Lookup(lookups) = instr {
+            assert_eq!(lookups.len(), 1);
+
+            let mut not_mergeable = vec![];
+            for lookup in lookups {
+                if current_lookups
+                    .iter()
+                    .any(|l| l.relation == lookup.relation)
+                {
+                    not_mergeable.push(lookup);
+                } else {
+                    current_lookups.push(lookup);
+                }
+            }
+
+            if !not_mergeable.is_empty() {
+                panic!("not mergeable");
+                // assert!(!current_lookups.is_empty());
+                // new_plan.push(Instruction2::Lookup(take(&mut current_lookups)));
+                // new_plan.push(Instruction2::Lookup(not_mergeable));
+            }
+        } else {
+            if !current_lookups.is_empty() {
+                new_plan.push(Instruction2::Lookup(take(&mut current_lookups)));
+            }
+            new_plan.push(instr);
+        }
+    }
+
+    if !current_lookups.is_empty() {
+        new_plan.push(Instruction2::Lookup(current_lookups));
+    }
+
+    for instr in &new_plan {
+        if let Instruction2::Lookup(lookups) = instr {
+            assert!(!lookups.is_empty());
+            let relations: HashSet<usize> = lookups.iter().map(|l| l.relation).collect();
+            assert_eq!(lookups.len(), relations.len());
+        }
+    }
+
+    assert!(new_plan.len() <= plan.len());
+    new_plan
+}
 
 // pub fn bushy_join<'a>(
 //     tables: &[Tb<'a, '_, Value<'a>>],
@@ -37,19 +89,19 @@ pub enum Instruction {
     Lookup(Vec<Lookup>),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Instruction2 {
     Intersect(Vec<Intersection2>),
     Lookup(Vec<Lookup2>),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Intersection2 {
     pub relation: usize,
     pub attr: Attribute,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Lookup2 {
     pub key: usize,
     pub relation: usize,
@@ -69,7 +121,7 @@ pub fn free_join<'a>(
     compiled_plan: &[Instruction2],
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
-    dbg!(compiled_plan);
+    let mut compiled_plan = compiled_plan.to_vec();
     if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
         let rels: SmallVec<[_; 8]> = tables[1..]
             .iter()
@@ -104,7 +156,7 @@ pub fn free_join<'a>(
                 data.push(data_iter.next().unwrap().clone());
             }
 
-            join_inner(&mut data, &rels, compiled_plan, &mut tuple, out);
+            join_inner(&mut data, &rels, &mut compiled_plan, &mut tuple, out);
         }
 
         // for i in 0..id_cols[0].len() {
@@ -126,11 +178,11 @@ pub fn free_join<'a>(
 fn join_inner<'a>(
     singleton: &mut Vec<Value<'a>>,
     relations: &[&Trie<Value<'a>>],
-    compiled_plan: &[Instruction2],
+    compiled_plan: &mut [Instruction2],
     tuple: &mut Vec<i32>,
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
-    let (instr, rest) = if let Some(tup) = compiled_plan.split_first() {
+    let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
         tup
     } else {
         return materialize(relations, tuple, singleton, out);
@@ -170,7 +222,9 @@ fn join_inner<'a>(
             }
         }
         Instruction2::Lookup(lookups) => {
-            // TODO sort the lookups
+            assert!(!lookups.is_empty());
+            lookups.sort_unstable_by_key(|l| relations[l.relation].get_map().unwrap().len());
+
             let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
             for lookup in lookups {
                 let value = tuple[lookup.key];

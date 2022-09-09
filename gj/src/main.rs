@@ -1,10 +1,19 @@
 use std::{collections::HashMap, time::Instant};
 
-use gj::{join::*, sql::*, util::*};
+use gj::{join::*, sql::*, util::*, *};
+
+use clap::Parser;
 use indexmap::IndexMap;
 
 fn main() {
-    for (q, i) in queries() {
+    let args = Args::parse();
+
+    let mut queries = queries();
+    if let Some(q) = &args.query {
+        queries.retain(|_, name| name.contains(q));
+    }
+
+    for (q, i) in queries {
         println!("running query {}: {} ", q, i);
 
         let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
@@ -22,7 +31,7 @@ fn main() {
         let payload = get_payload(&plan_tree);
         let plan = to_gj_plan(&plan_tree);
 
-        let raw_db = load_db(q, &scan, &plan);
+        let raw_db = load_db(&args, q, &scan, &plan);
         let db = from_raw(&raw_db);
 
         let mut in_view = HashMap::new();
@@ -40,9 +49,11 @@ fn main() {
             // let compiled_plan = compile_plan(&groups, node, &in_view);
             let (out_schema, build_plan) =
                 compute_full_plan(&db, node, &mut plan, &provides, &in_view);
-            // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
-            dbg!(&out_schema);
+            if args.optimize > 0 {
+                plan = optimize(plan);
+            }
+            // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
             build_plans.insert(node, build_plan);
             provides.insert(node, out_schema);
@@ -51,7 +62,7 @@ fn main() {
             map_tables_to_node(node, &mut in_view);
         }
 
-        debug_build_plans(&build_plans, &provides);
+        // debug_build_plans(&build_plans, &provides);
 
         let mut views = HashMap::new();
 
@@ -74,8 +85,6 @@ fn main() {
             let join_start = Instant::now();
             free_join(&tables, compiled_plan, &mut intermediate);
             println!("Join took {:?}", join_start.elapsed().as_secs_f32());
-
-            dbg!(intermediate.len());
 
             views.insert(node, intermediate);
             tables_buf.push(tables);
@@ -131,24 +140,23 @@ fn main() {
 }
 
 // mapping between the original query ID to duckdb's ID
-fn queries() -> Vec<(&'static str, &'static str)> {
+fn queries() -> IndexMap<&'static str, &'static str> {
     // let queries = vec![("33c", "IMDBQ113")];
 
-    let queries = vec![
-        ("15a", "IMDBQ052"),
-        ("15d", "IMDBQ055"),
-        ("8c", "IMDBQ029"),
-        ("8d", "IMDBQ030"),
-        ("17e", "IMDBQ064"),
-        ("6f", "IMDBQ023"),
-        ("16a", "IMDBQ056"),
-        ("16b", "IMDBQ057"),
-        ("16c", "IMDBQ058"),
-        ("16d", "IMDBQ059"),
-    ];
+    // let queries = vec![
+    //     ("15a", "IMDBQ052"),
+    //     ("15d", "IMDBQ055"),
+    //     ("8c", "IMDBQ029"),
+    //     ("8d", "IMDBQ030"),
+    //     ("17e", "IMDBQ064"),
+    //     ("6f", "IMDBQ023"),
+    //     ("16a", "IMDBQ056"),
+    //     ("16b", "IMDBQ057"),
+    //     ("16c", "IMDBQ058"),
+    //     ("16d", "IMDBQ059"),
+    // ];
 
-    /*
-    let bushy = false;
+    let bushy = true;
     let linear = true;
 
     let mut queries = vec![];
@@ -307,5 +315,5 @@ fn queries() -> Vec<(&'static str, &'static str)> {
     }
 
     // */
-    queries
+    queries.into_iter().collect()
 }

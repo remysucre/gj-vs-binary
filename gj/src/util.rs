@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::path;
 
 use indexmap::{IndexMap, IndexSet};
+use once_cell::sync::Lazy;
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
     file::reader::{FileReader, SerializedFileReader},
@@ -11,7 +12,7 @@ use parquet::{
 };
 
 use std::fs::File;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use crate::join::{Instruction, Instruction2, Lookup};
 use crate::trie::Tb;
@@ -103,8 +104,6 @@ pub fn compile_plan<'a>(
             }
         }
     });
-
-    dbg!(&groups);
 
     traverse_left(node, &mut |node: &TreeOp| match &node.attr {
         Some(NodeAttr::Scan(_)) => {
@@ -349,7 +348,7 @@ pub fn compute_full_plan<'a>(
                 provides[node]
                     .iter()
                     .position(|attrs| attrs.contains(a))
-                    .unwrap(),
+                    .unwrap_or_else(|| panic!("cannot find attribute: {:?}", a)),
             );
         } else {
             table_id = TableID::Name(a.table_name.clone());
@@ -419,8 +418,6 @@ pub fn compute_full_plan<'a>(
         }
     }
 
-    dbg!(&build_plan);
-
     // collect build plans into a table ordering, each with a column ordering
     let mut build_plan_out = Vec::new();
 
@@ -476,7 +473,9 @@ pub fn compute_full_plan<'a>(
     (out_schema, build_plan_out)
 }
 
-pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> RawDB {
+static RELATIONS: Lazy<Mutex<HashMap<String, RawRelation>>> = Lazy::new(Default::default);
+
+pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> RawDB {
     let tables = scan
         .iter()
         .map(|s| s.table_name.as_str())
@@ -521,10 +520,21 @@ pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> RawDB {
                 .build()
                 .unwrap();
 
-            db.insert(
-                table_name.to_string(),
-                from_parquet(q, table_name, table_schema),
-            );
+            let pq = if tables.contains(table_name) || !args.cache {
+                from_parquet(q, table_name, table_schema)
+            } else {
+                // not in tables, so it's a base table that we can maybe cache
+                let mut rels = RELATIONS.lock().unwrap();
+                let mut key = table_name.to_string();
+                key += &format!("{:?}", table_schema);
+                rels.entry(key)
+                    .and_modify(|_| println!("Using cached table {}", table_name))
+                    // no schema, we want to load the full relation
+                    .or_insert_with(|| from_parquet(q, table_name, table_schema))
+                    .clone()
+            };
+
+            db.insert(table_name.to_string(), pq);
 
             loaded.insert(table_name);
         }
@@ -534,7 +544,7 @@ pub fn load_db(q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> RawDB {
 }
 
 pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> RawRelation {
-    let mut table = RawRelation::default();
+    let mut table = HashMap::<Attribute, RawCol>::default();
     let path_s = format!(
         "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
         query, t_name
@@ -586,7 +596,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> RawRelation {
             }
         }
     }
-    table
+    Arc::new(table)
 }
 
 fn find_shared(table_name: &str) -> &str {

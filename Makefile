@@ -39,6 +39,16 @@ $(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(PREPROCESSOR)
 test: preprocessor/test.sh $(DATA)
 	cd preprocessor && bash test.sh join-order-benchmark imdb
 
+GJ_SRC=$(shell find gj/src -name "*.rs")
+GJ_OPT_LEVELS= 0 1
+GJ_LOGS=$(patsubst %,gj/gj-%.log,$(GJ_OPT_LEVELS))
+
+gj/gj-%.log: $(GJ_SRC)
+	(cd gj && cargo run --release -- --optimize=$* | tee gj-$*.log)
+
+plot.pdf: ./scripts/plot.py $(GJ_LOGS)
+	$^
+
 clean_all: clean
 	rm -rf duckdb && mkdir duckdb
 	$(MAKE) -C data/imdb clean_all
