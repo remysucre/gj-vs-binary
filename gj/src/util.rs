@@ -688,6 +688,7 @@ pub fn build_tables<'a, 'b>(
                 let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
                 let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
                 let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
+                log::debug!("building trie of size and capacity: {:?} {:?}", trie.get_map().unwrap().len(), trie.get_map().unwrap().capacity());
                 tables.push(Tb::Trie(trie));
             }
             TableID::Node(node) => {
@@ -702,6 +703,7 @@ pub fn build_tables<'a, 'b>(
                 let id_ids: Vec<_> = id_col_ids.iter().map(to_id).collect();
                 let data_ids: Vec<_> = data_col_ids.iter().map(to_id).collect();
                 let trie = build_trie_from_view(views, node, &id_ids, &data_ids);
+                log::debug!("building trie of size and capacity: {:?} {:?}", trie.get_map().unwrap().len(), trie.get_map().unwrap().capacity());
                 tables.push(Tb::Trie(trie));
             }
         }

@@ -53,6 +53,7 @@ fn main() {
             let (out_schema, build_plan) =
                 compute_full_plan(&db, node, &mut plan, &provides, &in_view);
             log::debug!("out schema: {:?}", out_schema);
+            log::debug!("compiled plan: {:?}", plan);
 
             if args.optimize > 0 {
                 plan = optimize(plan);
@@ -89,6 +90,8 @@ fn main() {
             let join_start = Instant::now();
             free_join(&tables, compiled_plan, &mut intermediate);
             println!("Join took {:?}", join_start.elapsed().as_secs_f32());
+
+            log::debug!("intermediate size: {:?}", intermediate.len());
 
             views.insert(node, intermediate);
             tables_buf.push(tables);

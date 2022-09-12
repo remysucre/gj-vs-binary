@@ -163,27 +163,25 @@ pub fn free_join<'a>(
 
         // assert!(matches!(&compiled_plan[0], Instruction::Scan));
 
+        let mut tuple = Vec::new();
+        let mut data = Vec::new();
         // unroll the outer scan
-        loop {
-            let mut tuple = Vec::new();
+        while let Some(v) = id_iters[0].next() {
 
-            if let Some(v) = id_iters[0].next() {
-                tuple.push(v.as_num());
-            } else {
-                break;
-            }
+            tuple.push(v.as_num());
 
             for id_iter in &mut id_iters[1..] {
                 tuple.push(id_iter.next().unwrap().as_num());
             }
 
-            let mut data = Vec::new();
 
             for data_iter in &mut data_iters {
                 data.push(data_iter.next().unwrap().clone());
             }
 
             join_inner(&mut data, &rels, &mut compiled_plan, &mut tuple, out);
+            tuple.clear();
+            data.clear();
         }
 
         // for i in 0..id_cols[0].len() {
