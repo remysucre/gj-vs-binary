@@ -1,8 +1,6 @@
 // use core::slice::SlicePattern;
-use std::collections::{HashMap, HashSet};
 use std::path;
 
-use indexmap::{IndexMap, IndexSet};
 use once_cell::sync::Lazy;
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
@@ -15,12 +13,8 @@ use std::fs::File;
 use std::sync::{Arc, Mutex};
 
 use crate::join::{Instruction, Instruction2, Lookup};
-use crate::trie::Tb;
-use crate::{
-    sql::*,
-    trie::{Trie, Value},
-    *,
-};
+use crate::trie::*;
+use crate::{sql::*, *};
 
 pub fn from_raw(rdb: &RawDB) -> DB {
     rdb.iter()
@@ -82,8 +76,8 @@ pub fn compile_plan<'a>(
 ) -> Vec<Instruction> {
     let mut compiled_plan = Vec::new();
     // let mut table_ids = IndexSet::<&TreeOp>::new();
-    let mut table_ids = HashMap::new();
-    let mut view_ids = HashMap::new();
+    let mut table_ids = HashMap::default();
+    let mut view_ids = HashMap::default();
     let mut groups: Vec<HashSet<Attribute>> = vec![];
 
     let mut left_table = None;
@@ -95,11 +89,11 @@ pub fn compile_plan<'a>(
             for eq in &join.equalizers {
                 if left_table.is_none() {
                     left_table = Some(&eq.left_attr.table_name);
-                    groups.push(HashSet::from([eq.left_attr.clone()]));
+                    groups.push([eq.left_attr.clone()].into_iter().collect());
                 } else if left_table.unwrap() == &eq.left_attr.table_name
                     && !groups.iter().any(|g| g.contains(&eq.left_attr))
                 {
-                    groups.push(HashSet::from([eq.left_attr.clone()]));
+                    groups.push([eq.left_attr.clone()].into_iter().collect());
                 }
             }
         }
@@ -177,7 +171,7 @@ pub fn compile_plan<'a>(
                         compiled_plan.push(Instruction::Intersect {
                             relations: vec![li, ri],
                         });
-                        let mut new_group = HashSet::new();
+                        let mut new_group = HashSet::default();
                         new_group.insert(eq.left_attr.clone());
                         new_group.insert(eq.right_attr.clone());
                         groups.push(new_group)
@@ -334,9 +328,9 @@ pub fn compute_full_plan<'a>(
     provides: &IndexMap<&'a TreeOp, Vec<Vec<Attribute>>>,
     in_view: &HashMap<&str, &'a TreeOp>,
 ) -> (ViewSchema, BuildPlan<'a>) {
-    let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::new();
+    let mut build_plan: IndexMap<TableID, IndexMap<ColID, Vec<Attribute>>> = IndexMap::default();
 
-    let mut tables = IndexSet::<TableID>::new();
+    let mut tables = IndexSet::<TableID>::default();
     let mut get_table_idx = |a: &Attribute| -> usize {
         // dbg!(a);
         let col_id;
@@ -365,7 +359,7 @@ pub fn compute_full_plan<'a>(
         idx - 1 // account for the scan table being present
     };
 
-    let mut attr_positions = HashMap::<Attribute, usize>::new();
+    let mut attr_positions = HashMap::<Attribute, usize>::default();
     for a in get_scan_join_attrs(root) {
         get_table_idx(&a);
         attr_positions.insert(a, attr_positions.len());
@@ -494,7 +488,7 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
         .map(|s| s.table_name.as_str())
         .collect::<HashSet<_>>();
 
-    let mut plan_table_name = HashMap::new();
+    let mut plan_table_name = HashMap::default();
 
     for node in plan {
         for a in node {
@@ -510,9 +504,9 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
         }
     }
 
-    let mut db = RawDB::new();
+    let mut db = RawDB::default();
 
-    let mut loaded = HashSet::new();
+    let mut loaded = HashSet::default();
 
     for attr in scan {
         for table_name in &plan_table_name[&attr.table_name.as_str()] {
@@ -688,7 +682,6 @@ pub fn build_tables<'a, 'b>(
                 let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
                 let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
                 let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
-                log::debug!("building trie of size and capacity: {:?} {:?}", trie.get_map().unwrap().len(), trie.get_map().unwrap().capacity());
                 tables.push(Tb::Trie(trie));
             }
             TableID::Node(node) => {
@@ -703,7 +696,6 @@ pub fn build_tables<'a, 'b>(
                 let id_ids: Vec<_> = id_col_ids.iter().map(to_id).collect();
                 let data_ids: Vec<_> = data_col_ids.iter().map(to_id).collect();
                 let trie = build_trie_from_view(views, node, &id_ids, &data_ids);
-                log::debug!("building trie of size and capacity: {:?} {:?}", trie.get_map().unwrap().len(), trie.get_map().unwrap().capacity());
                 tables.push(Tb::Trie(trie));
             }
         }
@@ -738,10 +730,16 @@ fn build_trie_from_view<'a>(
 ) -> Trie<Value<'a>> {
     let mut trie = Trie::default();
 
+    let mut ids = vec![0; id_ids.len()];
+    let mut data = vec![Value::Num(0); data_ids.len()];
     for row in views.get(node).unwrap() {
-        let ids: Vec<_> = id_ids.iter().map(|i| row[*i].as_num()).collect();
-        let data: Vec<_> = data_ids.iter().map(|i| row[*i].clone()).collect();
-        trie.insert(&ids, data);
+        ids.iter_mut()
+            .zip(id_ids)
+            .for_each(|(id, &idid)| *id = row[idid].as_num());
+        data.iter_mut()
+            .zip(data_ids)
+            .for_each(|(d, &dataid)| *d = row[dataid]);
+        trie.insert(&ids, &data);
     }
 
     trie
@@ -754,16 +752,21 @@ fn build_trie_from_db<'a>(
     data_attrs: &[Attribute],
 ) -> Trie<Value<'a>> {
     let rel = &db[table_name];
-    let id_cols: Vec<_> = id_attrs.iter().map(|a| rel.get(a).unwrap()).collect();
-    let data_cols: Vec<_> = data_attrs.iter().map(|a| rel.get(a).unwrap()).collect();
+    let id_cols: Vec<&[Value]> = id_attrs.iter().map(|a| rel[a].as_slice()).collect();
+    let data_cols: Vec<&[Value]> = data_attrs.iter().map(|a| rel[a].as_slice()).collect();
 
     let mut trie = Trie::default();
 
+    let mut ids = vec![0; id_cols.len()];
+    let mut data = vec![Value::Num(0); data_cols.len()];
     for i in 0..id_cols[0].len() {
-        let ids: Vec<_> = id_cols.iter().map(|col| col[i].as_num()).collect();
-        let data: Vec<_> = data_cols.iter().map(|col| col[i].clone()).collect();
-
-        trie.insert(&ids, data);
+        ids.iter_mut()
+            .zip(id_cols.iter())
+            .for_each(|(id, col)| *id = col[i].as_num());
+        data.iter_mut()
+            .zip(data_cols.iter())
+            .for_each(|(d, col)| *d = col[i]);
+        trie.insert(&ids, &data);
     }
 
     trie

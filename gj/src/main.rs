@@ -1,9 +1,8 @@
-use std::{collections::HashMap, time::Instant};
+use std::time::Instant;
 
 use gj::{join::*, sql::*, util::*, *};
 
 use clap::Parser;
-use indexmap::IndexMap;
 
 fn main() {
     env_logger::init();
@@ -35,10 +34,10 @@ fn main() {
         let raw_db = load_db(&args, q, &scan, &plan);
         let db = from_raw(&raw_db);
 
-        let mut in_view = HashMap::new();
-        let mut provides = IndexMap::new();
-        let mut build_plans = IndexMap::new();
-        let mut compiled_plans = IndexMap::new();
+        let mut in_view = HashMap::default();
+        let mut provides = IndexMap::default();
+        let mut build_plans = IndexMap::default();
+        let mut compiled_plans = IndexMap::default();
 
         let tm = to_materialize(&plan_tree);
 
@@ -67,7 +66,7 @@ fn main() {
 
         // debug_build_plans(&build_plans, &provides);
 
-        let mut views = HashMap::new();
+        let mut views = HashMap::default();
 
         let mut tables_buf = Vec::new();
 

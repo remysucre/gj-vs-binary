@@ -3,7 +3,14 @@ pub mod sql;
 pub mod trie;
 pub mod util;
 
-use std::collections::HashMap;
+pub type BuildHasher = std::hash::BuildHasherDefault<rustc_hash::FxHasher>;
+
+pub type HashMap<K, V> = hashbrown::HashMap<K, V, BuildHasher>;
+pub type HashSet<K> = hashbrown::HashSet<K, BuildHasher>;
+
+pub type IndexMap<K, V> = indexmap::IndexMap<K, V, BuildHasher>;
+pub type IndexSet<K> = indexmap::IndexSet<K, BuildHasher>;
+
 use std::sync::Arc;
 
 use sql::Attribute;

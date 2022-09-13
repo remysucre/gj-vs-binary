@@ -152,7 +152,7 @@ pub fn free_join<'a>(
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     let mut compiled_plan = compiled_plan.to_vec();
-    log::debug!("n instructions: {}", compiled_plan.len());
+    println!("n instructions: {}", compiled_plan.len());
     if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
         let rels: SmallVec<[_; 8]> = tables[1..]
             .iter()
@@ -184,7 +184,7 @@ pub fn free_join<'a>(
             }
 
             for data_iter in &mut data_iters {
-                ctx.singleton.push(data_iter.next().unwrap().clone());
+                ctx.singleton.push(*data_iter.next().unwrap());
             }
 
             ctx.join(&rels, &mut compiled_plan);
@@ -295,12 +295,12 @@ impl<'a> JoinContext<'a, '_> {
                 .chain(self.singleton.iter().cloned())
                 .collect();
             self.out.push(t);
-        } else if relations[0].get_data().unwrap().is_empty() {
+        } else if relations[0].get_data().unwrap().len() == 0 {
             self.materialize(&relations[1..]);
         } else {
             for vs in relations[0].get_data().unwrap() {
                 for v in vs {
-                    self.singleton.push(v.clone());
+                    self.singleton.push(*v);
                 }
                 self.materialize(&relations[1..]);
                 for _v in vs {

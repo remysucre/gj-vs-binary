@@ -1,10 +1,10 @@
-use std::{collections::HashMap, error::Error, fs, path};
+use std::{error::Error, fs, path};
 
 use derivative::Derivative;
-use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
 use crate::join::{Instruction2, Intersection2, Lookup2};
+use crate::*;
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub enum JoinType {
@@ -320,7 +320,7 @@ pub fn to_binary_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
 
     let mut collect_plan = |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(attr)) = &node.attr {
-            let mut attrs = IndexSet::new();
+            let mut attrs = IndexSet::default();
             for equalizer in &attr.equalizers {
                 let lattr = &equalizer.left_attr;
                 let rattr = &equalizer.right_attr;
@@ -339,7 +339,7 @@ pub fn to_binary_plan<'a>(root: &'a TreeOp) -> Vec<Vec<&'a Attribute>> {
 
 pub fn get_scan_join_attrs<'a>(root: &'a TreeOp) -> IndexSet<Attribute> {
     let mut left_table = None;
-    let mut scan_join_attrs = IndexSet::new();
+    let mut scan_join_attrs = IndexSet::default();
 
     traverse_left(root, &mut |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(join)) = &node.attr {

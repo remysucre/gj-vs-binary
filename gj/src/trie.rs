@@ -1,12 +1,13 @@
-type HashMap<K, V> = hashbrown::HashMap<K, V, std::hash::BuildHasherDefault<rustc_hash::FxHasher>>;
 use std::fmt;
 use std::fmt::{Debug, Display};
+use std::slice::Chunks;
 
 use crate::sql::Attribute;
+use crate::*;
 
 type Id = i32;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Copy)]
 pub enum Value<'a> {
     Str(&'a str),
     Num(i32),
@@ -29,7 +30,7 @@ impl Value<'_> {
 #[derive(Debug, Clone)]
 pub enum Trie<T> {
     Node(HashMap<Id, Self>),
-    Data(Vec<Vec<T>>),
+    Data(usize, Vec<T>),
 }
 
 pub type Schema = Vec<Attribute>;
@@ -84,23 +85,30 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get_data(&self) -> Result<&[Vec<T>], NotAData> {
-        if let Trie::Data(ref data) = *self {
-            Ok(data)
+    pub fn get_data(&self) -> Result<Chunks<T>, NotAData> {
+        if let Trie::Data(arity, data) = self {
+            if *arity > 0 {
+                Ok(data.chunks(*arity))
+            } else {
+                Ok(data.chunks(1))
+            }
         } else {
             Err(NotAData)
         }
     }
 
-    pub fn get_data_mut(&mut self) -> Result<&mut Vec<Vec<T>>, NotAData> {
-        if let Trie::Data(ref mut data) = *self {
-            Ok(data)
-        } else {
-            Err(NotAData)
-        }
-    }
+    // pub fn get_data_mut(&mut self) -> Result<&mut Vec<T>, NotAData> {
+    //     if let Trie::Data(ref mut data) = *self {
+    //         Ok(data)
+    //     } else {
+    //         Err(NotAData)
+    //     }
+    // }
 
-    pub fn insert(&mut self, ids: &[Id], data: Vec<T>) {
+    pub fn insert(&mut self, ids: &[Id], data: &[T])
+    where
+        T: Clone,
+    {
         let mut trie = self;
         for id in &ids[..ids.len() - 1] {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();
@@ -110,10 +118,15 @@ impl<T> Trie<T> {
             .get_map_mut()
             .unwrap()
             .entry(ids[ids.len() - 1])
-            .or_insert_with(|| Trie::Data(vec![]));
+            .or_insert_with(|| Trie::Data(data.len(), vec![]));
 
         if !data.is_empty() {
-            trie.get_data_mut().unwrap().push(data);
+            if let Trie::Data(arity, ref mut vec) = trie {
+                assert_eq!(*arity, data.len());
+                vec.extend_from_slice(data);
+            } else {
+                unreachable!()
+            }
         }
     }
 }
