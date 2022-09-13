@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::{Debug, Display};
+use std::rc::Rc;
 use std::slice::Chunks;
 
 use crate::sql::Attribute;
@@ -7,18 +8,13 @@ use crate::*;
 
 type Id = i32;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Copy)]
-pub enum Value<'a> {
-    Str(&'a str),
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub enum Value {
+    Str(Rc<String>),
     Num(i32),
 }
 
-pub enum RawValue {
-    Str(String),
-    Num(i32),
-}
-
-impl Value<'_> {
+impl Value {
     pub fn as_num(&self) -> i32 {
         match self {
             Value::Num(n) => *n,
@@ -28,16 +24,19 @@ impl Value<'_> {
 }
 
 #[derive(Debug, Clone)]
-pub enum Trie<T> {
+pub enum Trie {
     Node(HashMap<Id, Self>),
-    Data(usize, Vec<T>),
+    Data(usize, Vec<Value>),
 }
 
 pub type Schema = Vec<Attribute>;
 
-pub enum Tb<'a, 'b, T> {
-    Trie(Trie<T>),
-    Arr((Vec<&'b [Value<'a>]>, Vec<&'b [T]>)),
+pub enum Table {
+    Trie(Trie),
+    Arr {
+        id_cols: Vec<Col>,
+        data_cols: Vec<Col>,
+    },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -62,13 +61,13 @@ impl Display for NotANode {
 
 impl std::error::Error for NotANode {}
 
-impl<T> Default for Trie<T> {
+impl Default for Trie {
     fn default() -> Self {
         Trie::Node(HashMap::default())
     }
 }
 
-impl<T> Trie<T> {
+impl Trie {
     pub fn get_map(&self) -> Result<&HashMap<Id, Self>, NotANode> {
         if let Trie::Node(ref map) = *self {
             Ok(map)
@@ -85,7 +84,7 @@ impl<T> Trie<T> {
         }
     }
 
-    pub fn get_data(&self) -> Result<Chunks<T>, NotAData> {
+    pub fn get_data(&self) -> Result<Chunks<Value>, NotAData> {
         if let Trie::Data(arity, data) = self {
             if *arity > 0 {
                 Ok(data.chunks(*arity))
@@ -105,10 +104,7 @@ impl<T> Trie<T> {
     //     }
     // }
 
-    pub fn insert(&mut self, ids: &[Id], data: &[T])
-    where
-        T: Clone,
-    {
+    pub fn insert(&mut self, ids: &[Id], data: &[Value]) {
         let mut trie = self;
         for id in &ids[..ids.len() - 1] {
             trie = trie.get_map_mut().unwrap().entry(*id).or_default();

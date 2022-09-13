@@ -1,7 +1,6 @@
 // use core::slice::SlicePattern;
 use std::path;
 
-use once_cell::sync::Lazy;
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
     file::reader::{FileReader, SerializedFileReader},
@@ -10,32 +9,11 @@ use parquet::{
 };
 
 use std::fs::File;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use crate::join::{Instruction, Instruction2, Lookup};
 use crate::trie::*;
 use crate::{sql::*, *};
-
-pub fn from_raw(rdb: &RawDB) -> DB {
-    rdb.iter()
-        .map(|(name, table)| {
-            let t: HashMap<_, _> = table
-                .iter()
-                .map(|(attr, col)| {
-                    let c: Vec<_> = col
-                        .iter()
-                        .map(|val| match val {
-                            RawValue::Num(id) => Value::Num(*id),
-                            RawValue::Str(s) => Value::Str(s.as_str()),
-                        })
-                        .collect();
-                    (attr.clone(), c)
-                })
-                .collect();
-            (name.clone(), t)
-        })
-        .collect()
-}
 
 pub fn debug_build_plans<'a>(
     build_plans: &IndexMap<&'a TreeOp, BuildPlan<'a>>,
@@ -480,9 +458,9 @@ pub fn compute_full_plan<'a>(
     (out_schema, build_plan_out)
 }
 
-static RELATIONS: Lazy<Mutex<HashMap<String, RawRelation>>> = Lazy::new(Default::default);
+// static RELATIONS: Lazy<Mutex<HashMap<String, Relation>>> = Lazy::new(Default::default);
 
-pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> RawDB {
+pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
     let tables = scan
         .iter()
         .map(|s| s.table_name.as_str())
@@ -504,7 +482,7 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
         }
     }
 
-    let mut db = RawDB::default();
+    let mut db = DB::default();
 
     let mut loaded = HashSet::default();
 
@@ -530,15 +508,16 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
             let pq = if tables.contains(table_name) || !args.cache {
                 from_parquet(q, table_name, table_schema)
             } else {
+                todo!("caching isn't supported right now")
                 // not in tables, so it's a base table that we can maybe cache
-                let mut rels = RELATIONS.lock().unwrap();
-                let mut key = table_name.to_string();
-                key += &format!("{:?}", table_schema);
-                rels.entry(key)
-                    .and_modify(|_| println!("Using cached table {}", table_name))
-                    // no schema, we want to load the full relation
-                    .or_insert_with(|| from_parquet(q, table_name, table_schema))
-                    .clone()
+                // let mut rels = RELATIONS.lock().unwrap();
+                // let mut key = table_name.to_string();
+                // key += &format!("{:?}", table_schema);
+                // rels.entry(key)
+                //     .and_modify(|_| println!("Using cached table {}", table_name))
+                //     // no schema, we want to load the full relation
+                //     .or_insert_with(|| from_parquet(q, table_name, table_schema))
+                //     .clone()
             };
 
             db.insert(table_name.to_string(), pq);
@@ -550,8 +529,8 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
     db
 }
 
-pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> RawRelation {
-    let mut table = HashMap::<Attribute, RawCol>::default();
+pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
+    let mut table = HashMap::<Attribute, Vec<Value>>::default();
     let path_s = format!(
         "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
         query, t_name
@@ -583,7 +562,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> RawRelation {
                             attr_name: col_name.to_string(),
                         })
                         .or_default();
-                    col.push(RawValue::Num(*i));
+                    col.push(Value::Num(*i));
                 }
                 Field::Str(s) => {
                     let col = table
@@ -592,7 +571,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> RawRelation {
                             attr_name: col_name.to_string(),
                         })
                         .or_default();
-                    col.push(RawValue::Str(s.to_string()));
+                    col.push(Value::Str(Rc::new(s.to_string())));
                 }
                 Field::Null => {
                     unreachable!("Null found when loading DB");
@@ -603,7 +582,10 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> RawRelation {
             }
         }
     }
-    Arc::new(table)
+    table
+        .into_iter()
+        .map(|(attr, col)| (attr, Rc::<[Value]>::from(col)))
+        .collect()
 }
 
 fn find_shared(table_name: &str) -> &str {
@@ -636,11 +618,11 @@ fn find_shared(table_name: &str) -> &str {
 }
 
 // TODO lots of repetition, refactor this
-pub fn build_tables<'a, 'b>(
-    db: &'b DB<'a>,
-    views: &HashMap<&TreeOp, Vec<Vec<Value<'a>>>>,
+pub fn build_tables(
+    db: &DB,
+    views: &HashMap<&TreeOp, Vec<Vec<Value>>>,
     plan: &BuildPlan,
-) -> Vec<Tb<'a, 'b, Value<'a>>> {
+) -> Vec<Table> {
     let mut tables = vec![];
 
     let (t_id, id_col_ids, data_col_ids) = &plan[0];
@@ -660,7 +642,7 @@ pub fn build_tables<'a, 'b>(
         let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
         let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
         let flat_table = build_flat_table(db, t, &id_attrs, &data_attrs);
-        tables.push(Tb::Arr(flat_table));
+        tables.push(flat_table);
     } else {
         unreachable!("Left table cannot be a view");
     }
@@ -682,7 +664,7 @@ pub fn build_tables<'a, 'b>(
                 let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
                 let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
                 let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
-                tables.push(Tb::Trie(trie));
+                tables.push(Table::Trie(trie));
             }
             TableID::Node(node) => {
                 let to_id = |cid: &ColID| {
@@ -696,7 +678,7 @@ pub fn build_tables<'a, 'b>(
                 let id_ids: Vec<_> = id_col_ids.iter().map(to_id).collect();
                 let data_ids: Vec<_> = data_col_ids.iter().map(to_id).collect();
                 let trie = build_trie_from_view(views, node, &id_ids, &data_ids);
-                tables.push(Tb::Trie(trie));
+                tables.push(Table::Trie(trie));
             }
         }
     }
@@ -704,30 +686,24 @@ pub fn build_tables<'a, 'b>(
     tables
 }
 
-fn build_flat_table<'a, 'b>(
-    db: &'b DB<'a>,
+fn build_flat_table(
+    db: &DB,
     table_name: &str,
     id_attrs: &[Attribute],
     data_attrs: &[Attribute],
-) -> (Vec<&'b [Value<'a>]>, Vec<&'b [Value<'a>]>) {
+) -> Table {
     let rel = &db[table_name];
-    let id_cols: Vec<_> = id_attrs
-        .iter()
-        .map(|a| rel.get(a).unwrap().as_slice())
-        .collect();
-    let data_cols: Vec<_> = data_attrs
-        .iter()
-        .map(|a| rel.get(a).unwrap().as_slice())
-        .collect();
-    (id_cols, data_cols)
+    let id_cols: Vec<_> = id_attrs.iter().map(|a| rel[a].clone()).collect();
+    let data_cols: Vec<_> = data_attrs.iter().map(|a| rel[a].clone()).collect();
+    Table::Arr { id_cols, data_cols }
 }
 
-fn build_trie_from_view<'a>(
-    views: &HashMap<&TreeOp, Vec<Vec<Value<'a>>>>,
+fn build_trie_from_view(
+    views: &HashMap<&TreeOp, Vec<Vec<Value>>>,
     node: &TreeOp,
     id_ids: &[usize],
     data_ids: &[usize],
-) -> Trie<Value<'a>> {
+) -> Trie {
     let mut trie = Trie::default();
 
     let mut ids = vec![0; id_ids.len()];
@@ -738,22 +714,22 @@ fn build_trie_from_view<'a>(
             .for_each(|(id, &idid)| *id = row[idid].as_num());
         data.iter_mut()
             .zip(data_ids)
-            .for_each(|(d, &dataid)| *d = row[dataid]);
+            .for_each(|(d, &dataid)| *d = row[dataid].clone());
         trie.insert(&ids, &data);
     }
 
     trie
 }
 
-fn build_trie_from_db<'a>(
-    db: &DB<'a>,
+fn build_trie_from_db(
+    db: &DB,
     table_name: &str,
     id_attrs: &[Attribute],
     data_attrs: &[Attribute],
-) -> Trie<Value<'a>> {
+) -> Trie {
     let rel = &db[table_name];
-    let id_cols: Vec<&[Value]> = id_attrs.iter().map(|a| rel[a].as_slice()).collect();
-    let data_cols: Vec<&[Value]> = data_attrs.iter().map(|a| rel[a].as_slice()).collect();
+    let id_cols: Vec<Col> = id_attrs.iter().map(|a| rel[a].clone()).collect();
+    let data_cols: Vec<Col> = data_attrs.iter().map(|a| rel[a].clone()).collect();
 
     let mut trie = Trie::default();
 
@@ -765,7 +741,7 @@ fn build_trie_from_db<'a>(
             .for_each(|(id, col)| *id = col[i].as_num());
         data.iter_mut()
             .zip(data_cols.iter())
-            .for_each(|(d, col)| *d = col[i]);
+            .for_each(|(d, col)| *d = col[i].clone());
         trie.insert(&ids, &data);
     }
 

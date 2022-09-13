@@ -31,8 +31,7 @@ fn main() {
         let payload = get_payload(&plan_tree);
         let plan = to_gj_plan(&plan_tree);
 
-        let raw_db = load_db(&args, q, &scan, &plan);
-        let db = from_raw(&raw_db);
+        let db = load_db(&args, q, &scan, &plan);
 
         let mut in_view = HashMap::default();
         let mut provides = IndexMap::default();

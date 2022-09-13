@@ -145,20 +145,20 @@ pub struct Lookup {
 }
 
 // Assumes that the first table is a scan
-pub fn free_join<'a>(
+pub fn free_join(
     args: &Args,
-    tables: &[Tb<'a, '_, Value<'a>>],
+    tables: &[Table],
     compiled_plan: &[Instruction2],
-    out: &mut Vec<Vec<Value<'a>>>,
+    out: &mut Vec<Vec<Value>>,
 ) {
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
-    if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
+    if let Table::Arr { id_cols, data_cols } = &tables[0] {
         let rels: SmallVec<[_; 8]> = tables[1..]
             .iter()
             .map(|t| match &t {
-                Tb::Arr(_) => unreachable!("Only left table can be flat"),
-                Tb::Trie(trie) => trie,
+                Table::Arr { .. } => unreachable!("Only left table can be flat"),
+                Table::Trie(trie) => trie,
             })
             .collect();
 
@@ -184,7 +184,7 @@ pub fn free_join<'a>(
             }
 
             for data_iter in &mut data_iters {
-                ctx.singleton.push(*data_iter.next().unwrap());
+                ctx.singleton.push(data_iter.next().unwrap().clone());
             }
 
             ctx.join(&rels, &mut compiled_plan);
@@ -210,16 +210,16 @@ pub fn free_join<'a>(
     }
 }
 
-struct JoinContext<'a, 'b> {
+struct JoinContext<'a> {
     n_lookups: usize,
-    singleton: Vec<Value<'a>>,
+    singleton: Vec<Value>,
     tuple: Vec<i32>,
-    out: &'b mut Vec<Vec<Value<'a>>>,
-    args: &'b Args,
+    out: &'a mut Vec<Vec<Value>>,
+    args: &'a Args,
 }
 
-impl<'a> JoinContext<'a, '_> {
-    fn join(&mut self, relations: &[&Trie<Value<'a>>], compiled_plan: &mut [Instruction2]) {
+impl JoinContext<'_> {
+    fn join(&mut self, relations: &[&Trie], compiled_plan: &mut [Instruction2]) {
         let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
             tup
         } else {
@@ -286,7 +286,7 @@ impl<'a> JoinContext<'a, '_> {
         }
     }
 
-    fn materialize(&mut self, relations: &[&Trie<Value<'a>>]) {
+    fn materialize(&mut self, relations: &[&Trie]) {
         if relations.is_empty() {
             let t: Vec<_> = self
                 .tuple
@@ -300,7 +300,7 @@ impl<'a> JoinContext<'a, '_> {
         } else {
             for vs in relations[0].get_data().unwrap() {
                 for v in vs {
-                    self.singleton.push(*v);
+                    self.singleton.push(v.clone());
                 }
                 self.materialize(&relations[1..]);
                 for _v in vs {
