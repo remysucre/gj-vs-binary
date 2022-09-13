@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import re
-import statistics
-import matplotlib.pyplot as plt
-import numpy as np
 
-import matplotlib
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
-matplotlib.rcParams['savefig.bbox'] = 'tight'
+import plotly.express as px
+
+# import matplotlib
+# matplotlib.rcParams['pdf.fonttype'] = 42
+# matplotlib.rcParams['ps.fonttype'] = 42
+# matplotlib.rcParams['savefig.bbox'] = 'tight'
 
 
 def parse_gj(filename):
@@ -29,7 +28,7 @@ def parse_gj(filename):
 
     data = []
     for m in re.finditer(regexp, text, re.DOTALL):
-        print(m.groups())
+        # print(m.groups())
         groups = map(float, m.groups())
         data.append(dict(zip(pats.keys(), groups)))
 
@@ -39,34 +38,35 @@ def parse_gj(filename):
 def plot(gjs):
 
     # get an arbitrary data list to plot duckdb stuff
+    # data = list(gjs.values())[0]
     data = list(gjs.values())[0]
 
-    # sort
-    def sort_key(x): return x['dd_join']
-    data.sort(key=sort_key)
-    for data in gjs.values():
-        data.sort(key=sort_key)
-
-    ind = np.arange(len(data))
-
-    fig, ax = plt.subplots()
-
-    ax.plot([q['dd_total'] for q in data], label='duckdb total', color='black')
-    ax.plot([q['dd_filter'] for q in data], label='duckdb filter',
-            color='black', linestyle='--')
-    ax.plot([q['dd_join'] for q in data], label='duckdb join',
-            color='black', linestyle=':')
-    ax.plot([q['build'] for q in data], label='build',
-            color='blue', linestyle='--')
-
     for name, gj in gjs.items():
-        ax.plot([q['total'] for q in gj], label=name)
+        for i, d in enumerate(gj):
+            assert d['query'] == data[i]['query']
+            data[i][name] = d['total']
 
-    ax.set_xlabel('IMDB Query')
-    ax.set_xticks(ind)
-    ax.set_xticklabels([int(q['query']) for q in data])
-    ax.set_ylabel('Run time')
-    ax.legend()
+    for d in data:
+        d['query'] = str(int(d['query']))
+        del d['total']
+
+    print(data[:5])
+
+    # sort
+    def sort_key(x): return x['dd_total']
+    data.sort(key=sort_key)
+
+    ys = ['dd_total', 'dd_filter', 'dd_join', 'build'] + list(gjs.keys())
+
+    fig = px.line(
+        data, x='query', y=ys,
+        # barmode='group',
+    )
+    fig.update_layout(
+        title='IMDB Query Times',
+        yaxis_title='Time (s)',
+    )
+    fig.write_html('plot.html')
 
 
 if __name__ == '__main__':
@@ -78,6 +78,3 @@ if __name__ == '__main__':
     }
 
     plot(gjs)
-    plt.savefig(f"plot.png")
-    plt.savefig(f"plot.pdf")
-    plt.show()
