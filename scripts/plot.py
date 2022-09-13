@@ -18,6 +18,8 @@ def parse_gj(filename):
         dd_total=r'DUCKDB total time: ([\d\.]*)',
         dd_filter=r'DUCKDB filter time: ([\d\.]*)',
         dd_join=r'DUCKDB join time: ([\d\.]*)',
+        build=r'Total building takes ([\d\.]*)',
+        join=r'Total joining takes ([\d\.]*)',
         total=r'Total takes ([\d\.]*)',
     )
     regexp = ".*?".join(pats.values())
@@ -38,18 +40,26 @@ def plot(gjs):
 
     # get an arbitrary data list to plot duckdb stuff
     data = list(gjs.values())[0]
-    data.sort(key=lambda x: x['dd_total'])
+
+    # sort
+    def sort_key(x): return x['dd_join']
+    data.sort(key=sort_key)
+    for data in gjs.values():
+        data.sort(key=sort_key)
 
     ind = np.arange(len(data))
 
     fig, ax = plt.subplots()
 
-    ax.plot([q['dd_total'] for q in data], label='duckdb total')
-    ax.plot([q['dd_filter'] for q in data], label='duckdb filter')
-    ax.plot([q['dd_join'] for q in data], label='duckdb join')
+    ax.plot([q['dd_total'] for q in data], label='duckdb total', color='black')
+    ax.plot([q['dd_filter'] for q in data], label='duckdb filter',
+            color='black', linestyle='--')
+    ax.plot([q['dd_join'] for q in data], label='duckdb join',
+            color='black', linestyle=':')
+    ax.plot([q['build'] for q in data], label='build',
+            color='blue', linestyle='--')
 
     for name, gj in gjs.items():
-        gj.sort(key=lambda x: x['dd_total'])
         ax.plot([q['total'] for q in gj], label=name)
 
     ax.set_xlabel('IMDB Query')
@@ -57,7 +67,6 @@ def plot(gjs):
     ax.set_xticklabels([int(q['query']) for q in data])
     ax.set_ylabel('Run time')
     ax.legend()
-    plt.show()
 
 
 if __name__ == '__main__':
@@ -71,3 +80,4 @@ if __name__ == '__main__':
     plot(gjs)
     plt.savefig(f"plot.png")
     plt.savefig(f"plot.pdf")
+    plt.show()

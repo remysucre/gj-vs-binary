@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use gj::{join::*, sql::*, util::*, *};
 
@@ -52,7 +52,6 @@ fn main() {
             let (out_schema, build_plan) =
                 compute_full_plan(&db, node, &mut plan, &provides, &in_view);
             log::debug!("out schema: {:?}", out_schema);
-            log::debug!("compiled plan: {:?}", plan);
 
             plan = optimize(&args, plan);
             // compute_full_plan(&db, &groups, &provides, &in_view, node);
@@ -68,8 +67,10 @@ fn main() {
 
         let mut views = HashMap::default();
 
-        let mut tables_buf = Vec::new();
+        let mut tables_buf = Vec::default();
 
+        let mut total_building = Duration::default();
+        let mut total_joining = Duration::default();
         let start = Instant::now();
 
         // TODO hash treeop by address
@@ -79,16 +80,18 @@ fn main() {
 
             let build_start = Instant::now();
             let tables = build_tables(&db, &views, build_plan);
-            println!("Building takes {}", build_start.elapsed().as_secs_f32());
+            let build_time = build_start.elapsed();
+            println!("Building takes {}", build_time.as_secs_f32());
+            total_building += build_time;
 
-            let mut intermediate = Vec::new();
+            let mut intermediate = Vec::default();
 
             println!("Running join with {} tables", tables.len());
             let join_start = Instant::now();
             free_join(&args, &tables, compiled_plan, &mut intermediate);
-            println!("Join took {:?}", join_start.elapsed().as_secs_f32());
-
-            log::debug!("intermediate size: {:?}", intermediate.len());
+            let join_time = join_start.elapsed();
+            println!("Join took {:?}", join_time.as_secs_f32());
+            total_joining += join_time;
 
             views.insert(node, intermediate);
             tables_buf.push(tables);
@@ -112,7 +115,7 @@ fn main() {
             })
             .collect();
 
-        let mut result = Vec::new();
+        let mut result = Vec::default();
 
         // for row in final_view {
         //     if result.is_empty() {
@@ -139,7 +142,27 @@ fn main() {
         }
 
         println!("{:?}", result);
+        println!("Total building takes {}", total_building.as_secs_f32());
+        println!("Total joining takes {}", total_joining.as_secs_f32());
         println!("Total takes {}", start.elapsed().as_secs_f32());
+
+        // use trie::*;
+        // let mut stats = HashMap::default();
+        // for tables in tables_buf {
+        //     for table in tables {
+        //         if let Tb::Trie(t) = table {
+        //             t.compute_trie_stats(&mut stats)
+        //         }
+        //     }
+        // }
+        // let mut stats = stats
+        //     .into_iter()
+        //     .map(|(len, amt)| (amt, len))
+        //     .collect::<Vec<_>>();
+        // stats.sort_unstable();
+        // stats.reverse();
+        // stats.truncate(50);
+        // log::debug!("trie stats: {:?}", stats);
     }
 }
 
@@ -159,6 +182,8 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     //     ("16c", "IMDBQ058"),
     //     ("16d", "IMDBQ059"),
     // ];
+
+    // return queries.into_iter().collect();
 
     let bushy = true;
     let linear = true;
