@@ -3,10 +3,12 @@ use std::{collections::HashSet, mem::take};
 use crate::{
     sql::{Attribute, FAKE},
     trie::*,
+    Args,
 };
 use smallvec::SmallVec;
 
-pub fn optimize(plan: Vec<Instruction2>) -> Vec<Instruction2> {
+pub fn optimize(_args: &Args, plan: Vec<Instruction2>) -> Vec<Instruction2> {
+    // combining lookups is unconditional
     let mut new_plan = vec![];
     let mut current_lookups: Vec<Lookup2> = vec![];
 
@@ -144,11 +146,13 @@ pub struct Lookup {
 
 // Assumes that the first table is a scan
 pub fn free_join<'a>(
+    args: &Args,
     tables: &[Tb<'a, '_, Value<'a>>],
     compiled_plan: &[Instruction2],
     out: &mut Vec<Vec<Value<'a>>>,
 ) {
     let mut compiled_plan = compiled_plan.to_vec();
+    log::debug!("n instructions: {}", compiled_plan.len());
     if let Tb::Arr((id_cols, data_cols)) = &tables[0] {
         let rels: SmallVec<[_; 8]> = tables[1..]
             .iter()
@@ -163,26 +167,32 @@ pub fn free_join<'a>(
 
         // assert!(matches!(&compiled_plan[0], Instruction::Scan));
 
-        let mut tuple = Vec::new();
-        let mut data = Vec::new();
+        let mut ctx = JoinContext {
+            args,
+            n_lookups: 0,
+            singleton: vec![],
+            tuple: vec![],
+            out,
+        };
+
         // unroll the outer scan
         while let Some(v) = id_iters[0].next() {
-
-            tuple.push(v.as_num());
+            ctx.tuple.push(v.as_num());
 
             for id_iter in &mut id_iters[1..] {
-                tuple.push(id_iter.next().unwrap().as_num());
+                ctx.tuple.push(id_iter.next().unwrap().as_num());
             }
-
 
             for data_iter in &mut data_iters {
-                data.push(data_iter.next().unwrap().clone());
+                ctx.singleton.push(data_iter.next().unwrap().clone());
             }
 
-            join_inner(&mut data, &rels, &mut compiled_plan, &mut tuple, out);
-            tuple.clear();
-            data.clear();
+            ctx.join(&rels, &mut compiled_plan);
+            ctx.tuple.clear();
+            ctx.singleton.clear();
         }
+
+        log::debug!("{} lookups", ctx.n_lookups);
 
         // for i in 0..id_cols[0].len() {
         //     let singleton: SmallVec<[_; 4]> = id_cols
@@ -200,67 +210,103 @@ pub fn free_join<'a>(
     }
 }
 
-fn join_inner<'a>(
-    singleton: &mut Vec<Value<'a>>,
-    relations: &[&Trie<Value<'a>>],
-    compiled_plan: &mut [Instruction2],
-    tuple: &mut Vec<i32>,
-    out: &mut Vec<Vec<Value<'a>>>,
-) {
-    let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
-        tup
-    } else {
-        return materialize(relations, tuple, singleton, out);
-    };
+struct JoinContext<'a, 'b> {
+    n_lookups: usize,
+    singleton: Vec<Value<'a>>,
+    tuple: Vec<i32>,
+    out: &'b mut Vec<Vec<Value<'a>>>,
+    args: &'b Args,
+}
 
-    match instr {
-        Instruction2::Intersect(js) => {
-            let j_min = js
-                .iter()
-                .min_by_key(|&j| relations[j.relation].get_map().unwrap().len())
-                .unwrap()
-                .relation;
+impl<'a> JoinContext<'a, '_> {
+    fn join(&mut self, relations: &[&Trie<Value<'a>>], compiled_plan: &mut [Instruction2]) {
+        let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
+            tup
+        } else {
+            return self.materialize(relations);
+        };
 
-            for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
-                if let Some(tries) = js
+        match instr {
+            Instruction2::Intersect(js) => {
+                let j_min = js
                     .iter()
-                    .filter(|&j| j.relation != j_min)
-                    .map(|j| {
-                        relations[j.relation]
-                            .get_map()
-                            .unwrap()
-                            .get(id)
-                            .map(|trie| (j, trie))
-                    })
-                    .collect::<Option<SmallVec<[_; 8]>>>()
-                {
-                    // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
-                    let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
-                    rels[j_min] = trie_min;
-                    for (j, trie) in tries {
-                        rels[j.relation] = trie;
+                    .min_by_key(|&j| relations[j.relation].get_map().unwrap().len())
+                    .unwrap()
+                    .relation;
+
+                for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
+                    if let Some(tries) = js
+                        .iter()
+                        .filter(|&j| j.relation != j_min)
+                        .map(|j| {
+                            relations[j.relation]
+                                .get_map()
+                                .unwrap()
+                                .get(id)
+                                .map(|trie| (j, trie))
+                        })
+                        .collect::<Option<SmallVec<[_; 8]>>>()
+                    {
+                        // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
+                        let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
+                        rels[j_min] = trie_min;
+                        for (j, trie) in tries {
+                            rels[j.relation] = trie;
+                        }
+                        self.tuple.push(*id);
+                        self.join(&rels, rest);
+                        self.tuple.pop();
                     }
-                    tuple.push(*id);
-                    join_inner(singleton, &rels, rest, tuple, out);
-                    tuple.pop();
+                }
+            }
+            Instruction2::Lookup(lookups) => {
+                assert!(!lookups.is_empty());
+                if self.args.optimize > 0 {
+                    lookups
+                        .sort_unstable_by_key(|l| relations[l.relation].get_map().unwrap().len());
+                }
+
+                let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
+                for lookup in lookups {
+                    let value = self.tuple[lookup.key];
+                    self.n_lookups += 1;
+                    if let Some(r) = rels[lookup.relation].get_map().unwrap().get(&value) {
+                        rels[lookup.relation] = r;
+                    } else {
+                        return;
+                    }
+                }
+
+                if rest.is_empty() {
+                    self.materialize(&rels);
+                } else {
+                    self.join(&rels, rest);
                 }
             }
         }
-        Instruction2::Lookup(lookups) => {
-            assert!(!lookups.is_empty());
-            lookups.sort_unstable_by_key(|l| relations[l.relation].get_map().unwrap().len());
+    }
 
-            let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
-            for lookup in lookups {
-                let value = tuple[lookup.key];
-                if let Some(r) = rels[lookup.relation].get_map().unwrap().get(&value) {
-                    rels[lookup.relation] = r;
-                } else {
-                    return;
+    fn materialize(&mut self, relations: &[&Trie<Value<'a>>]) {
+        if relations.is_empty() {
+            let t: Vec<_> = self
+                .tuple
+                .iter()
+                .map(|i| Value::Num(*i))
+                .chain(self.singleton.iter().cloned())
+                .collect();
+            self.out.push(t);
+        } else if relations[0].get_data().unwrap().is_empty() {
+            self.materialize(&relations[1..]);
+        } else {
+            for vs in relations[0].get_data().unwrap() {
+                for v in vs {
+                    self.singleton.push(v.clone());
+                }
+                self.materialize(&relations[1..]);
+                for _v in vs {
+                    self.singleton.pop();
                 }
             }
-
-            join_inner(singleton, &rels, rest, tuple, out)
         }
     }
 }
@@ -329,31 +375,3 @@ fn join_inner<'a>(
 //         }
 //     }
 // }
-
-fn materialize<'a>(
-    relations: &[&Trie<Value<'a>>],
-    tuple: &mut Vec<i32>,
-    data: &mut Vec<Value<'a>>,
-    out: &mut Vec<Vec<Value<'a>>>,
-) {
-    if relations.is_empty() {
-        let t: Vec<_> = tuple
-            .iter()
-            .map(|i| Value::Num(*i))
-            .chain(data.iter().cloned())
-            .collect();
-        out.push(t);
-    } else if relations[0].get_data().unwrap().is_empty() {
-        materialize(&relations[1..], tuple, data, out);
-    } else {
-        for vs in relations[0].get_data().unwrap() {
-            for v in vs {
-                data.push(v.clone());
-            }
-            materialize(&relations[1..], tuple, data, out);
-            for _v in vs {
-                data.pop();
-            }
-        }
-    }
-}

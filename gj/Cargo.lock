@@ -254,6 +254,7 @@ dependencies = [
  "clap",
  "derivative",
  "env_logger",
+ "hashbrown",
  "indexmap",
  "log",
  "once_cell",
@@ -275,6 +276,9 @@ name = "hashbrown"
 version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "607c8a29735385251a339424dd462993c0fed8fa09d378f259377df08c126022"
+dependencies = [
+ "ahash",
+]
 
 [[package]]
 name = "heck"

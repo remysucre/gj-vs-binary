@@ -1,4 +1,4 @@
-use rustc_hash::FxHashMap as HashMap;
+type HashMap<K, V> = hashbrown::HashMap<K, V, std::hash::BuildHasherDefault<rustc_hash::FxHasher>>;
 use std::fmt;
 use std::fmt::{Debug, Display};
 
