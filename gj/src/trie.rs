@@ -1,7 +1,9 @@
-use std::fmt;
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 use std::rc::Rc;
 use std::slice::Chunks;
+
+use hashbrown::hash_map::Entry;
+use smallvec::SmallVec;
 
 use crate::sql::Attribute;
 use crate::*;
@@ -26,7 +28,7 @@ impl Value {
 #[derive(Debug, Clone)]
 pub enum Trie {
     Node(HashMap<Id, Self>),
-    Data(usize, Vec<Value>),
+    Data(usize, SmallVec<[Value; 2]>),
 }
 
 pub type Schema = Vec<Attribute>;
@@ -39,28 +41,6 @@ pub enum Table {
     },
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct NotAData;
-
-impl Display for NotAData {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Not a data")
-    }
-}
-
-impl std::error::Error for NotAData {}
-
-#[derive(Debug, Clone, Copy)]
-pub struct NotANode;
-
-impl Display for NotANode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Not a node")
-    }
-}
-
-impl std::error::Error for NotANode {}
-
 impl Default for Trie {
     fn default() -> Self {
         Trie::Node(HashMap::default())
@@ -68,61 +48,68 @@ impl Default for Trie {
 }
 
 impl Trie {
-    pub fn get_map(&self) -> Result<&HashMap<Id, Self>, NotANode> {
-        if let Trie::Node(ref map) = *self {
-            Ok(map)
-        } else {
-            Err(NotANode)
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            Trie::Node(m) => m.len(),
+            Trie::Data(..) => panic!("not a data"),
         }
     }
 
-    pub fn get_map_mut(&mut self) -> Result<&mut HashMap<Id, Self>, NotANode> {
+    pub fn get(&self, id: Id) -> Option<&Self> {
+        match self {
+            Trie::Node(m) => m.get(&id),
+            Trie::Data(..) => panic!("not a node"),
+        }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = (Id, &Self)> {
+        match self {
+            Trie::Node(m) => m.iter().map(|(k, v)| (*k, v)),
+            Trie::Data(..) => panic!("not a node"),
+        }
+    }
+
+    fn get_map_mut(&mut self) -> &mut HashMap<Id, Self> {
         if let Trie::Node(ref mut map) = *self {
-            Ok(map)
+            map
         } else {
-            Err(NotANode)
+            panic!("not a node")
         }
     }
 
-    pub fn get_data(&self) -> Result<Chunks<Value>, NotAData> {
+    pub fn get_data(&self) -> Chunks<Value> {
         if let Trie::Data(arity, data) = self {
             if *arity > 0 {
-                Ok(data.chunks(*arity))
+                data.chunks(*arity)
             } else {
-                Ok(data.chunks(1))
+                data.chunks(1)
             }
         } else {
-            Err(NotAData)
+            panic!("not a data")
         }
     }
-
-    // pub fn get_data_mut(&mut self) -> Result<&mut Vec<T>, NotAData> {
-    //     if let Trie::Data(ref mut data) = *self {
-    //         Ok(data)
-    //     } else {
-    //         Err(NotAData)
-    //     }
-    // }
 
     pub fn insert(&mut self, ids: &[Id], data: &[Value]) {
         let mut trie = self;
         for id in &ids[..ids.len() - 1] {
-            trie = trie.get_map_mut().unwrap().entry(*id).or_default();
+            trie = trie.get_map_mut().entry(*id).or_default();
         }
 
-        trie = trie
-            .get_map_mut()
-            .unwrap()
-            .entry(ids[ids.len() - 1])
-            .or_insert_with(|| Trie::Data(data.len(), vec![]));
-
-        if !data.is_empty() {
-            if let Trie::Data(arity, ref mut vec) = trie {
-                assert_eq!(*arity, data.len());
-                vec.extend_from_slice(data);
-            } else {
-                unreachable!()
+        match trie.get_map_mut().entry(ids[ids.len() - 1]) {
+            Entry::Vacant(e) => {
+                e.insert(Trie::Data(data.len(), data.into()));
             }
+            Entry::Occupied(mut e) => match e.get_mut() {
+                Trie::Node(_) => unreachable!(),
+                Trie::Data(arity, vec) => {
+                    assert_eq!(*arity, data.len());
+                    vec.extend(data.iter().cloned());
+                }
+            },
         }
     }
 }

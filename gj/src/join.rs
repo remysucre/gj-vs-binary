@@ -230,21 +230,15 @@ impl JoinContext<'_> {
             Instruction2::Intersect(js) => {
                 let j_min = js
                     .iter()
-                    .min_by_key(|&j| relations[j.relation].get_map().unwrap().len())
+                    .min_by_key(|&j| relations[j.relation].len())
                     .unwrap()
                     .relation;
 
-                for (id, trie_min) in relations[j_min].get_map().unwrap().iter() {
+                for (id, trie_min) in relations[j_min].iter() {
                     if let Some(tries) = js
                         .iter()
                         .filter(|&j| j.relation != j_min)
-                        .map(|j| {
-                            relations[j.relation]
-                                .get_map()
-                                .unwrap()
-                                .get(id)
-                                .map(|trie| (j, trie))
-                        })
+                        .map(|j| relations[j.relation].get(id).map(|trie| (j, trie)))
                         .collect::<Option<SmallVec<[_; 8]>>>()
                     {
                         // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
@@ -253,7 +247,7 @@ impl JoinContext<'_> {
                         for (j, trie) in tries {
                             rels[j.relation] = trie;
                         }
-                        self.tuple.push(*id);
+                        self.tuple.push(id);
                         self.join(&rels, rest);
                         self.tuple.pop();
                     }
@@ -262,15 +256,14 @@ impl JoinContext<'_> {
             Instruction2::Lookup(lookups) => {
                 assert!(!lookups.is_empty());
                 if self.args.optimize > 0 {
-                    lookups
-                        .sort_unstable_by_key(|l| relations[l.relation].get_map().unwrap().len());
+                    lookups.sort_unstable_by_key(|l| relations[l.relation].len());
                 }
 
                 let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                 for lookup in lookups {
                     let value = self.tuple[lookup.key];
                     self.n_lookups += 1;
-                    if let Some(r) = rels[lookup.relation].get_map().unwrap().get(&value) {
+                    if let Some(r) = rels[lookup.relation].get(value) {
                         rels[lookup.relation] = r;
                     } else {
                         return;
@@ -295,10 +288,10 @@ impl JoinContext<'_> {
                 .chain(self.singleton.iter().cloned())
                 .collect();
             self.out.push(t);
-        } else if relations[0].get_data().unwrap().len() == 0 {
+        } else if relations[0].get_data().len() == 0 {
             self.materialize(&relations[1..]);
         } else {
-            for vs in relations[0].get_data().unwrap() {
+            for vs in relations[0].get_data() {
                 for v in vs {
                     self.singleton.push(v.clone());
                 }
