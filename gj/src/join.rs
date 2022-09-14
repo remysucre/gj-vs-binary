@@ -241,7 +241,6 @@ impl JoinContext<'_> {
                         .map(|j| relations[j.relation].get(id).map(|trie| (j, trie)))
                         .collect::<Option<SmallVec<[_; 8]>>>()
                     {
-                        // let mut rels: SmallVec<[_; 8]> = relations.to_smallvec();
                         let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                         rels[j_min] = trie_min;
                         for (j, trie) in tries {

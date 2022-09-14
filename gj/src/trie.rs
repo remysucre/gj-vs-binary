@@ -28,7 +28,16 @@ impl Value {
 #[derive(Debug, Clone)]
 pub enum Trie {
     Node(HashMap<Id, Self>),
+    Vec(Vec<Id>, SmallVec<[Value; 2]>),
     Data(usize, SmallVec<[Value; 2]>),
+    Nil,
+}
+
+pub enum TrieRef<'a> {
+    Node(&'a HashMap<Id, Trie>),
+    Vec(&'a [Id], &'a [Value]),
+    Data(usize, &'a [Value]),
+    Nil,
 }
 
 pub type Schema = Vec<Attribute>;
@@ -43,7 +52,7 @@ pub enum Table {
 
 impl Default for Trie {
     fn default() -> Self {
-        Trie::Node(HashMap::default())
+        Trie::Nil
     }
 }
 
@@ -54,21 +63,42 @@ impl Trie {
 
     pub fn len(&self) -> usize {
         match self {
+            Trie::Nil => 0,
             Trie::Node(m) => m.len(),
+            Trie::Vec(_, _) => 1,
             Trie::Data(..) => panic!("not a data"),
         }
     }
 
-    pub fn get(&self, id: Id) -> Option<&Self> {
+    pub fn as_ref(&self) -> TrieRef {
         match self {
-            Trie::Node(m) => m.get(&id),
+            Trie::Nil => TrieRef::Nil,
+            Trie::Node(m) => TrieRef::Node(m),
+            Trie::Vec(ids, vals) => TrieRef::Vec(ids, vals),
+            Trie::Data(id, vals) => TrieRef::Data(*id, vals),
+        }
+    }
+
+    pub fn get(&self, id: Id) -> Option<TrieRef> {
+        match self {
+            Trie::Nil => None,
+            Trie::Node(m) => m.get(&id).map(|t| t.as_ref()),
+            Trie::Vec(ids, data) => {
+                if ids[0] == id {
+                    Some(TrieRef::Vec(&ids[1..], data))
+                } else {
+                    None
+                }
+            }
             Trie::Data(..) => panic!("not a node"),
         }
     }
 
-    pub fn for_each(&self, mut f: impl FnMut(Id, &Self)) {
+    pub fn for_each(&self, mut f: impl FnMut(Id, TrieRef)) {
         match self {
-            Trie::Node(m) => m.iter().for_each(|(k, v)| f(*k, v)),
+            Trie::Nil => {}
+            Trie::Node(m) => m.iter().for_each(|(k, v)| f(*k, v.as_ref())),
+            Trie::Vec(ids, data) => f(ids[0], TrieRef::Vec(&ids[1..], data)),
             Trie::Data(..) => panic!("not a node"),
         }
     }
@@ -94,22 +124,51 @@ impl Trie {
     }
 
     pub fn insert(&mut self, ids: &[Id], data: &[Value]) {
-        let mut trie = self;
-        for id in &ids[..ids.len() - 1] {
-            trie = trie.get_map_mut().entry(*id).or_default();
+
+        match self {
+            Trie::Nil => {
+                *self = Trie::Vec(ids.to_vec(), data.to_vec().into());
+            }
+            Trie::Vec(ids_0, data_0) => {
+                let mut m = HashMap::default();
+                m.insert(ids_0[0], Trie::Vec(ids_0[1..].to_vec(), data_0.clone()));
+                *self = Trie::Node(m);
+                self.insert(ids, data);
+            }
+            Trie::Node(m) => {
+                let id = ids[0];
+                let entry = m.entry(id);
+                match entry {
+                    Entry::Occupied(mut e) => {
+                        e.get_mut().insert(&ids[1..], data);
+                    }
+                    Entry::Vacant(e) => {
+                        e.insert(Trie::Vec(ids[1..].to_vec(), data.to_vec().into()));
+                    }
+                } 
+            }
+            Trie::Data(arity, vec) => {
+                assert_eq!(*arity, data.len());
+                vec.extend(data.iter().cloned());
+            }
         }
 
-        match trie.get_map_mut().entry(ids[ids.len() - 1]) {
-            Entry::Vacant(e) => {
-                e.insert(Trie::Data(data.len(), data.into()));
-            }
-            Entry::Occupied(mut e) => match e.get_mut() {
-                Trie::Node(_) => unreachable!(),
-                Trie::Data(arity, vec) => {
-                    assert_eq!(*arity, data.len());
-                    vec.extend(data.iter().cloned());
-                }
-            },
-        }
+    //     let mut trie = self;
+    //     for id in &ids[..ids.len() - 1] {
+    //         trie = trie.get_map_mut().entry(*id).or_default();
+    //     }
+
+    //     match trie.get_map_mut().entry(ids[ids.len() - 1]) {
+    //         Entry::Vacant(e) => {
+    //             e.insert(Trie::Data(data.len(), data.into()));
+    //         }
+    //         Entry::Occupied(mut e) => match e.get_mut() {
+    //             Trie::Node(_) | Trie::Vec(..) => unreachable!(),
+    //             Trie::Data(arity, vec) => {
+    //                 assert_eq!(*arity, data.len());
+    //                 vec.extend(data.iter().cloned());
+    //             }
+    //         },
+    //     }
     }
 }
