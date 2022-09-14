@@ -1,5 +1,5 @@
 // use core::slice::SlicePattern;
-use std::path;
+use std::{path, time::Instant};
 
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
@@ -704,6 +704,8 @@ fn build_trie_from_view(
     id_ids: &[usize],
     data_ids: &[usize],
 ) -> Trie {
+    let start = Instant::now();
+
     let mut trie = Trie::default();
 
     let mut ids = vec![0; id_ids.len()];
@@ -718,6 +720,7 @@ fn build_trie_from_view(
         trie.insert(&ids, &data);
     }
 
+    log::debug!("building view takes {:?}", start.elapsed().as_secs_f32());
     trie
 }
 
@@ -727,6 +730,7 @@ fn build_trie_from_db(
     id_attrs: &[Attribute],
     data_attrs: &[Attribute],
 ) -> Trie {
+    let start = Instant::now();
     let rel = &db[table_name];
     let id_cols: Vec<Col> = id_attrs.iter().map(|a| rel[a].clone()).collect();
     let data_cols: Vec<Col> = data_attrs.iter().map(|a| rel[a].clone()).collect();
@@ -744,6 +748,8 @@ fn build_trie_from_db(
             .for_each(|(d, col)| *d = col[i].clone());
         trie.insert(&ids, &data);
     }
+
+    log::debug!("building {} takes {:?}", table_name, start.elapsed().as_secs_f32());
 
     trie
 }
