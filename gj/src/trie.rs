@@ -66,9 +66,9 @@ impl Trie {
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = (Id, &Self)> {
+    pub fn for_each(&self, mut f: impl FnMut(Id, &Self)) {
         match self {
-            Trie::Node(m) => m.iter().map(|(k, v)| (*k, v)),
+            Trie::Node(m) => m.iter().for_each(|(k, v)| f(*k, v)),
             Trie::Data(..) => panic!("not a node"),
         }
     }
