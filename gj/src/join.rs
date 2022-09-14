@@ -3,6 +3,7 @@ use std::{collections::HashSet, mem::take};
 use crate::{
     sql::{Attribute, FAKE},
     trie::*,
+    util::*,
     Args,
 };
 use smallvec::SmallVec;
@@ -145,12 +146,7 @@ pub struct Lookup {
 }
 
 // Assumes that the first table is a scan
-pub fn free_join(
-    args: &Args,
-    tables: &[Table],
-    compiled_plan: &[Instruction2],
-    out: &mut Vec<Vec<Value>>,
-) {
+pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], out: &mut View) {
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
     if let Table::Arr { id_cols, data_cols } = &tables[0] {
@@ -214,7 +210,7 @@ struct JoinContext<'a> {
     n_lookups: usize,
     singleton: Vec<Value>,
     tuple: Vec<i32>,
-    out: &'a mut Vec<Vec<Value>>,
+    out: &'a mut View,
     args: &'a Args,
 }
 
@@ -280,24 +276,21 @@ impl JoinContext<'_> {
 
     fn materialize(&mut self, relations: &[TrieRef]) {
         if relations.is_empty() {
-            let t: Vec<_> = self
-                .tuple
-                .iter()
-                .map(|i| Value::Num(*i))
-                .chain(self.singleton.iter().cloned())
-                .collect();
-            self.out.push(t);
+            assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
+            self.out.vec.extend(
+                self.tuple
+                    .iter()
+                    .map(|i| Value::Num(*i))
+                    .chain(self.singleton.iter().cloned()),
+            );
         } else if relations[0].get_data().len() == 0 {
             self.materialize(&relations[1..]);
         } else {
             for vs in relations[0].get_data() {
-                for v in vs {
-                    self.singleton.push(v.clone());
-                }
+                let len = self.singleton.len();
+                self.singleton.extend_from_slice(vs);
                 self.materialize(&relations[1..]);
-                for _v in vs {
-                    self.singleton.pop();
-                }
+                self.singleton.truncate(len);
             }
         }
     }

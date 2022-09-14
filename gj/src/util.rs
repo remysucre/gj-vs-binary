@@ -618,11 +618,7 @@ fn find_shared(table_name: &str) -> &str {
 }
 
 // TODO lots of repetition, refactor this
-pub fn build_tables(
-    db: &DB,
-    views: &HashMap<&TreeOp, Vec<Vec<Value>>>,
-    plan: &BuildPlan,
-) -> Vec<Table> {
+pub fn build_tables(db: &DB, views: &HashMap<&TreeOp, View>, plan: &BuildPlan) -> Vec<Table> {
     let mut tables = vec![];
 
     let (t_id, id_col_ids, data_col_ids) = &plan[0];
@@ -698,8 +694,22 @@ fn build_flat_table(
     Table::Arr { id_cols, data_cols }
 }
 
+pub struct View {
+    pub arity: usize,
+    pub vec: Vec<Value>,
+}
+
+impl<'a> IntoIterator for &'a View {
+    type Item = &'a [Value];
+    type IntoIter = std::slice::Chunks<'a, Value>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.vec.chunks(self.arity)
+    }
+}
+
 fn build_trie_from_view(
-    views: &HashMap<&TreeOp, Vec<Vec<Value>>>,
+    views: &HashMap<&TreeOp, View>,
     node: &TreeOp,
     id_ids: &[usize],
     data_ids: &[usize],
@@ -708,7 +718,7 @@ fn build_trie_from_view(
 
     let mut ids = vec![0; id_ids.len()];
     let mut data = vec![Value::Num(0); data_ids.len()];
-    for row in views.get(node).unwrap() {
+    for row in &views[node] {
         ids.iter_mut()
             .zip(id_ids)
             .for_each(|(id, &idid)| *id = row[idid].as_num());

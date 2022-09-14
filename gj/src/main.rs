@@ -83,7 +83,10 @@ fn main() {
             println!("Building takes {}", build_time.as_secs_f32());
             total_building += build_time;
 
-            let mut intermediate = Vec::default();
+            let mut intermediate = View {
+                vec: vec![],
+                arity: provides[node].len(),
+            };
 
             println!("Running join with {} tables", tables.len());
             let join_start = Instant::now();
