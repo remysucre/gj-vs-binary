@@ -158,7 +158,7 @@ pub fn free_join(
             .iter()
             .map(|t| match &t {
                 Table::Arr { .. } => unreachable!("Only left table can be flat"),
-                Table::Trie(trie) => trie,
+                Table::Trie(trie) => trie.as_ref(),
             })
             .collect();
 
@@ -219,7 +219,7 @@ struct JoinContext<'a> {
 }
 
 impl JoinContext<'_> {
-    fn join(&mut self, relations: &[&Trie], compiled_plan: &mut [Instruction2]) {
+    fn join<'b>(&mut self, relations: &[TrieRef<'b>], compiled_plan: &mut [Instruction2]) {
         let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
             tup
         } else {
@@ -258,7 +258,7 @@ impl JoinContext<'_> {
                     lookups.sort_unstable_by_key(|l| relations[l.relation].len());
                 }
 
-                let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
+                let mut rels: SmallVec<[TrieRef<'b>; 8]> = SmallVec::from_slice(relations);
                 for lookup in lookups {
                     let value = self.tuple[lookup.key];
                     self.n_lookups += 1;
@@ -278,7 +278,7 @@ impl JoinContext<'_> {
         }
     }
 
-    fn materialize(&mut self, relations: &[&Trie]) {
+    fn materialize(&mut self, relations: &[TrieRef]) {
         if relations.is_empty() {
             let t: Vec<_> = self
                 .tuple

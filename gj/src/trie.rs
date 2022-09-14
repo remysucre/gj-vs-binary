@@ -33,11 +33,76 @@ pub enum Trie {
     Nil,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum TrieRef<'a> {
     Node(&'a HashMap<Id, Trie>),
     Vec(&'a [Id], &'a [Value]),
     Data(usize, &'a [Value]),
     Nil,
+}
+
+impl<'a> TrieRef<'a> {
+
+    pub fn for_each(&self, mut f: impl FnMut(Id, TrieRef)) {
+        match self {
+            TrieRef::Node(m) => m.iter().for_each(|(k, v)| f(*k, v.as_ref())),
+            TrieRef::Vec(ids, data) => {
+                if ids.len() == 1 {
+                    f(ids[0], TrieRef::Data(data.len(), data));
+                } else {
+
+                    f(ids[0], TrieRef::Vec(&ids[1..], data));
+                }
+            }
+            TrieRef::Data(..) => panic!("not a node"),
+            TrieRef::Nil => {}
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            TrieRef::Nil => 0,
+            TrieRef::Node(m) => m.len(),
+            TrieRef::Vec(_, _) => 1,
+            TrieRef::Data(..) => panic!("not a data"),
+        }
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn get(&self, id: Id) -> Option<TrieRef<'a>> {
+        match self {
+            TrieRef::Nil => None,
+            TrieRef::Node(m) => m.get(&id).map(|t| t.as_ref()),
+            TrieRef::Vec(ids, data) => {
+                if ids[0] == id {
+                    if ids[1..].is_empty() {
+                        Some(TrieRef::Data(data.len(), data))
+                    } else {
+                        Some(TrieRef::Vec(&ids[1..], data))
+                    }
+                } else {
+                    None
+                }
+            }
+            TrieRef::Data(..) => panic!("not a node"),
+        }
+    }
+
+    pub fn get_data(&self) -> Chunks<Value> {
+        if let TrieRef::Data(arity, data) = self {
+            if *arity > 0 {
+                data.chunks(*arity)
+            } else {
+                data.chunks(1)
+            }
+        } else {
+            panic!("not a data {:#?}", self)
+        }
+    }
 }
 
 pub type Schema = Vec<Attribute>;
@@ -131,7 +196,11 @@ impl Trie {
             }
             Trie::Vec(ids_0, data_0) => {
                 let mut m = HashMap::default();
-                m.insert(ids_0[0], Trie::Vec(ids_0[1..].to_vec(), data_0.clone()));
+                if ids_0[1..].is_empty() {
+                    m.insert(ids_0[0], Trie::Data(data_0.len(), data_0.clone()));
+                } else {
+                    m.insert(ids_0[0], Trie::Vec(ids_0[1..].to_vec(), data_0.clone()));
+                }
                 *self = Trie::Node(m);
                 self.insert(ids, data);
             }
@@ -140,10 +209,18 @@ impl Trie {
                 let entry = m.entry(id);
                 match entry {
                     Entry::Occupied(mut e) => {
-                        e.get_mut().insert(&ids[1..], data);
+                        if ids[1..].is_empty() {
+                            e.insert(Trie::Data(data.len(), data.to_vec().into()));
+                        } else {
+                            e.get_mut().insert(&ids[1..], data);
+                        }
                     }
                     Entry::Vacant(e) => {
-                        e.insert(Trie::Vec(ids[1..].to_vec(), data.to_vec().into()));
+                        if ids[1..].is_empty() {
+                            e.insert(Trie::Data(data.len(), data.to_vec().into()));
+                        } else {
+                            e.insert(Trie::Vec(ids[1..].to_vec(), data.to_vec().into()));
+                        }
                     }
                 } 
             }
