@@ -150,7 +150,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
     if let Table::Arr { id_cols, data_cols } = &tables[0] {
-        let rels: SmallVec<[_; 8]> = tables[1..]
+        let mut rels: SmallVec<[_; 8]> = tables[1..]
             .iter()
             .map(|t| match &t {
                 Table::Arr { .. } => unreachable!("Only left table can be flat"),
@@ -178,21 +178,78 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
             out,
         };
 
-        // unroll the outer scan
-        while let Some(v) = id_iters[0].next() {
-            ctx.tuple.push(v);
+        if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
+            let batch_size = 1000;
+            'outer: loop {
+                let mut tuple_cols: Vec<Vec<i32>> = vec![vec![]; id_cols.len()];
+                let mut data_cols: Vec<Vec<Value>> = vec![vec![]; data_cols.len()];
 
-            for id_iter in &mut id_iters[1..] {
-                ctx.tuple.push(id_iter.next().unwrap());
+                for (id_iter, tuple_col) in id_iters.iter_mut().zip(tuple_cols.iter_mut()) {
+                    tuple_col.extend(id_iter.take(batch_size));
+                    if tuple_col.is_empty() {
+                        break 'outer;
+                    }
+                }
+
+                for (data_iter, data_col) in data_iters.iter_mut().zip(data_cols.iter_mut()) {
+                    data_col.extend(data_iter.take(batch_size));
+                }
+
+                let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
+
+                for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
+                    let col = &tuple_cols[lookup.key];
+                    let rel = &rels[lookup.relation];
+                    for (i, id) in col.iter().enumerate() {
+                        if let Some(trie) = rel.get(*id) {
+                            trie_col[i] = Some(trie);
+                        }
+                    }
+                }
+
+                for i in 0..batch_size {
+                    if i >= tuple_cols[0].len() {
+                        break;
+                    }
+
+                    if trie_cols.iter().any(|c| c[i].is_none()) {
+                        continue;
+                    }
+
+                    for tuple_col in &mut tuple_cols {
+                        ctx.tuple.push(tuple_col[i]);
+                    }
+
+                    for data_col in &mut data_cols {
+                        ctx.singleton.push(data_col[i].clone());
+                    }
+
+                    for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
+                        rels[lookup.relation] = trie_col[i].unwrap();
+                    }
+
+                    ctx.join(&rels, tail);
+                    ctx.tuple.clear();
+                    ctx.singleton.clear();
+                }
             }
+        } else {
+            // unroll the outer scan
+            while let Some(v) = id_iters[0].next() {
+                ctx.tuple.push(v);
 
-            for data_iter in &mut data_iters {
-                ctx.singleton.push(data_iter.next().unwrap().clone());
+                for id_iter in &mut id_iters[1..] {
+                    ctx.tuple.push(id_iter.next().unwrap());
+                }
+
+                for data_iter in &mut data_iters {
+                    ctx.singleton.push(data_iter.next().unwrap().clone());
+                }
+
+                ctx.join(&rels, &mut compiled_plan);
+                ctx.tuple.clear();
+                ctx.singleton.clear();
             }
-
-            ctx.join(&rels, &mut compiled_plan);
-            ctx.tuple.clear();
-            ctx.singleton.clear();
         }
 
         log::debug!("{} lookups", ctx.n_lookups);
