@@ -150,7 +150,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
     if let Table::Arr { id_cols, data_cols } = &tables[0] {
-        let mut rels: SmallVec<[_; 8]> = tables[1..]
+        let rels: SmallVec<[_; 8]> = tables[1..]
             .iter()
             .map(|t| match &t {
                 Table::Arr { .. } => unreachable!("Only left table can be flat"),
@@ -180,9 +180,12 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
 
         if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
             let batch_size = 1000;
+
             'outer: loop {
-                let mut tuple_cols: Vec<Vec<i32>> = vec![vec![]; id_cols.len()];
-                let mut data_cols: Vec<Vec<Value>> = vec![vec![]; data_cols.len()];
+                let mut tuple_cols: Vec<Vec<i32>> =
+                    vec![Vec::with_capacity(batch_size); id_cols.len()];
+                let mut data_cols: Vec<Vec<Value>> =
+                    vec![Vec::with_capacity(batch_size); data_cols.len()];
 
                 for (id_iter, tuple_col) in id_iters.iter_mut().zip(tuple_cols.iter_mut()) {
                     tuple_col.extend(id_iter.take(batch_size));
@@ -195,27 +198,23 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
                     data_col.extend(data_iter.take(batch_size));
                 }
 
-                let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
+                let mut id_trie_cols: Vec<(usize, Vec<&Trie>)> =
+                    (0..tuple_cols[0].len()).map(|i| (i, vec![])).collect();
 
-                for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
-                    let col = &tuple_cols[lookup.key];
-                    let rel = &rels[lookup.relation];
-                    for (i, id) in col.iter().enumerate() {
-                        if let Some(trie) = rel.get(*id) {
-                            trie_col[i] = Some(trie);
+                for lookup in lookups.iter() {
+                    let mut new_id_trie_cols = Vec::new();
+                    for (i, tries) in id_trie_cols {
+                        let key = tuple_cols[lookup.key][i];
+                        let trie = &rels[lookup.relation];
+                        if let Some(trie) = trie.get(key) {
+                            let mut new_tries = tries.clone();
+                            new_tries.push(trie);
+                            new_id_trie_cols.push((i, new_tries));
                         }
                     }
+                    id_trie_cols = new_id_trie_cols;
                 }
-
-                for i in 0..batch_size {
-                    if i >= tuple_cols[0].len() {
-                        break;
-                    }
-
-                    if trie_cols.iter().any(|c| c[i].is_none()) {
-                        continue;
-                    }
-
+                for (i, tries) in id_trie_cols {
                     for tuple_col in &mut tuple_cols {
                         ctx.tuple.push(tuple_col[i]);
                     }
@@ -224,14 +223,68 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
                         ctx.singleton.push(data_col[i].clone());
                     }
 
-                    for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
-                        rels[lookup.relation] = trie_col[i].unwrap();
+                    let mut new_rels: SmallVec<[&Trie; 8]> = SmallVec::from_slice(&rels);
+
+                    for (lookup, trie) in lookups.iter().zip(tries) {
+                        new_rels[lookup.relation] = trie;
                     }
 
-                    ctx.join(&rels, tail);
+                    ctx.join(&new_rels, tail);
                     ctx.tuple.clear();
                     ctx.singleton.clear();
                 }
+
+                // let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
+
+                // 'inner: for i in 0..tuple_cols[0].len() {
+                //     for (j, lookup) in lookups.iter().enumerate() {
+                //         let key = tuple_cols[lookup.key][i];
+                //         let trie = &rels[lookup.relation];
+                //         if let Some(data) = trie.get(key) {
+                //             trie_cols[j][i] = Some(data);
+                //         } else {
+                //             continue 'inner;
+                //         }
+                //     }
+                // }
+
+                // // for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
+                // //     let col = &tuple_cols[lookup.key];
+                // //     let rel = &rels[lookup.relation];
+                // //     for (i, id) in col.iter().enumerate() {
+                // //         if let Some(trie) = rel.get(*id) {
+                // //             trie_col[i] = Some(trie);
+                // //         }
+                // //     }
+                // // }
+
+                // for i in 0..batch_size {
+                //     if i >= tuple_cols[0].len() {
+                //         break;
+                //     }
+
+                //     if trie_cols.iter().any(|c| c[i].is_none()) {
+                //         continue;
+                //     }
+
+                //     for tuple_col in &mut tuple_cols {
+                //         ctx.tuple.push(tuple_col[i]);
+                //     }
+
+                //     for data_col in &mut data_cols {
+                //         ctx.singleton.push(data_col[i].clone());
+                //     }
+
+                //     let mut new_rels: SmallVec<[&Trie; 8]> = SmallVec::from_slice(&rels);
+
+                //     for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
+                //         new_rels[lookup.relation] = trie_col[i].unwrap();
+                //     }
+
+                //     ctx.join(&new_rels, tail);
+                //     ctx.tuple.clear();
+                //     ctx.singleton.clear();
+                // }
             }
         } else {
             // unroll the outer scan
