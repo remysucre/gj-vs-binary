@@ -35,6 +35,17 @@ mod cell {
             }
         }
 
+        pub fn map<Out, FT, FZ>(&self, ft: FT, fz: FZ) -> Out
+        where
+            FT: FnOnce(&T) -> Out,
+            FZ: FnOnce(&Z) -> Out,
+        {
+            match unsafe { &*self.inner.get() } {
+                Ok(v) => ft(v),
+                Err(z) => fz(z),
+            }
+        }
+
         pub fn get_or_init<F>(&self, f: F) -> &T
         where
             F: FnOnce(Z) -> T,
@@ -82,14 +93,14 @@ struct Thunk {
 
 impl Thunk {
     fn for_each(&self, mut f: impl FnMut(u32, Id)) {
-        let col = &self.schema.id_cols[self.col as usize];
+        let col = &self.schema.id_cols[self.col as usize].ints();
         if self.indexes.is_empty() {
-            for (i, id) in col.iter().enumerate() {
-                f(i as u32, id.as_num());
+            for (i, &id) in col.iter().enumerate() {
+                f(i as u32, id);
             }
         } else {
             for &idx in &self.indexes {
-                f(idx, col[idx as usize].as_num());
+                f(idx, col[idx as usize]);
             }
         }
     }
@@ -139,12 +150,22 @@ impl Trie {
         match self.force() {
             TrieInner::Node(map) => map.len(),
             TrieInner::SetNode(set, _t) => set.len(),
-            TrieInner::Data(_, indexes) => indexes.len(),
+            TrieInner::Data(_, _) => panic!(),
         }
     }
 
     pub fn guess_len(&self) -> usize {
-        self.len()
+        self.inner.map(
+            |trie| match trie {
+                TrieInner::Node(m) => m.len(),
+                TrieInner::SetNode(s, _) => s.len(),
+                TrieInner::Data(_, _) => panic!(),
+            },
+            |thunk| match thunk.indexes.len() {
+                0 => thunk.schema.id_cols[thunk.col as usize].len(),
+                _ => thunk.indexes.len(),
+            },
+        )
     }
 
     #[inline(never)]
@@ -168,6 +189,8 @@ impl Trie {
             thunk.for_each(|_i, id| {
                 set.insert(id);
             });
+
+            // println!("Trie len: {}", set.len());
             TrieInner::SetNode(set, mk_thunk())
         } else {
             let mut map = HashMap::<Id, Box<Trie>>::default();
@@ -241,7 +264,7 @@ impl Trie {
                 let mut row = vec![];
                 for idx in idxs {
                     for col in &schema.data_cols {
-                        row.push(col[*idx as usize].clone());
+                        row.push(col.get_value(*idx as usize).clone());
                     }
                     f(&row);
                     row.clear();

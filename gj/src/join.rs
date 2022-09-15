@@ -158,13 +158,20 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
             })
             .collect();
 
-        let mut id_iters: Vec<_> = id_cols.iter().map(|c| c.iter()).collect();
-        let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.iter()).collect();
+        let mut id_iters: Vec<_> = id_cols.iter().map(|c| c.ints().iter().copied()).collect();
+        let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.values()).collect();
+
+        if args.optimize > 0 {
+            for instr in &mut compiled_plan {
+                if let Instruction2::Lookup(lookups) = instr {
+                    lookups.sort_unstable_by_key(|l| rels[l.relation].guess_len());
+                }
+            }
+        }
 
         // assert!(matches!(&compiled_plan[0], Instruction::Scan));
 
         let mut ctx = JoinContext {
-            args,
             n_lookups: 0,
             singleton: vec![],
             tuple: vec![],
@@ -173,10 +180,10 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
 
         // unroll the outer scan
         while let Some(v) = id_iters[0].next() {
-            ctx.tuple.push(v.as_num());
+            ctx.tuple.push(v);
 
             for id_iter in &mut id_iters[1..] {
-                ctx.tuple.push(id_iter.next().unwrap().as_num());
+                ctx.tuple.push(id_iter.next().unwrap());
             }
 
             for data_iter in &mut data_iters {
@@ -211,7 +218,6 @@ struct JoinContext<'a> {
     singleton: Vec<Value>,
     tuple: Vec<i32>,
     out: &'a mut View,
-    args: &'a Args,
 }
 
 impl JoinContext<'_> {
@@ -251,9 +257,9 @@ impl JoinContext<'_> {
             }
             Instruction2::Lookup(lookups) => {
                 assert!(!lookups.is_empty());
-                if self.args.optimize > 0 {
-                    lookups.sort_unstable_by_key(|l| relations[l.relation].guess_len());
-                }
+                // if self.args.optimize > 0 {
+                //     lookups.sort_unstable_by_key(|l| relations[l.relation].guess_len());
+                // }
 
                 let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                 for lookup in lookups {

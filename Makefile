@@ -44,7 +44,7 @@ GJ_OPT_LEVELS= 0 1
 GJ_LOGS=$(patsubst %,gj/gj-%.log,$(GJ_OPT_LEVELS))
 
 gj/gj-%.log: $(GJ_SRC)
-	(cd gj && cargo run --release -- --optimize=$* | tee gj-$*.log)
+	(cd gj && time cargo run --profile=release-final -- --optimize=$* | tee gj-$*.log)
 
 plot.pdf: ./scripts/plot.py $(GJ_LOGS)
 	$^

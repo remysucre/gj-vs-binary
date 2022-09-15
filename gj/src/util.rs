@@ -530,7 +530,7 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
 }
 
 pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
-    let mut table = HashMap::<Attribute, Vec<Value>>::default();
+    let mut table = HashMap::<Attribute, ColInner>::default();
     let path_s = format!(
         "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
         query, t_name
@@ -584,7 +584,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
     }
     table
         .into_iter()
-        .map(|(attr, col)| (attr, Rc::<[Value]>::from(col)))
+        .map(|(attr, col)| (attr, col.into()))
         .collect()
 }
 
@@ -714,8 +714,8 @@ fn build_trie_from_view(
     id_ids: &[usize],
     data_ids: &[usize],
 ) -> Trie {
-    let mut id_cols: Vec<Vec<Value>> = vec![vec![]; id_ids.len()];
-    let mut data_cols: Vec<Vec<Value>> = vec![vec![]; data_ids.len()];
+    let mut id_cols: Vec<Vec<i32>> = vec![vec![]; id_ids.len()];
+    let mut data_cols: Vec<ColInner> = vec![ColInner::default(); data_ids.len()];
 
     // let mut ids = vec![0; id_ids.len()];
     // let mut data = vec![Value::Num(0); data_ids.len()];
@@ -723,7 +723,7 @@ fn build_trie_from_view(
         id_cols
             .iter_mut()
             .zip(id_ids)
-            .for_each(|(col, &idid)| col.push(row[idid].clone()));
+            .for_each(|(col, &idid)| col.push(row[idid].as_num()));
         data_cols
             .iter_mut()
             .zip(data_ids)
@@ -734,7 +734,10 @@ fn build_trie_from_view(
     // let mut trie = Trie::default();
     // trie
     let trie_schema = TrieSchema {
-        id_cols: id_cols.into_iter().map(|c| c.into()).collect(),
+        id_cols: id_cols
+            .into_iter()
+            .map(|c| ColInner::Int(c).into())
+            .collect(),
         data_cols: data_cols.into_iter().map(|c| c.into()).collect(),
     };
 
