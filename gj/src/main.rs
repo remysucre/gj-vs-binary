@@ -27,8 +27,6 @@ fn main() {
         println!("DUCKDB filter time: {}", filter_time);
         println!("DUCKDB join time: {}", join_time);
 
-        continue;
-
         let scan = get_scans(&scan_tree);
         let payload = get_payload(&plan_tree);
         let plan = to_gj_plan(&plan_tree);

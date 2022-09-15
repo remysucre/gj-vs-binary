@@ -53,7 +53,7 @@ def plot(gjs):
     print(data[:5])
 
     # sort
-    def sort_key(x): return x['dd_total']
+    def sort_key(x): return x['dd_join']
     data.sort(key=sort_key)
 
     ys = ['dd_total', 'dd_filter', 'dd_join', 'build'] + list(gjs.keys())

@@ -178,21 +178,99 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
             out,
         };
 
-        // unroll the outer scan
-        while let Some(v) = id_iters[0].next() {
-            ctx.tuple.push(v);
+        if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
+            let mut local_rels = rels.clone();
+            let batch_size = 1000.min(id_cols[0].len());
+            let mut tuple_cols: Vec<Vec<i32>> = vec![vec![]; id_cols.len()];
+            let mut data_cols: Vec<Vec<Value>> = vec![vec![]; data_cols.len()];
+            let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
+            'outer: loop {
+                for (id_iter, tuple_col) in id_iters.iter_mut().zip(tuple_cols.iter_mut()) {
+                    tuple_col.extend(id_iter.take(batch_size));
+                    if tuple_col.is_empty() {
+                        break 'outer;
+                    }
+                }
 
-            for id_iter in &mut id_iters[1..] {
-                ctx.tuple.push(id_iter.next().unwrap());
+                for (data_iter, data_col) in data_iters.iter_mut().zip(data_cols.iter_mut()) {
+                    data_col.extend(data_iter.take(batch_size));
+                }
+
+                for trie_col in trie_cols.iter_mut() {
+                    trie_col.fill(None);
+                }
+
+                // do the first lookup
+                let trie_col = &mut trie_cols[0];
+                let col = &tuple_cols[lookups[0].key];
+                let rel = &rels[lookups[0].relation];
+                for (i, id) in col.iter().enumerate() {
+                    if let Some(trie) = rel.get(*id) {
+                        trie_col[i] = Some(trie);
+                    }
+                }
+
+                for j in 1..lookups.len() {
+                    let lookup = &lookups[j];
+                    let (tc0, tc1) = trie_cols.split_at_mut(j);
+                    let prev_trie_col = tc0.last().unwrap();
+                    let trie_col = tc1.first_mut().unwrap();
+                    let col = &tuple_cols[lookup.key];
+                    let rel = &rels[lookup.relation];
+                    for (i, id) in col.iter().enumerate() {
+                        if prev_trie_col[i].is_some() {
+                            if let Some(trie) = rel.get(*id) {
+                                trie_col[i] = Some(trie);
+                            }
+                        }
+                    }
+                }
+
+                for i in 0..batch_size {
+                    if i >= tuple_cols[0].len() {
+                        break;
+                    }
+
+                    if trie_cols.iter().any(|c| c[i].is_none()) {
+                        continue;
+                    }
+
+                    for tuple_col in &mut tuple_cols {
+                        ctx.tuple.push(tuple_col[i]);
+                    }
+
+                    for data_col in &mut data_cols {
+                        ctx.singleton.push(data_col[i].clone());
+                    }
+
+                    for (lookup, trie_col) in lookups.iter().zip(&mut trie_cols) {
+                        local_rels[lookup.relation] = trie_col[i].unwrap();
+                    }
+
+                    ctx.join(&local_rels, tail);
+                    ctx.tuple.clear();
+                    ctx.singleton.clear();
+                }
+                tuple_cols.iter_mut().for_each(|c| c.clear());
+                data_cols.iter_mut().for_each(|c| c.clear());
             }
+        } else {
+            // unroll the outer scan
+            while let Some(v) = id_iters[0].next() {
+                ctx.tuple.push(v);
 
-            for data_iter in &mut data_iters {
-                ctx.singleton.push(data_iter.next().unwrap().clone());
+                for id_iter in &mut id_iters[1..] {
+                    ctx.tuple.push(id_iter.next().unwrap());
+                }
+
+                for data_iter in &mut data_iters {
+                    ctx.singleton.push(data_iter.next().unwrap().clone());
+                }
+
+                ctx.join(&rels, &mut compiled_plan);
+                ctx.tuple.clear();
+                ctx.singleton.clear();
             }
-
-            ctx.join(&rels, &mut compiled_plan);
-            ctx.tuple.clear();
-            ctx.singleton.clear();
         }
 
         log::debug!("{} lookups", ctx.n_lookups);
