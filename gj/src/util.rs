@@ -714,21 +714,31 @@ fn build_trie_from_view(
     id_ids: &[usize],
     data_ids: &[usize],
 ) -> Trie {
-    let mut trie = Trie::default();
+    let mut id_cols: Vec<Vec<Value>> = vec![vec![]; id_ids.len()];
+    let mut data_cols: Vec<Vec<Value>> = vec![vec![]; data_ids.len()];
 
-    let mut ids = vec![0; id_ids.len()];
-    let mut data = vec![Value::Num(0); data_ids.len()];
+    // let mut ids = vec![0; id_ids.len()];
+    // let mut data = vec![Value::Num(0); data_ids.len()];
     for row in &views[node] {
-        ids.iter_mut()
+        id_cols
+            .iter_mut()
             .zip(id_ids)
-            .for_each(|(id, &idid)| *id = row[idid].as_num());
-        data.iter_mut()
+            .for_each(|(col, &idid)| col.push(row[idid].clone()));
+        data_cols
+            .iter_mut()
             .zip(data_ids)
-            .for_each(|(d, &dataid)| *d = row[dataid].clone());
-        trie.insert(&ids, &data);
+            .for_each(|(col, &dataid)| col.push(row[dataid].clone()));
+        // trie.insert(&ids, &data);
     }
 
-    trie
+    // let mut trie = Trie::default();
+    // trie
+    let trie_schema = TrieSchema {
+        id_cols: id_cols.into_iter().map(|c| c.into()).collect(),
+        data_cols: data_cols.into_iter().map(|c| c.into()).collect(),
+    };
+
+    Trie::new(trie_schema)
 }
 
 fn build_trie_from_db(
@@ -741,21 +751,23 @@ fn build_trie_from_db(
     let id_cols: Vec<Col> = id_attrs.iter().map(|a| rel[a].clone()).collect();
     let data_cols: Vec<Col> = data_attrs.iter().map(|a| rel[a].clone()).collect();
 
-    let mut trie = Trie::default();
+    let trie_schema = TrieSchema { id_cols, data_cols };
 
-    let mut ids = vec![0; id_cols.len()];
-    let mut data = vec![Value::Num(0); data_cols.len()];
-    for i in 0..id_cols[0].len() {
-        ids.iter_mut()
-            .zip(id_cols.iter())
-            .for_each(|(id, col)| *id = col[i].as_num());
-        data.iter_mut()
-            .zip(data_cols.iter())
-            .for_each(|(d, col)| *d = col[i].clone());
-        trie.insert(&ids, &data);
-    }
+    Trie::new(trie_schema)
 
-    trie
+    // let mut ids = vec![0; id_cols.len()];
+    // let mut data = vec![Value::Num(0); data_cols.len()];
+    // for i in 0..id_cols[0].len() {
+    //     ids.iter_mut()
+    //         .zip(id_cols.iter())
+    //         .for_each(|(id, col)| *id = col[i].as_num());
+    //     data.iter_mut()
+    //         .zip(data_cols.iter())
+    //         .for_each(|(d, col)| *d = col[i].clone());
+    //     trie.insert(&ids, &data);
+    // }
+
+    // trie
 }
 
 fn type_of(col: &str) -> Type {

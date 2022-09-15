@@ -154,7 +154,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
             .iter()
             .map(|t| match &t {
                 Table::Arr { .. } => unreachable!("Only left table can be flat"),
-                Table::Trie(trie) => trie.as_ref(),
+                Table::Trie(trie) => trie,
             })
             .collect();
 
@@ -215,7 +215,7 @@ struct JoinContext<'a> {
 }
 
 impl JoinContext<'_> {
-    fn join<'b>(&mut self, relations: &[TrieRef<'b>], compiled_plan: &mut [Instruction2]) {
+    fn join(&mut self, relations: &[&Trie], compiled_plan: &mut [Instruction2]) {
         let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
             tup
         } else {
@@ -230,7 +230,8 @@ impl JoinContext<'_> {
                     .unwrap()
                     .relation;
 
-                relations[j_min].for_each(|id, trie_min| {
+                for (&id, trie_min) in relations[j_min].get_map() {
+                    // relations[j_min].for_each(|id, trie_min| {
                     if let Some(tries) = js
                         .iter()
                         .filter(|&j| j.relation != j_min)
@@ -246,15 +247,15 @@ impl JoinContext<'_> {
                         self.join(&rels, rest);
                         self.tuple.pop();
                     }
-                })
+                }
             }
             Instruction2::Lookup(lookups) => {
                 assert!(!lookups.is_empty());
                 if self.args.optimize > 0 {
-                    lookups.sort_unstable_by_key(|l| relations[l.relation].len());
+                    lookups.sort_unstable_by_key(|l| relations[l.relation].guess_len());
                 }
 
-                let mut rels: SmallVec<[TrieRef<'b>; 8]> = SmallVec::from_slice(relations);
+                let mut rels: SmallVec<[_; 8]> = SmallVec::from_slice(relations);
                 for lookup in lookups {
                     let value = self.tuple[lookup.key];
                     self.n_lookups += 1;
@@ -274,7 +275,7 @@ impl JoinContext<'_> {
         }
     }
 
-    fn materialize(&mut self, relations: &[TrieRef]) {
+    fn materialize(&mut self, relations: &[&Trie]) {
         if relations.is_empty() {
             assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
             self.out.vec.extend(
@@ -283,15 +284,15 @@ impl JoinContext<'_> {
                     .map(|i| Value::Num(*i))
                     .chain(self.singleton.iter().cloned()),
             );
-        } else if relations[0].get_data().len() == 0 {
+        } else if !relations[0].has_data() {
             self.materialize(&relations[1..]);
         } else {
-            for vs in relations[0].get_data() {
+            relations[0].for_each_data(|vs| {
                 let len = self.singleton.len();
                 self.singleton.extend_from_slice(vs);
                 self.materialize(&relations[1..]);
                 self.singleton.truncate(len);
-            }
+            })
         }
     }
 }
