@@ -54,6 +54,7 @@ pub enum NodeAttr {
     Join(JoinAttr),
     Scan(ScanAttr),
     Project(ProjectAttr),
+    Filter,
 }
 
 #[derive(Derivative)]
@@ -74,7 +75,7 @@ pub fn get_filter_cost(root: &TreeOp) -> f64 {
     let mut cost = 0.0;
 
     postorder_traverse(root, &mut |node| {
-        if let Some(NodeAttr::Scan(_)) = &node.attr {
+        if let Some(NodeAttr::Scan(_)) | Some(NodeAttr::Filter) = &node.attr {
             if node.extra_info.contains("Filters") {
                 cost += node.timing;
             }
@@ -150,7 +151,7 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
 
             let join_type = match extra_info[0] {
                 "INNER" => JoinType::Inner,
-                "MARK" => return, // mark join is essentially a filter
+                "MARK" => return,
                 _ => panic!("Fail to parse Join Type {}", extra_info[0]),
             };
 
@@ -245,7 +246,11 @@ pub fn parse_tree_extra_info(root: &mut TreeOp) {
                 .collect();
             node.attr = Some(NodeAttr::Project(ProjectAttr { columns }));
         }
-        _ => (),
+        "CHUNK_SCAN" | "RESULT_COLLECTOR" | "SIMPLE_AGGREGATE" | "Query" => {}
+        "FILTER" => {
+            node.attr = Some(NodeAttr::Filter);
+        }
+        _ => panic!("Unknown node type {}", node.name),
     };
     inorder_traverse_mut(root, &mut parse_func);
 }
