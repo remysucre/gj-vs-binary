@@ -80,10 +80,26 @@ struct Thunk {
     indexes: IdxBuf,
 }
 
+impl Thunk {
+    fn for_each(&self, mut f: impl FnMut(u32, Id)) {
+        let col = &self.schema.id_cols[self.col as usize];
+        if self.indexes.is_empty() {
+            for (i, id) in col.iter().enumerate() {
+                f(i as u32, id.as_num());
+            }
+        } else {
+            for &idx in &self.indexes {
+                f(idx, col[idx as usize].as_num());
+            }
+        }
+    }
+}
+
 type IdxBuf = SmallVec<[u32; 4]>;
 
 enum TrieInner {
     Node(HashMap<Id, Box<Trie>>),
+    SetNode(HashSet<Id>, Box<Trie>),
     Data(Rc<TrieSchema>, IdxBuf),
 }
 
@@ -120,68 +136,54 @@ impl Trie {
 
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
-        self.get_map().len()
+        match self.force() {
+            TrieInner::Node(map) => map.len(),
+            TrieInner::SetNode(set, _t) => set.len(),
+            TrieInner::Data(_, indexes) => indexes.len(),
+        }
     }
 
     pub fn guess_len(&self) -> usize {
-        self.get_map().len()
+        self.len()
     }
 
     #[inline(never)]
     fn from_thunk(thunk: Thunk) -> TrieInner {
-        if thunk.col == thunk.schema.id_cols.len() as u32 {
+        let id_cols_left = thunk.schema.id_cols.len() - thunk.col as usize;
+
+        let mk_thunk = || {
+            Box::new(Trie {
+                inner: cell::OnceCell::new(Thunk {
+                    col: thunk.col + 1,
+                    schema: thunk.schema.clone(),
+                    indexes: Default::default(),
+                }),
+            })
+        };
+
+        if id_cols_left == 0 {
             TrieInner::Data(thunk.schema, thunk.indexes)
+        } else if id_cols_left == 1 && thunk.schema.data_cols.is_empty() {
+            let mut set = HashSet::<Id>::default();
+            thunk.for_each(|_i, id| {
+                set.insert(id);
+            });
+            TrieInner::SetNode(set, mk_thunk())
         } else {
             let mut map = HashMap::<Id, Box<Trie>>::default();
-            let col = &thunk.schema.id_cols[thunk.col as usize];
 
-            let mk_thunk = || {
-                Box::new(Trie {
-                    inner: cell::OnceCell::new(Thunk {
-                        col: thunk.col + 1,
-                        schema: thunk.schema.clone(),
-                        indexes: Default::default(),
-                    }),
-                })
-            };
-
-            if thunk.indexes.is_empty() {
-                for (i, v) in col.iter().enumerate() {
-                    let id = v.as_num();
-                    map.entry(id)
-                        .or_insert_with(mk_thunk)
-                        .inner
-                        .get_init_data()
-                        .indexes
-                        .push(i as u32);
-                }
-            } else {
-                for i in thunk.indexes {
-                    let id = col[i as usize].as_num();
-                    map.entry(id)
-                        .or_insert_with(mk_thunk)
-                        .inner
-                        .get_init_data()
-                        .indexes
-                        .push(i);
-                }
-            }
+            thunk.for_each(|i, id| {
+                map.entry(id)
+                    .or_insert_with(mk_thunk)
+                    .inner
+                    .get_init_data()
+                    .indexes
+                    .push(i);
+            });
 
             // println!("Trie len: {}", map.len());
 
             TrieInner::Node(map)
-            // TrieInner::Node(
-            //     map.into_iter()
-            //         .map(|(k, v)| {
-            //             (
-            //                 k,
-            //                 Trie {
-            //                     inner: cell::OnceCell::new(v),
-            //                 },
-            //             )
-            //         })
-            //         .collect(),
-            // )
         }
     }
 
@@ -190,28 +192,42 @@ impl Trie {
         self.inner.get_or_init(Self::from_thunk)
     }
 
-    pub fn get_map(&self) -> &HashMap<Id, Box<Self>> {
+    pub fn get(&self, id: Id) -> Option<&Trie> {
         match self.force() {
-            TrieInner::Node(map) => map,
+            TrieInner::Node(map) => match map.get(&id) {
+                Some(t) => Some(t),
+                None => None,
+            },
+            TrieInner::SetNode(set, trie) => {
+                if set.contains(&id) {
+                    Some(trie)
+                } else {
+                    None
+                }
+            }
             TrieInner::Data(..) => panic!("Trie is not a node"),
         }
     }
 
-    pub fn get(&self, id: Id) -> Option<&Trie> {
-        match self.get_map().get(&id) {
-            Some(trie) => Some(trie),
-            None => None,
-        }
-    }
-
     pub fn for_each(&self, mut f: impl FnMut(Id, &Self)) {
-        for (id, trie) in self.get_map() {
-            f(*id, trie);
+        match self.force() {
+            TrieInner::Node(map) => {
+                for (id, trie) in map {
+                    f(*id, trie);
+                }
+            }
+            TrieInner::SetNode(set, trie) => {
+                for id in set {
+                    f(*id, trie);
+                }
+            }
+            TrieInner::Data(..) => panic!("Trie is not a node"),
         }
     }
 
     pub fn has_data(&self) -> bool {
         match self.force() {
+            TrieInner::SetNode(..) => false,
             TrieInner::Node(_) => panic!(),
             TrieInner::Data(schema, _idxs) => !schema.data_cols.is_empty(),
         }
@@ -219,6 +235,7 @@ impl Trie {
 
     pub fn for_each_data(&self, mut f: impl FnMut(&[Value])) {
         match self.force() {
+            TrieInner::SetNode(..) => panic!(),
             TrieInner::Node(_) => panic!(),
             TrieInner::Data(schema, idxs) => {
                 let mut row = vec![];

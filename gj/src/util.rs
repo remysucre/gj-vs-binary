@@ -1,5 +1,5 @@
 // use core::slice::SlicePattern;
-use std::{path, time::Instant};
+use std::path;
 
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},

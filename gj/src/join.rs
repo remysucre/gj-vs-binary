@@ -230,8 +230,8 @@ impl JoinContext<'_> {
                     .unwrap()
                     .relation;
 
-                for (&id, trie_min) in relations[j_min].get_map() {
-                    // relations[j_min].for_each(|id, trie_min| {
+                // for (&id, trie_min) in relations[j_min].get_map() {
+                relations[j_min].for_each(|id, trie_min| {
                     if let Some(tries) = js
                         .iter()
                         .filter(|&j| j.relation != j_min)
@@ -247,7 +247,7 @@ impl JoinContext<'_> {
                         self.join(&rels, rest);
                         self.tuple.pop();
                     }
-                }
+                });
             }
             Instruction2::Lookup(lookups) => {
                 assert!(!lookups.is_empty());
