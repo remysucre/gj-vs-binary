@@ -1,7 +1,8 @@
 use std::fmt::Debug;
 use std::rc::Rc;
 
-use smallvec::SmallVec;
+use hashbrown::hash_map::Entry;
+use smallvec::{smallvec, SmallVec};
 
 use crate::sql::Attribute;
 use crate::*;
@@ -131,10 +132,6 @@ pub enum Table {
 }
 
 impl Trie {
-    // pub fn is_empty(&self) -> bool {
-    //     self.len() == 0
-    // }
-
     pub fn new(schema: TrieSchema) -> Self {
         Self {
             inner: cell::OnceCell::new(Thunk {
@@ -172,12 +169,12 @@ impl Trie {
     fn from_thunk(thunk: Thunk) -> TrieInner {
         let id_cols_left = thunk.schema.id_cols.len() - thunk.col as usize;
 
-        let mk_thunk = || {
+        let mk_thunk = |i: u32| {
             Box::new(Trie {
                 inner: cell::OnceCell::new(Thunk {
                     col: thunk.col + 1,
                     schema: thunk.schema.clone(),
-                    indexes: Default::default(),
+                    indexes: smallvec![i],
                 }),
             })
         };
@@ -191,17 +188,17 @@ impl Trie {
             });
 
             // println!("Trie len: {}", set.len());
-            TrieInner::SetNode(set, mk_thunk())
+            TrieInner::SetNode(set, mk_thunk(0xc0ffee))
         } else {
             let mut map = HashMap::<Id, Box<Trie>>::default();
 
-            thunk.for_each(|i, id| {
-                map.entry(id)
-                    .or_insert_with(mk_thunk)
-                    .inner
-                    .get_init_data()
-                    .indexes
-                    .push(i);
+            thunk.for_each(|i, id| match map.entry(id) {
+                Entry::Occupied(mut e) => {
+                    e.get_mut().inner.get_init_data().indexes.push(i);
+                }
+                Entry::Vacant(e) => {
+                    e.insert(mk_thunk(i));
+                }
             });
 
             // println!("Trie len: {}", map.len());
@@ -226,6 +223,32 @@ impl Trie {
                     Some(trie)
                 } else {
                     None
+                }
+            }
+            TrieInner::Data(..) => panic!("Trie is not a node"),
+        }
+    }
+
+    pub fn get_many<'a, F1, F2>(&'a self, ids: &[Id], test: F1, mut f: F2)
+    where
+        F1: Fn(usize) -> bool,
+        F2: FnMut(usize, &'a Trie),
+    {
+        match self.force() {
+            TrieInner::Node(map) => {
+                for (i, &id) in ids.iter().enumerate() {
+                    if test(i) {
+                        if let Some(t) = map.get(&id) {
+                            f(i, t);
+                        }
+                    }
+                }
+            }
+            TrieInner::SetNode(set, trie) => {
+                for (i, &id) in ids.iter().enumerate() {
+                    if test(i) && set.contains(&id) {
+                        f(i, trie);
+                    }
                 }
             }
             TrieInner::Data(..) => panic!("Trie is not a node"),

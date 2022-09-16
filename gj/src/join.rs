@@ -204,26 +204,27 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
                 let trie_col = &mut trie_cols[0];
                 let col = &tuple_cols[lookups[0].key];
                 let rel = &rels[lookups[0].relation];
-                for (i, id) in col.iter().enumerate() {
-                    if let Some(trie) = rel.get(*id) {
+                rel.get_many(
+                    col,
+                    |_| true,
+                    |i, trie| {
                         trie_col[i] = Some(trie);
-                    }
-                }
+                    },
+                );
 
-                for j in 1..lookups.len() {
-                    let lookup = &lookups[j];
+                for (j, lookup) in lookups.iter().enumerate().skip(1) {
                     let (tc0, tc1) = trie_cols.split_at_mut(j);
                     let prev_trie_col = tc0.last().unwrap();
                     let trie_col = tc1.first_mut().unwrap();
                     let col = &tuple_cols[lookup.key];
                     let rel = &rels[lookup.relation];
-                    for (i, id) in col.iter().enumerate() {
-                        if prev_trie_col[i].is_some() {
-                            if let Some(trie) = rel.get(*id) {
-                                trie_col[i] = Some(trie);
-                            }
-                        }
-                    }
+                    rel.get_many(
+                        col,
+                        |i| prev_trie_col[i].is_some(),
+                        |i, trie| {
+                            trie_col[i] = Some(trie);
+                        },
+                    );
                 }
 
                 for i in 0..batch_size {
