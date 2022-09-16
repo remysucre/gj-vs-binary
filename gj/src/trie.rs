@@ -7,7 +7,12 @@ use smallvec::{smallvec, SmallVec};
 use crate::sql::Attribute;
 use crate::*;
 
+#[inline]
+#[cold]
+fn cold() {}
+
 mod cell {
+    use super::cold;
     use std::cell::UnsafeCell;
 
     pub struct OnceCell<T, Z> {
@@ -25,7 +30,10 @@ mod cell {
         pub fn get(&self) -> Option<&T> {
             match unsafe { &*self.inner.get() } {
                 Ok(v) => Some(v),
-                Err(_) => None,
+                Err(_) => {
+                    cold();
+                    None
+                }
             }
         }
 
@@ -54,8 +62,9 @@ mod cell {
             if let Some(v) = self.get() {
                 return v;
             }
+            cold();
             let z = match unsafe { &mut *self.inner.get() } {
-                Ok(_) => unreachable!(),
+                Ok(_) => unsafe { std::hint::unreachable_unchecked() },
                 Err(z) => unsafe { std::ptr::read(z) },
             };
             let v = f(z);
@@ -107,7 +116,7 @@ impl Thunk {
     }
 }
 
-type IdxBuf = SmallVec<[u32; 4]>;
+type IdxBuf = SmallVec<[u32; 8]>;
 
 enum TrieInner {
     Node(HashMap<Id, Box<Trie>>),
@@ -165,6 +174,7 @@ impl Trie {
         )
     }
 
+    #[cold]
     #[inline(never)]
     fn from_thunk(thunk: Thunk) -> TrieInner {
         let id_cols_left = thunk.schema.id_cols.len() - thunk.col as usize;
@@ -193,11 +203,11 @@ impl Trie {
             let mut map = HashMap::<Id, Box<Trie>>::default();
 
             thunk.for_each(|i, id| match map.entry(id) {
-                Entry::Occupied(mut e) => {
-                    e.get_mut().inner.get_init_data().indexes.push(i);
-                }
                 Entry::Vacant(e) => {
                     e.insert(mk_thunk(i));
+                }
+                Entry::Occupied(mut e) => {
+                    e.get_mut().inner.get_init_data().indexes.push(i);
                 }
             });
 
