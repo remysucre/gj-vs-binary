@@ -48,11 +48,16 @@ fn main() {
             // let compiled_plan = compile_plan(&groups, node, &in_view);
             log::debug!("binary plan: {:?}", plan);
 
+            if args.optimize == 2 {
+                plan = merge_occurrences(plan);
+                log::debug!("merged plan: {:?}", &plan);
+            }
+
             let (out_schema, build_plan) =
                 compute_full_plan(&db, node, &mut plan, &provides, &in_view);
             log::debug!("out schema: {:?}", out_schema);
 
-            plan = optimize(&args, plan);
+            plan = combine_lookups(&args, plan);
             // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
             build_plans.insert(node, build_plan);

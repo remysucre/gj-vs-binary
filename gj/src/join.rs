@@ -8,7 +8,87 @@ use crate::{
 };
 use smallvec::SmallVec;
 
-pub fn optimize(_args: &Args, plan: Vec<Instruction2>) -> Vec<Instruction2> {
+pub fn merge_occurrences(plan: Vec<Instruction2>) -> Vec<Instruction2> {
+    let mut groups: Vec<Vec<Instruction2>> = vec![];
+
+    let group_contains = |group: &Vec<Instruction2>, instr: &Instruction2| {
+        let (i_left, i_right) = match instr {
+            Instruction2::Intersect(inters) => {
+                assert_eq!(inters.len(), 2);
+                (&inters[0].attr, &inters[1].attr)
+            }
+            Instruction2::Lookup(lookups) => {
+                assert_eq!(lookups.len(), 1);
+                (&lookups[0].left, &lookups[0].right)
+            }
+        };
+
+        group.iter().any(|i| {
+            let left;
+            let right;
+            match i {
+                Instruction2::Lookup(lookups) => {
+                    assert_eq!(lookups.len(), 1);
+                    left = &lookups[0].left;
+                    right = &lookups[0].right;
+                }
+                Instruction2::Intersect(inters) => {
+                    assert_eq!(inters.len(), 2);
+                    left = &inters[0].attr;
+                    right = &inters[1].attr;
+                }
+            }
+            left == i_left || left == i_right || right == i_left || right == i_right
+        })
+    };
+
+    for instr in plan {
+        if let Some(i) = groups.iter().position(|g| group_contains(g, &instr)) {
+            groups[i].push(instr);
+        } else {
+            groups.push(vec![instr]);
+        }
+    }
+
+    let mut new_plan = vec![];
+
+    for group in groups {
+        if group
+            .iter()
+            .any(|g| matches!(g, Instruction2::Intersect(_)))
+        {
+            let mut new_inters = vec![];
+            for instr in group {
+                match instr {
+                    Instruction2::Lookup(lookups) => {
+                        new_inters.push(Intersection2 {
+                            relation: usize::default(),
+                            attr: lookups[0].left.clone(),
+                        });
+                        new_inters.push(Intersection2 {
+                            relation: usize::default(),
+                            attr: lookups[0].right.clone(),
+                        });
+                    }
+                    Instruction2::Intersect(inters) => {
+                        for inter in inters {
+                            new_inters.push(inter.clone());
+                        }
+                    }
+                }
+            }
+            new_plan.push(Instruction2::Intersect(new_inters));
+        } else {
+            for lookup in group {
+                new_plan.push(lookup);
+            }
+        }
+    }
+
+    new_plan
+}
+
+pub fn combine_lookups(_args: &Args, plan: Vec<Instruction2>) -> Vec<Instruction2> {
     // combining lookups is unconditional
     let mut new_plan = vec![];
     let mut current_lookups: Vec<Lookup2> = vec![];
@@ -161,7 +241,8 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
         let mut id_iters: Vec<_> = id_cols.iter().map(|c| c.ints().iter().copied()).collect();
         let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.values()).collect();
 
-        if args.optimize > 0 {
+        // if args.optimize > 0 {
+        if args.optimize == 1 {
             for instr in &mut compiled_plan {
                 if let Instruction2::Lookup(lookups) = instr {
                     lookups.sort_unstable_by_key(|l| rels[l.relation].guess_len());
