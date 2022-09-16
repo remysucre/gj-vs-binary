@@ -230,13 +230,15 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
     if let Table::Arr { id_cols, data_cols } = &tables[0] {
-        let rels: SmallVec<[_; 8]> = tables[1..]
+        let roots: SmallVec<[_; 8]> = tables[1..]
             .iter()
             .map(|t| match &t {
                 Table::Arr { .. } => unreachable!("Only left table can be flat"),
                 Table::Trie(trie) => trie,
             })
             .collect();
+
+        let rels: SmallVec<[TrieRef; 8]> = roots.iter().map(|t| t.as_ref()).collect::<_>();
 
         let mut id_iters: Vec<_> = id_cols.iter().map(|c| c.ints().iter().copied()).collect();
         let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.values()).collect();
@@ -262,10 +264,11 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
         if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
             let mut local_rels = rels.clone();
             let batch_size = 1000.min(id_cols[0].len());
-            let mut tuple_cols: Vec<Vec<i32>> = vec![vec![]; id_cols.len()];
-            let mut data_cols: Vec<Vec<Value>> = vec![vec![]; data_cols.len()];
+            let mut tuple_cols: Vec<Vec<i32>> = vec![Vec::with_capacity(batch_size); id_cols.len()];
+            let mut data_cols: Vec<Vec<Value>> =
+                vec![Vec::with_capacity(batch_size); data_cols.len()];
             let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
-            'outer: loop {
+            'outer: for loop_iter in 0.. {
                 for (id_iter, tuple_col) in id_iters.iter_mut().zip(tuple_cols.iter_mut()) {
                     tuple_col.extend(id_iter.take(batch_size));
                     if tuple_col.is_empty() {
@@ -277,8 +280,10 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
                     data_col.extend(data_iter.take(batch_size));
                 }
 
-                for trie_col in trie_cols.iter_mut() {
-                    trie_col.fill(None);
+                if loop_iter > 0 {
+                    for trie_col in trie_cols.iter_mut() {
+                        trie_col.fill(None);
+                    }
                 }
 
                 // do the first lookup
@@ -308,11 +313,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
                     );
                 }
 
-                for i in 0..batch_size {
-                    if i >= tuple_cols[0].len() {
-                        break;
-                    }
-
+                for i in 0..tuple_cols[0].len() {
                     if trie_cols.iter().any(|c| c[i].is_none()) {
                         continue;
                     }
@@ -333,6 +334,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
                     ctx.tuple.clear();
                     ctx.singleton.clear();
                 }
+
                 tuple_cols.iter_mut().for_each(|c| c.clear());
                 data_cols.iter_mut().for_each(|c| c.clear());
             }
@@ -381,7 +383,7 @@ struct JoinContext<'a> {
 }
 
 impl JoinContext<'_> {
-    fn join(&mut self, relations: &[&Trie], compiled_plan: &mut [Instruction2]) {
+    fn join(&mut self, relations: &[TrieRef], compiled_plan: &mut [Instruction2]) {
         let (instr, rest) = if let Some(tup) = compiled_plan.split_first_mut() {
             tup
         } else {
@@ -441,7 +443,7 @@ impl JoinContext<'_> {
         }
     }
 
-    fn materialize(&mut self, relations: &[&Trie]) {
+    fn materialize(&mut self, relations: &[TrieRef]) {
         if relations.is_empty() {
             assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
             self.out.vec.extend(

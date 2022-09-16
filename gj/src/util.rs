@@ -713,7 +713,7 @@ fn build_trie_from_view(
     node: &TreeOp,
     id_ids: &[usize],
     data_ids: &[usize],
-) -> Trie {
+) -> TrieRoot {
     let mut id_cols: Vec<Vec<i32>> = vec![vec![]; id_ids.len()];
     let mut data_cols: Vec<ColInner> = vec![ColInner::default(); data_ids.len()];
 
@@ -733,15 +733,15 @@ fn build_trie_from_view(
 
     // let mut trie = Trie::default();
     // trie
-    let trie_schema = TrieSchema {
-        id_cols: id_cols
+    let trie_schema = TrieSchema::new(
+        id_cols
             .into_iter()
             .map(|c| ColInner::Int(c).into())
             .collect(),
-        data_cols: data_cols.into_iter().map(|c| c.into()).collect(),
-    };
+        data_cols.into_iter().map(|c| c.into()).collect(),
+    );
 
-    Trie::new(trie_schema)
+    TrieRoot::new(trie_schema)
 }
 
 fn build_trie_from_db(
@@ -749,14 +749,13 @@ fn build_trie_from_db(
     table_name: &str,
     id_attrs: &[Attribute],
     data_attrs: &[Attribute],
-) -> Trie {
+) -> TrieRoot {
     let rel = &db[table_name];
     let id_cols: Vec<Col> = id_attrs.iter().map(|a| rel[a].clone()).collect();
     let data_cols: Vec<Col> = data_attrs.iter().map(|a| rel[a].clone()).collect();
 
-    let trie_schema = TrieSchema { id_cols, data_cols };
-
-    Trie::new(trie_schema)
+    let trie_schema = TrieSchema::new(id_cols, data_cols);
+    TrieRoot::new(trie_schema)
 
     // let mut ids = vec![0; id_cols.len()];
     // let mut data = vec![Value::Num(0); data_cols.len()];
