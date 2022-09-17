@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::fmt::Debug;
 use std::rc::Rc;
 
@@ -186,9 +187,46 @@ impl Thunk {
 type InnerMap = HashMap<Id, u32>;
 
 enum TrieInner {
-    Node(InnerMap, Vec<Trie>),
-    SetNode(HashSet<Id>, Box<Trie>),
+    Map(InnerMap, Vec<Trie>),
+    Set(HashSet<Id>, Box<Trie>),
+    DenseSet(DenseMap<()>, Box<Trie>),
     Data(Thunk),
+}
+
+struct DenseMap<T> {
+    min: Id,
+    map: Vec<Option<T>>,
+}
+
+impl<T: Copy> DenseMap<T> {
+    fn new(min: Id, max: Id) -> Self {
+        let len: usize = (max - min + 1).try_into().unwrap();
+        Self {
+            map: vec![None; len],
+            min,
+        }
+    }
+
+    fn insert(&mut self, id: Id, value: T) {
+        let i: usize = (id - self.min).try_into().unwrap();
+        self.map[i] = Some(value);
+    }
+
+    fn get(&self, id: Id) -> Option<T> {
+        let i: usize = (id - self.min).try_into().ok()?;
+        self.map.get(i).copied().flatten()
+    }
+
+    fn iter(&self) -> impl Iterator<Item = (Id, T)> + '_ {
+        self.map
+            .iter()
+            .enumerate()
+            .filter_map(|(i, v)| v.map(|v| (i as Id + self.min, v)))
+    }
+
+    fn len(&self) -> usize {
+        self.map.len()
+    }
 }
 
 pub enum TrieSchema {
@@ -259,8 +297,9 @@ impl<'a> TrieRef<'a> {
     #[allow(clippy::len_without_is_empty)]
     pub fn len(self) -> usize {
         match self.force() {
-            TrieInner::Node(map, _) => map.len(),
-            TrieInner::SetNode(set, _t) => set.len(),
+            TrieInner::Map(map, _) => map.len(),
+            TrieInner::Set(set, _t) => set.len(),
+            TrieInner::DenseSet(set, _t) => set.len(),
             TrieInner::Data(..) => panic!(),
         }
     }
@@ -268,8 +307,9 @@ impl<'a> TrieRef<'a> {
     pub fn guess_len(self) -> usize {
         self.trie.inner.map(
             |trie| match trie.as_ref() {
-                TrieInner::Node(m, _) => m.len(),
-                TrieInner::SetNode(s, _) => s.len(),
+                TrieInner::Map(m, _) => m.len(),
+                TrieInner::Set(s, _) => s.len(),
+                TrieInner::DenseSet(s, _) => s.len(),
                 TrieInner::Data(..) => panic!(),
             },
             |thunk| match thunk.len() {
@@ -300,12 +340,26 @@ impl<'a> TrieRef<'a> {
             TrieInner::Data(thunk)
         } else if kind == 1 {
             let mut set = HashSet::<Id>::default();
+            let mut min = Id::MAX;
+            let mut max = Id::MIN;
             self.for_each_in_thunk(thunk, |_i, id| {
+                min = min.min(id);
+                max = max.max(id);
                 set.insert(id);
             });
 
+            assert!(!set.is_empty());
             // println!("Trie len: {}", set.len());
-            TrieInner::SetNode(set, Box::new(mk_thunk(0xc0ffee)))
+
+            if (max - min) < ((set.len() * 2) as i32) {
+                let mut denseset = DenseMap::new(min, max);
+                for id in set {
+                    denseset.insert(id, ());
+                }
+                TrieInner::DenseSet(denseset, Box::new(mk_thunk(0xc0ffee)))
+            } else {
+                TrieInner::Set(set, Box::new(mk_thunk(0xc0ffee)))
+            }
         } else {
             let mut map = InnerMap::default();
             let mut tries = Vec::new();
@@ -326,7 +380,7 @@ impl<'a> TrieRef<'a> {
 
             // println!("Trie len: {}", map.len());
 
-            TrieInner::Node(map, tries)
+            TrieInner::Map(map, tries)
         };
 
         Box::new(inner)
@@ -359,9 +413,16 @@ impl<'a> TrieRef<'a> {
 
     pub fn get(self, id: Id) -> Option<TrieRef<'a>> {
         match self.force() {
-            TrieInner::Node(map, ts) => map.get(&id).map(|&i| self.mk_ref(&ts[i as usize])),
-            TrieInner::SetNode(set, trie) => {
+            TrieInner::Map(map, ts) => map.get(&id).map(|&i| self.mk_ref(&ts[i as usize])),
+            TrieInner::Set(set, trie) => {
                 if set.contains(&id) {
+                    Some(self.mk_ref(trie))
+                } else {
+                    None
+                }
+            }
+            TrieInner::DenseSet(s, trie) => {
+                if s.get(id).is_some() {
                     Some(self.mk_ref(trie))
                 } else {
                     None
@@ -377,7 +438,7 @@ impl<'a> TrieRef<'a> {
         F2: FnMut(usize, Self),
     {
         match self.force() {
-            TrieInner::Node(map, ts) => {
+            TrieInner::Map(map, ts) => {
                 let schema = self.schema.next();
                 for (i, &id) in ids.iter().enumerate() {
                     if test(i) {
@@ -388,10 +449,18 @@ impl<'a> TrieRef<'a> {
                     }
                 }
             }
-            TrieInner::SetNode(set, trie) => {
+            TrieInner::Set(set, trie) => {
                 let schema = self.schema.next();
                 for (i, &id) in ids.iter().enumerate() {
                     if test(i) && set.contains(&id) {
+                        f(i, Self { schema, trie });
+                    }
+                }
+            }
+            TrieInner::DenseSet(set, trie) => {
+                let schema = self.schema.next();
+                for (i, &id) in ids.iter().enumerate() {
+                    if test(i) && set.get(id).is_some() {
                         f(i, Self { schema, trie });
                     }
                 }
@@ -402,16 +471,22 @@ impl<'a> TrieRef<'a> {
 
     pub fn for_each(self, mut f: impl FnMut(Id, Self)) {
         match self.force() {
-            TrieInner::Node(map, ts) => {
+            TrieInner::Map(map, ts) => {
                 let schema = self.schema.next();
                 for (&id, &ti) in map {
                     let trie = &ts[ti as usize];
                     f(id, Self { schema, trie });
                 }
             }
-            TrieInner::SetNode(set, trie) => {
+            TrieInner::Set(set, trie) => {
                 let schema = self.schema.next();
                 for &id in set {
+                    f(id, Self { schema, trie });
+                }
+            }
+            TrieInner::DenseSet(set, trie) => {
+                let schema = self.schema.next();
+                for (id, _) in set.iter() {
                     f(id, Self { schema, trie });
                 }
             }
@@ -421,16 +496,18 @@ impl<'a> TrieRef<'a> {
 
     pub fn has_data(self) -> bool {
         match self.force() {
-            TrieInner::SetNode(..) => false,
-            TrieInner::Node(..) => panic!(),
+            TrieInner::Set(..) => false,
+            TrieInner::Map(..) => panic!(),
+            TrieInner::DenseSet(..) => panic!(),
             TrieInner::Data(..) => !self.schema.data_cols().is_empty(),
         }
     }
 
     pub fn for_each_data(self, mut f: impl FnMut(&[Value])) {
         match self.force() {
-            TrieInner::SetNode(..) => panic!(),
-            TrieInner::Node(..) => panic!(),
+            TrieInner::Map(..) => panic!(),
+            TrieInner::Set(..) => panic!(),
+            TrieInner::DenseSet(..) => panic!(),
             TrieInner::Data(thunk) => {
                 let mut row = vec![];
                 thunk.for_each(|idx| {
