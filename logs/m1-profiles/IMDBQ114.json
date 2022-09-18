@@ -1,0 +1,247 @@
+{
+   "name":  "Query", 
+   "result": 0.633067,
+   "timing": 0.633067,
+   "cardinality": 0,
+   "extra_info": "select '(29a.sql (joincard (relset cc ci mc)', sum(cc.cnt * ci.cnt * mc.cnt), '))'\nfrom\n (select movie_id, count(*) as cnt from complete_cast   group by movie_id) as cc,\n (select movie_id, count(*) as cnt from cast_info       group by movie_id) as ci,\n (select movie_id, count(*) as cnt from movie_companies group by movie_id) as mc\nwhere mc.movie_id = ci.movie_id and\n      mc.movie_id = cc.movie_id and\n      ci.movie_id = cc.movie_id;\n", 
+   "timings": [
+   {
+   "annotation": "optimizer", 
+   "timing": 0.000101
+   },
+   {
+   "annotation": "optimizer > column_lifetime", 
+   "timing": 0.000003
+   },
+   {
+   "annotation": "optimizer > common_aggregate", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > common_subexpressions", 
+   "timing": 0.000002
+   },
+   {
+   "annotation": "optimizer > deliminator", 
+   "timing": 0.000000
+   },
+   {
+   "annotation": "optimizer > expression_rewriter", 
+   "timing": 0.000007
+   },
+   {
+   "annotation": "optimizer > filter_pullup", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > filter_pushdown", 
+   "timing": 0.000017
+   },
+   {
+   "annotation": "optimizer > in_clause", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > join_order", 
+   "timing": 0.000022
+   },
+   {
+   "annotation": "optimizer > regex_range", 
+   "timing": 0.000000
+   },
+   {
+   "annotation": "optimizer > reorder_filter", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > statistics_propagation", 
+   "timing": 0.000039
+   },
+   {
+   "annotation": "optimizer > top_n", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > unused_columns", 
+   "timing": 0.000004
+   },
+   {
+   "annotation": "physical_planner", 
+   "timing": 0.000020
+   },
+   {
+   "annotation": "physical_planner > column_binding", 
+   "timing": 0.000003
+   },
+   {
+   "annotation": "physical_planner > create_plan", 
+   "timing": 0.000012
+   },
+   {
+   "annotation": "physical_planner > resolve_types", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "planner", 
+   "timing": 0.000078
+   },
+   {
+   "annotation": "planner > binder", 
+   "timing": 0.000075
+   }
+   ],
+   "children": [
+    {
+      "name": "RESULT_COLLECTOR",
+      "timing":0.000003,
+      "cardinality":0,
+      "extra_info": "",
+      "timings": [
+      ],
+      "children": [
+       {
+         "name": "PROJECTION",
+         "timing":0.000001,
+         "cardinality":1,
+         "extra_info": "'(29a.sql (joincard (relset cc ci mc)'\nsum(((cnt * cnt) * cnt))\n'))'\n",
+         "timings": [
+         ],
+         "children": [
+          {
+            "name": "SIMPLE_AGGREGATE",
+            "timing":0.000056,
+            "cardinality":1,
+            "extra_info": "sum(#0)",
+            "timings": [
+            ],
+            "children": [
+             {
+               "name": "PROJECTION",
+               "timing":0.000254,
+               "cardinality":72690,
+               "extra_info": "((cnt * cnt) * cnt)\n",
+               "timings": [
+               ],
+               "children": [
+                {
+                  "name": "HASH_JOIN",
+                  "timing":0.049801,
+                  "cardinality":72690,
+                  "extra_info": "INNER\nmovie_id = movie_id\nmovie_id = movie_id\n",
+                  "timings": [
+                  ],
+                  "children": [
+                   {
+                     "name": "HASH_JOIN",
+                     "timing":0.037532,
+                     "cardinality":1040119,
+                     "extra_info": "INNER\nmovie_id = movie_id\n",
+                     "timings": [
+                     ],
+                     "children": [
+                      {
+                        "name": "HASH_GROUP_BY",
+                        "timing":3.073379,
+                        "cardinality":2331601,
+                        "extra_info": "#0\ncount_star()",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "PROJECTION",
+                           "timing":0.002263,
+                           "cardinality":36244344,
+                           "extra_info": "movie_id\n",
+                           "timings": [
+                           ],
+                           "children": [
+                            {
+                              "name": "SEQ_SCAN",
+                              "timing":0.035011,
+                              "cardinality":36244344,
+                              "extra_info": "cast_info\n[INFOSEPARATOR]\nmovie_id",
+                              "timings": [
+                              ],
+                              "children": [
+                              ]
+                            }
+                           ]
+                         }
+                        ]
+                      }
+,
+                      {
+                        "name": "HASH_GROUP_BY",
+                        "timing":0.136310,
+                        "cardinality":1087236,
+                        "extra_info": "#0\ncount_star()",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "PROJECTION",
+                           "timing":0.000188,
+                           "cardinality":2609129,
+                           "extra_info": "movie_id\n",
+                           "timings": [
+                           ],
+                           "children": [
+                            {
+                              "name": "SEQ_SCAN",
+                              "timing":0.001078,
+                              "cardinality":2609129,
+                              "extra_info": "movie_companies\n[INFOSEPARATOR]\nmovie_id",
+                              "timings": [
+                              ],
+                              "children": [
+                              ]
+                            }
+                           ]
+                         }
+                        ]
+                      }
+                     ]
+                   }
+,
+                   {
+                     "name": "HASH_GROUP_BY",
+                     "timing":0.005720,
+                     "cardinality":93514,
+                     "extra_info": "#0\ncount_star()",
+                     "timings": [
+                     ],
+                     "children": [
+                      {
+                        "name": "PROJECTION",
+                        "timing":0.000004,
+                        "cardinality":135086,
+                        "extra_info": "movie_id\n",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "SEQ_SCAN",
+                           "timing":0.000030,
+                           "cardinality":135086,
+                           "extra_info": "complete_cast\n[INFOSEPARATOR]\nmovie_id",
+                           "timings": [
+                           ],
+                           "children": [
+                           ]
+                         }
+                        ]
+                      }
+                     ]
+                   }
+                  ]
+                }
+               ]
+             }
+            ]
+          }
+         ]
+       }
+      ]
+    }
+   ]
+}

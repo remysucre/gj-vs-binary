@@ -1,0 +1,321 @@
+{
+   "name":  "Query", 
+   "result": 0.079838,
+   "timing": 0.079838,
+   "cardinality": 0,
+   "extra_info": "SELECT MIN(an.name) AS acress_pseudonym,\n       MIN(t.title) AS japanese_anime_movie\nFROM aka_name AS an,\n     cast_info AS ci,\n     company_name AS cn,\n     movie_companies AS mc,\n     name AS n,\n     role_type AS rt,\n     title AS t\nWHERE ci.note ='(voice: English version)'\n  AND cn.country_code ='[jp]'\n  AND mc.note LIKE '%(Japan)%'\n  AND mc.note NOT LIKE '%(USA)%'\n  AND (mc.note LIKE '%(2006)%'\n       OR mc.note LIKE '%(2007)%')\n  AND n.name LIKE '%Yo%'\n  AND n.name NOT LIKE '%Yu%'\n  AND rt.role ='actress'\n  AND t.production_year BETWEEN 2006 AND 2007\n  AND (t.title LIKE 'One Piece%'\n       OR t.title LIKE 'Dragon Ball Z%')\n  AND an.person_id = n.id\n  AND n.id = ci.person_id\n  AND ci.movie_id = t.id\n  AND t.id = mc.movie_id\n  AND mc.company_id = cn.id\n  AND ci.role_id = rt.id\n  AND an.person_id = ci.person_id\n  AND ci.movie_id = mc.movie_id;\n\n", 
+   "timings": [
+   {
+   "annotation": "optimizer", 
+   "timing": 0.000592
+   },
+   {
+   "annotation": "optimizer > column_lifetime", 
+   "timing": 0.000006
+   },
+   {
+   "annotation": "optimizer > common_aggregate", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > common_subexpressions", 
+   "timing": 0.000002
+   },
+   {
+   "annotation": "optimizer > deliminator", 
+   "timing": 0.000000
+   },
+   {
+   "annotation": "optimizer > expression_rewriter", 
+   "timing": 0.000053
+   },
+   {
+   "annotation": "optimizer > filter_pullup", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > filter_pushdown", 
+   "timing": 0.000083
+   },
+   {
+   "annotation": "optimizer > in_clause", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > join_order", 
+   "timing": 0.000362
+   },
+   {
+   "annotation": "optimizer > regex_range", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > reorder_filter", 
+   "timing": 0.000003
+   },
+   {
+   "annotation": "optimizer > statistics_propagation", 
+   "timing": 0.000070
+   },
+   {
+   "annotation": "optimizer > top_n", 
+   "timing": 0.000000
+   },
+   {
+   "annotation": "optimizer > unused_columns", 
+   "timing": 0.000006
+   },
+   {
+   "annotation": "physical_planner", 
+   "timing": 0.000034
+   },
+   {
+   "annotation": "physical_planner > column_binding", 
+   "timing": 0.000008
+   },
+   {
+   "annotation": "physical_planner > create_plan", 
+   "timing": 0.000016
+   },
+   {
+   "annotation": "physical_planner > resolve_types", 
+   "timing": 0.000002
+   },
+   {
+   "annotation": "planner", 
+   "timing": 0.000109
+   },
+   {
+   "annotation": "planner > binder", 
+   "timing": 0.000108
+   }
+   ],
+   "children": [
+    {
+      "name": "RESULT_COLLECTOR",
+      "timing":0.000002,
+      "cardinality":0,
+      "extra_info": "",
+      "timings": [
+      ],
+      "children": [
+       {
+         "name": "SIMPLE_AGGREGATE",
+         "timing":0.000005,
+         "cardinality":1,
+         "extra_info": "min(#0)\nmin(#1)",
+         "timings": [
+         ],
+         "children": [
+          {
+            "name": "PROJECTION",
+            "timing":0.000001,
+            "cardinality":6,
+            "extra_info": "name\ntitle\n",
+            "timings": [
+            ],
+            "children": [
+             {
+               "name": "HASH_JOIN",
+               "timing":0.049884,
+               "cardinality":6,
+               "extra_info": "INNER\nid = person_id\nperson_id = person_id\n",
+               "timings": [
+               ],
+               "children": [
+                {
+                  "name": "HASH_JOIN",
+                  "timing":0.000031,
+                  "cardinality":4,
+                  "extra_info": "INNER\nmovie_id = id\nmovie_id = id\n",
+                  "timings": [
+                  ],
+                  "children": [
+                   {
+                     "name": "HASH_JOIN",
+                     "timing":0.000015,
+                     "cardinality":16,
+                     "extra_info": "INNER\nrole_id = id\n",
+                     "timings": [
+                     ],
+                     "children": [
+                      {
+                        "name": "HASH_JOIN",
+                        "timing":0.000630,
+                        "cardinality":42,
+                        "extra_info": "INNER\nmovie_id = movie_id\n",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "HASH_JOIN",
+                           "timing":0.008262,
+                           "cardinality":938,
+                           "extra_info": "INNER\nperson_id = id\n",
+                           "timings": [
+                           ],
+                           "children": [
+                            {
+                              "name": "SEQ_SCAN",
+                              "timing":0.293799,
+                              "cardinality":93095,
+                              "extra_info": "cast_info\n[INFOSEPARATOR]\nnote\nperson_id\nmovie_id\nrole_id\n[INFOSEPARATOR]\nFilters: note=(voice: English version) AND note IS NOT NULL\n",
+                              "timings": [
+                              ],
+                              "children": [
+                              ]
+                            }
+,
+                            {
+                              "name": "PROJECTION",
+                              "timing":0.000007,
+                              "cardinality":20911,
+                              "extra_info": "#1\n",
+                              "timings": [
+                              ],
+                              "children": [
+                               {
+                                 "name": "FILTER",
+                                 "timing":0.048988,
+                                 "cardinality":20911,
+                                 "extra_info": "(contains(name, 'Yo') AND NOT(contains(name, 'Yu')))",
+                                 "timings": [
+                                 ],
+                                 "children": [
+                                  {
+                                    "name": "SEQ_SCAN",
+                                    "timing":0.032942,
+                                    "cardinality":4167491,
+                                    "extra_info": "name\n[INFOSEPARATOR]\nname\nid",
+                                    "timings": [
+                                    ],
+                                    "children": [
+                                    ]
+                                  }
+                                 ]
+                               }
+                              ]
+                            }
+                           ]
+                         }
+,
+                         {
+                           "name": "HASH_JOIN",
+                           "timing":0.001534,
+                           "cardinality":8495,
+                           "extra_info": "INNER\ncompany_id = id\n",
+                           "timings": [
+                           ],
+                           "children": [
+                            {
+                              "name": "PROJECTION",
+                              "timing":0.000009,
+                              "cardinality":8569,
+                              "extra_info": "#1\n#2\n",
+                              "timings": [
+                              ],
+                              "children": [
+                               {
+                                 "name": "FILTER",
+                                 "timing":0.063109,
+                                 "cardinality":8569,
+                                 "extra_info": "(contains(note, '(Japan)') AND NOT(contains(note, '(USA)')) AND (contains(note, '(2006)') OR contains(note, '(2007)')))",
+                                 "timings": [
+                                 ],
+                                 "children": [
+                                  {
+                                    "name": "SEQ_SCAN",
+                                    "timing":0.010360,
+                                    "cardinality":2609129,
+                                    "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\nmovie_id\ncompany_id",
+                                    "timings": [
+                                    ],
+                                    "children": [
+                                    ]
+                                  }
+                                 ]
+                               }
+                              ]
+                            }
+,
+                            {
+                              "name": "SEQ_SCAN",
+                              "timing":0.003443,
+                              "cardinality":6752,
+                              "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid\n[INFOSEPARATOR]\nFilters: country_code=[jp] AND country_code IS NOT NULL\n",
+                              "timings": [
+                              ],
+                              "children": [
+                              ]
+                            }
+                           ]
+                         }
+                        ]
+                      }
+,
+                      {
+                        "name": "SEQ_SCAN",
+                        "timing":0.000003,
+                        "cardinality":1,
+                        "extra_info": "role_type\n[INFOSEPARATOR]\nrole\nid\n[INFOSEPARATOR]\nFilters: role=actress AND role IS NOT NULL\n",
+                        "timings": [
+                        ],
+                        "children": [
+                        ]
+                      }
+                     ]
+                   }
+,
+                   {
+                     "name": "PROJECTION",
+                     "timing":0.000002,
+                     "cardinality":7,
+                     "extra_info": "#1\n#2\n",
+                     "timings": [
+                     ],
+                     "children": [
+                      {
+                        "name": "FILTER",
+                        "timing":0.009498,
+                        "cardinality":7,
+                        "extra_info": "(prefix(title, 'One Piece') OR prefix(title, 'Dragon Ball Z'))",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "SEQ_SCAN",
+                           "timing":0.049778,
+                           "cardinality":227994,
+                           "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\ntitle\nid\n[INFOSEPARATOR]\nFilters: production_year>=2006 AND production_year<=2007 AND production_year IS NOT NULL\n",
+                           "timings": [
+                           ],
+                           "children": [
+                           ]
+                         }
+                        ]
+                      }
+                     ]
+                   }
+                  ]
+                }
+,
+                {
+                  "name": "SEQ_SCAN",
+                  "timing":0.007383,
+                  "cardinality":901343,
+                  "extra_info": "aka_name\n[INFOSEPARATOR]\nperson_id\nname",
+                  "timings": [
+                  ],
+                  "children": [
+                  ]
+                }
+               ]
+             }
+            ]
+          }
+         ]
+       }
+      ]
+    }
+   ]
+}

@@ -1,0 +1,342 @@
+{
+   "name":  "Query", 
+   "result": 0.199410,
+   "timing": 0.199410,
+   "cardinality": 0,
+   "extra_info": "SELECT MIN(an.name) AS alternative_name,\n       MIN(chn.name) AS character_name,\n       MIN(t.title) AS movie\nFROM aka_name AS an,\n     char_name AS chn,\n     cast_info AS ci,\n     company_name AS cn,\n     movie_companies AS mc,\n     name AS n,\n     role_type AS rt,\n     title AS t\nWHERE ci.note IN ('(voice)',\n                  '(voice: Japanese version)',\n                  '(voice) (uncredited)',\n                  '(voice: English version)')\n  AND cn.country_code ='[us]'\n  AND mc.note IS NOT NULL\n  AND (mc.note LIKE '%(USA)%'\n       OR mc.note LIKE '%(worldwide)%')\n  AND n.gender ='f'\n  AND n.name LIKE '%Ang%'\n  AND rt.role ='actress'\n  AND t.production_year BETWEEN 2005 AND 2015\n  AND ci.movie_id = t.id\n  AND t.id = mc.movie_id\n  AND ci.movie_id = mc.movie_id\n  AND mc.company_id = cn.id\n  AND ci.role_id = rt.id\n  AND n.id = ci.person_id\n  AND chn.id = ci.person_role_id\n  AND an.person_id = n.id\n  AND an.person_id = ci.person_id;\n\n", 
+   "timings": [
+   {
+   "annotation": "optimizer", 
+   "timing": 0.001174
+   },
+   {
+   "annotation": "optimizer > column_lifetime", 
+   "timing": 0.000009
+   },
+   {
+   "annotation": "optimizer > common_aggregate", 
+   "timing": 0.000002
+   },
+   {
+   "annotation": "optimizer > common_subexpressions", 
+   "timing": 0.000002
+   },
+   {
+   "annotation": "optimizer > deliminator", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > expression_rewriter", 
+   "timing": 0.000037
+   },
+   {
+   "annotation": "optimizer > filter_pullup", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > filter_pushdown", 
+   "timing": 0.000098
+   },
+   {
+   "annotation": "optimizer > in_clause", 
+   "timing": 0.000002
+   },
+   {
+   "annotation": "optimizer > join_order", 
+   "timing": 0.000926
+   },
+   {
+   "annotation": "optimizer > regex_range", 
+   "timing": 0.000001
+   },
+   {
+   "annotation": "optimizer > reorder_filter", 
+   "timing": 0.000004
+   },
+   {
+   "annotation": "optimizer > statistics_propagation", 
+   "timing": 0.000082
+   },
+   {
+   "annotation": "optimizer > top_n", 
+   "timing": 0.000000
+   },
+   {
+   "annotation": "optimizer > unused_columns", 
+   "timing": 0.000007
+   },
+   {
+   "annotation": "physical_planner", 
+   "timing": 0.000045
+   },
+   {
+   "annotation": "physical_planner > column_binding", 
+   "timing": 0.000012
+   },
+   {
+   "annotation": "physical_planner > create_plan", 
+   "timing": 0.000021
+   },
+   {
+   "annotation": "physical_planner > resolve_types", 
+   "timing": 0.000004
+   },
+   {
+   "annotation": "planner", 
+   "timing": 0.000129
+   },
+   {
+   "annotation": "planner > binder", 
+   "timing": 0.000128
+   }
+   ],
+   "children": [
+    {
+      "name": "RESULT_COLLECTOR",
+      "timing":0.000002,
+      "cardinality":0,
+      "extra_info": "",
+      "timings": [
+      ],
+      "children": [
+       {
+         "name": "SIMPLE_AGGREGATE",
+         "timing":0.000014,
+         "cardinality":1,
+         "extra_info": "min(#0)\nmin(#1)\nmin(#2)",
+         "timings": [
+         ],
+         "children": [
+          {
+            "name": "PROJECTION",
+            "timing":0.000006,
+            "cardinality":121,
+            "extra_info": "name\nname\ntitle\n",
+            "timings": [
+            ],
+            "children": [
+             {
+               "name": "HASH_JOIN",
+               "timing":0.054046,
+               "cardinality":121,
+               "extra_info": "INNER\nid = person_id\nperson_id = person_id\n",
+               "timings": [
+               ],
+               "children": [
+                {
+                  "name": "HASH_JOIN",
+                  "timing":0.168402,
+                  "cardinality":115,
+                  "extra_info": "INNER\nperson_role_id = id\n",
+                  "timings": [
+                  ],
+                  "children": [
+                   {
+                     "name": "HASH_JOIN",
+                     "timing":0.086202,
+                     "cardinality":125,
+                     "extra_info": "INNER\nmovie_id = id\nmovie_id = id\n",
+                     "timings": [
+                     ],
+                     "children": [
+                      {
+                        "name": "HASH_JOIN",
+                        "timing":0.000022,
+                        "cardinality":329,
+                        "extra_info": "INNER\nrole_id = id\n",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "HASH_JOIN",
+                           "timing":0.033310,
+                           "cardinality":333,
+                           "extra_info": "INNER\nmovie_id = movie_id\n",
+                           "timings": [
+                           ],
+                           "children": [
+                            {
+                              "name": "HASH_JOIN",
+                              "timing":0.010060,
+                              "cardinality":728,
+                              "extra_info": "INNER\nperson_id = id\n",
+                              "timings": [
+                              ],
+                              "children": [
+                               {
+                                 "name": "PROJECTION",
+                                 "timing":0.000621,
+                                 "cardinality":867477,
+                                 "extra_info": "#1\n#2\n#3\n#4\n",
+                                 "timings": [
+                                 ],
+                                 "children": [
+                                  {
+                                    "name": "FILTER",
+                                    "timing":0.465721,
+                                    "cardinality":867477,
+                                    "extra_info": "(note = '(voice)' OR note = '(voice: Japanese version)' OR note = '(voice) (uncredited)' OR note = '(voice: English version)')",
+                                    "timings": [
+                                    ],
+                                    "children": [
+                                     {
+                                       "name": "SEQ_SCAN",
+                                       "timing":0.215959,
+                                       "cardinality":36244344,
+                                       "extra_info": "cast_info\n[INFOSEPARATOR]\nnote\nmovie_id\nrole_id\nperson_id\nperson_role_id",
+                                       "timings": [
+                                       ],
+                                       "children": [
+                                       ]
+                                     }
+                                    ]
+                                  }
+                                 ]
+                               }
+,
+                               {
+                                 "name": "PROJECTION",
+                                 "timing":0.000002,
+                                 "cardinality":6768,
+                                 "extra_info": "#2\n",
+                                 "timings": [
+                                 ],
+                                 "children": [
+                                  {
+                                    "name": "FILTER",
+                                    "timing":0.016692,
+                                    "cardinality":6768,
+                                    "extra_info": "contains(name, 'Ang')",
+                                    "timings": [
+                                    ],
+                                    "children": [
+                                     {
+                                       "name": "SEQ_SCAN",
+                                       "timing":0.013887,
+                                       "cardinality":961555,
+                                       "extra_info": "name\n[INFOSEPARATOR]\ngender\nname\nid\n[INFOSEPARATOR]\nFilters: gender=f AND gender IS NOT NULL\n",
+                                       "timings": [
+                                       ],
+                                       "children": [
+                                       ]
+                                     }
+                                    ]
+                                  }
+                                 ]
+                               }
+                              ]
+                            }
+,
+                            {
+                              "name": "HASH_JOIN",
+                              "timing":0.007286,
+                              "cardinality":542096,
+                              "extra_info": "INNER\ncompany_id = id\n",
+                              "timings": [
+                              ],
+                              "children": [
+                               {
+                                 "name": "PROJECTION",
+                                 "timing":0.000531,
+                                 "cardinality":590994,
+                                 "extra_info": "#1\n#2\n",
+                                 "timings": [
+                                 ],
+                                 "children": [
+                                  {
+                                    "name": "FILTER",
+                                    "timing":0.114177,
+                                    "cardinality":590994,
+                                    "extra_info": "((note IS NOT NULL) AND (contains(note, '(USA)') OR contains(note, '(worldwide)')))",
+                                    "timings": [
+                                    ],
+                                    "children": [
+                                     {
+                                       "name": "SEQ_SCAN",
+                                       "timing":0.012946,
+                                       "cardinality":2609129,
+                                       "extra_info": "movie_companies\n[INFOSEPARATOR]\nnote\nmovie_id\ncompany_id",
+                                       "timings": [
+                                       ],
+                                       "children": [
+                                       ]
+                                     }
+                                    ]
+                                  }
+                                 ]
+                               }
+,
+                               {
+                                 "name": "SEQ_SCAN",
+                                 "timing":0.003764,
+                                 "cardinality":84843,
+                                 "extra_info": "company_name\n[INFOSEPARATOR]\ncountry_code\nid\n[INFOSEPARATOR]\nFilters: country_code=[us] AND country_code IS NOT NULL\n",
+                                 "timings": [
+                                 ],
+                                 "children": [
+                                 ]
+                               }
+                              ]
+                            }
+                           ]
+                         }
+,
+                         {
+                           "name": "SEQ_SCAN",
+                           "timing":0.000005,
+                           "cardinality":1,
+                           "extra_info": "role_type\n[INFOSEPARATOR]\nrole\nid\n[INFOSEPARATOR]\nFilters: role=actress AND role IS NOT NULL\n",
+                           "timings": [
+                           ],
+                           "children": [
+                           ]
+                         }
+                        ]
+                      }
+,
+                      {
+                        "name": "SEQ_SCAN",
+                        "timing":0.057476,
+                        "cardinality":1107888,
+                        "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>=2005 AND production_year<=2015 AND production_year IS NOT NULL\n",
+                        "timings": [
+                        ],
+                        "children": [
+                        ]
+                      }
+                     ]
+                   }
+,
+                   {
+                     "name": "SEQ_SCAN",
+                     "timing":0.036357,
+                     "cardinality":3140339,
+                     "extra_info": "char_name\n[INFOSEPARATOR]\nid\nname",
+                     "timings": [
+                     ],
+                     "children": [
+                     ]
+                   }
+                  ]
+                }
+,
+                {
+                  "name": "SEQ_SCAN",
+                  "timing":0.008969,
+                  "cardinality":901343,
+                  "extra_info": "aka_name\n[INFOSEPARATOR]\nperson_id\nname",
+                  "timings": [
+                  ],
+                  "children": [
+                  ]
+                }
+               ]
+             }
+            ]
+          }
+         ]
+       }
+      ]
+    }
+   ]
+}
