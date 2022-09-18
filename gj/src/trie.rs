@@ -363,9 +363,6 @@ impl<'a> TrieRef<'a> {
         } else {
             let mut map = InnerMap::default();
             let mut tries = Vec::new();
-            let capacity = self.schema.id_col().len() / 2;
-            map.reserve(capacity);
-            tries.reserve(capacity);
 
             self.for_each_in_thunk(thunk, |i, id| match map.entry(id) {
                 Entry::Vacant(e) => {
