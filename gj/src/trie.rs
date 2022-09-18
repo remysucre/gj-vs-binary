@@ -3,8 +3,7 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use hashbrown::hash_map::Entry;
-// use smallvec::{smallvec, SmallVec};
-use thin_vec::{thin_vec, ThinVec};
+use smallvec::{smallvec, SmallVec};
 
 use crate::sql::Attribute;
 use crate::*;
@@ -108,79 +107,31 @@ pub struct TrieRef<'a> {
     trie: &'a Trie,
 }
 
-enum Thunk {
-    Small([u32; 3]),
-    Big(ThinVec<u32>),
-}
+struct Thunk(SmallVec<[u32; 4]>);
 
 impl Thunk {
     fn empty() -> Self {
-        Self::Small([0; 3])
+        Self(Default::default())
     }
 
     fn is_empty(&self) -> bool {
-        matches!(self, Self::Small([0, _, _]))
+        self.0.is_empty()
     }
 
     fn len(&self) -> usize {
-        match self {
-            Thunk::Small(v) => {
-                if v[0] == 0 {
-                    0
-                } else if v[1] == 0 {
-                    1
-                } else if v[2] == 0 {
-                    2
-                } else {
-                    3
-                }
-            }
-            Thunk::Big(v) => v.len(),
-        }
+        self.0.len()
     }
 
     fn singleton(idx: u32) -> Thunk {
-        Self::Small([idx, 0, 0])
+        Self(smallvec![idx])
     }
 
     fn push(&mut self, idx: u32) {
-        match self {
-            Thunk::Small(v) => {
-                if v[0] == 0 {
-                    v[0] = idx;
-                } else if v[1] == 0 {
-                    v[1] = idx;
-                } else if v[2] == 0 {
-                    v[2] = idx;
-                } else {
-                    *self = Thunk::Big(thin_vec![v[0], v[1], v[2], idx]);
-                }
-            }
-            Thunk::Big(v) => {
-                v.push(idx);
-            }
-        }
+        self.0.push(idx)
     }
 
-    fn for_each(&self, mut f: impl FnMut(u32)) {
-        match self {
-            Thunk::Small(v) => {
-                if v[0] != 0 {
-                    f(v[0]);
-                }
-                if v[1] != 0 {
-                    f(v[1]);
-                }
-                if v[2] != 0 {
-                    f(v[2]);
-                }
-            }
-            Thunk::Big(v) => {
-                for &idx in v.iter() {
-                    f(idx);
-                }
-            }
-        }
+    fn for_each(&self, f: impl FnMut(u32)) {
+        self.0.iter().copied().for_each(f)
     }
 }
 
