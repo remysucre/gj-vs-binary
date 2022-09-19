@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import re
+import json
+import statistics
+import itertools
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -11,64 +13,27 @@ import plotly.graph_objects as go
 # matplotlib.rcParams['savefig.bbox'] = 'tight'
 
 
-def parse_gj(filename):
-    print(f'parsing {filename}')
-    pats = dict(
-        query=r'running query \w+: IMDBQ(\d+)',
-        dd_total=r'DUCKDB total time: ([\d\.]*)',
-        dd_filter=r'DUCKDB filter time: ([\d\.]*)',
-        duck_db=r'DUCKDB join time: ([\d\.]*)',
-        build=r'Total building takes ([\d\.]*)',
-        join=r'Total joining takes ([\d\.]*)',
-        total=r'Total takes ([\d\.]*)',
-    )
-    regexp = ".*?".join(pats.values())
+def plot(data):
+    # get the sorted query names
+    ddb = sorted(data['duckdb'], key=lambda x: x['join_time'])
+    indexes = {d['query']: i for i, d in enumerate(ddb)}
+    gj = sorted(data['gj'], key=lambda x: indexes[x['query']])
 
-    with open(filename) as f:
-        text = f.read()
-
-    data = []
-    for m in re.finditer(regexp, text, re.DOTALL):
-        # print(m.groups())
-        groups = map(float, m.groups())
-        data.append(dict(zip(pats.keys(), groups)))
-
-    return data
-
-
-def plot(gjs):
-
-    # get an arbitrary data list to plot duckdb stuff
-    # data = list(gjs.values())[0]
-    data = list(gjs.values())[0]
-
-    for name, gj in gjs.items():
-        for i, d in enumerate(gj):
-            assert d['query'] == data[i]['query']
-            data[i][name] = d['total']
-
-    for d in data:
-        d['query'] = str(int(d['query']))
-        del d['total']
-
-    print(data[:5])
-
-    # sort
-    def sort_key(x): return x['duck_db']
-    data.sort(key=sort_key)
-
-    # ys = ['dd_total', 'dd_filter', 'duck_db', 'build']
-    ys = ['duck_db']
+    # preprocess all data
+    for d in itertools.chain(ddb, gj):
+        d['query'] = d['query'].lstrip('IMDBQ')
 
     fig1 = px.line(
-        data, x='query', y=ys,
-        # barmode='group',
+        ddb, x='query', y='join_time',
     )
 
-    zs = list(gjs.keys())
+    # preprocess gj data
+    for d in gj:
+        d['total'] = statistics.mean(d['total_times'])
+        d['optimize'] = 'O{}'.format(d['optimize'])
 
-    fig2 = px.scatter(
-        data, x='query', y=zs,
+    fig2 = px.line(
+        gj, x='query', y='total', color='optimize',
     )
 
     fig = go.Figure(data=fig1.data + fig2.data)
@@ -83,9 +48,7 @@ def plot(gjs):
 if __name__ == '__main__':
     import sys
 
-    gjs = {
-        filename: parse_gj(filename)
-        for filename in sys.argv[1:]
-    }
+    with open(sys.argv[1]) as f:
+        data = json.load(f)
 
-    plot(gjs)
+    plot(data)

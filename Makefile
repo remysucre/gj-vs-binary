@@ -40,13 +40,11 @@ test: preprocessor/test.sh $(DATA)
 	cd preprocessor && bash test.sh join-order-benchmark imdb
 
 GJ_SRC=$(shell find gj/src -name "*.rs")
-GJ_OPT_LEVELS= 0 1 2
-GJ_LOGS=$(patsubst %,gj/gj-%.log,$(GJ_OPT_LEVELS))
 
-gj/gj-%.log: $(GJ_SRC)
-	(cd gj && time cargo run --profile=release-final -- --optimize=$* | tee gj-$*.log)
+gj/gj.json: $(GJ_SRC)
+	(cd gj && time cargo run --profile=release-final -- -O0 -O1 -O2 -n5 --json=gj.json)
 
-plot.pdf: ./scripts/plot.py $(GJ_LOGS)
+plot.html: ./scripts/plot.py gj/gj.json
 	$^
 
 clean_all: clean

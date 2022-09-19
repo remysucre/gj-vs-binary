@@ -97,9 +97,13 @@ use clap::Parser;
 #[derive(Parser)]
 pub struct Args {
     #[clap(short = 'O', long, default_value = "0")]
-    pub optimize: usize,
+    pub optimize: Vec<usize>,
+    #[clap(short = 'n', long, default_value = "1")]
+    pub n_trials: usize,
     #[clap(long)]
     pub no_cache: bool,
-    #[clap(long)]
+    #[clap(short = 'q', long)]
     pub query: Option<String>,
+    #[clap(long, default_value = "out.json")]
+    pub json: String,
 }

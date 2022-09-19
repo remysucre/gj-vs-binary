@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::time::{Duration, Instant};
 
 use gj::{join::*, sql::*, util::*, *};
@@ -7,11 +8,15 @@ use clap::Parser;
 fn main() {
     env_logger::init();
     let args = Args::parse();
+    let mut json = std::fs::File::create(&args.json).unwrap();
 
     let mut queries = queries();
     if let Some(q) = &args.query {
         queries.retain(|_, name| name.contains(q));
     }
+
+    let mut records = Vec::new();
+    let mut ddb_records = Vec::new();
 
     for (q, i) in queries {
         println!("running query {}: {} ", q, i);
@@ -27,150 +32,182 @@ fn main() {
         println!("DUCKDB filter time: {}", filter_time);
         println!("DUCKDB join time: {}", join_time);
 
+        ddb_records.push(DuckDbRecord {
+            query: i.into(),
+            query_short: q.into(),
+            total_time,
+            filter_time,
+            join_time,
+        });
+
         let scan = get_scans(&scan_tree);
         let payload = get_payload(&plan_tree);
         let plan = to_gj_plan(&plan_tree);
 
         let db = load_db(&args, q, &scan, &plan);
 
-        let mut in_view = HashMap::default();
-        let mut provides = IndexMap::default();
-        let mut build_plans = IndexMap::default();
-        let mut compiled_plans = IndexMap::default();
+        for &optimize in &args.optimize {
+            records.push(Record {
+                query: i.into(),
+                query_short: q.into(),
+                optimize,
+                total_times: (0..args.n_trials)
+                    .map(|_| run_query(&plan_tree, optimize, &db, &payload))
+                    .collect(),
+            });
+        }
+    }
 
-        let tm = to_materialize(&plan_tree);
+    serde_json::to_writer_pretty(
+        &mut json,
+        &serde_json::json!({
+            "gj": records,
+            "duckdb": ddb_records,
+        }),
+    )
+    .unwrap();
+}
 
-        let root = tm[tm.len() - 1];
+#[derive(Serialize)]
+struct Record {
+    query: String,
+    query_short: String,
+    optimize: usize,
+    total_times: Vec<f64>,
+}
 
-        for node in to_materialize(&plan_tree) {
-            // let groups = to_left_deep_plan(node);
-            let mut plan = to_binary_plan2(node);
-            // let compiled_plan = compile_plan(&groups, node, &in_view);
-            log::debug!("binary plan: {:?}", plan);
+#[derive(Serialize)]
+struct DuckDbRecord {
+    query: String,
+    query_short: String,
+    total_time: f64,
+    join_time: f64,
+    filter_time: f64,
+}
 
-            if args.optimize == 2 {
-                plan = merge_occurrences(plan);
-                log::debug!("merged plan: {:?}", &plan);
-            }
+fn run_query(plan_tree: &TreeOp, optimize: usize, db: &DB, payload: &[&Attribute]) -> f64 {
+    let mut in_view = HashMap::default();
+    let mut provides = IndexMap::default();
+    let mut build_plans = IndexMap::default();
+    let mut compiled_plans = IndexMap::default();
+    let tm = to_materialize(plan_tree);
+    let root = tm[tm.len() - 1];
+    for node in to_materialize(plan_tree) {
+        // let groups = to_left_deep_plan(node);
+        let mut plan = to_binary_plan2(node);
+        // let compiled_plan = compile_plan(&groups, node, &in_view);
+        log::debug!("binary plan: {:?}", plan);
 
-            let (out_schema, build_plan) =
-                compute_full_plan(&db, node, &mut plan, &provides, &in_view);
-            log::debug!("out schema: {:?}", out_schema);
-
-            plan = combine_lookups(&args, plan);
-            // compute_full_plan(&db, &groups, &provides, &in_view, node);
-
-            build_plans.insert(node, build_plan);
-            provides.insert(node, out_schema);
-            compiled_plans.insert(node, plan);
-
-            map_tables_to_node(node, &mut in_view);
+        if optimize == 2 {
+            plan = merge_occurrences(plan);
+            log::debug!("merged plan: {:?}", &plan);
         }
 
-        // debug_build_plans(&build_plans, &provides);
+        let (out_schema, build_plan) = compute_full_plan(db, node, &mut plan, &provides, &in_view);
+        log::debug!("out schema: {:?}", out_schema);
 
-        let mut views = HashMap::default();
+        plan = combine_lookups(optimize, plan);
+        // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
-        let mut tables_buf = Vec::default();
+        build_plans.insert(node, build_plan);
+        provides.insert(node, out_schema);
+        compiled_plans.insert(node, plan);
 
-        let mut total_building = Duration::default();
-        let mut total_joining = Duration::default();
-        let start = Instant::now();
+        map_tables_to_node(node, &mut in_view);
+    }
+    // debug_build_plans(&build_plans, &provides);
+    let mut views = HashMap::default();
+    let mut tables_buf = Vec::default();
+    let mut total_building = Duration::default();
+    let mut total_joining = Duration::default();
+    let start = Instant::now();
+    // TODO hash treeop by address
+    for (node, compiled_plan) in &compiled_plans {
+        let loop_start = Instant::now();
+        let build_plan = &build_plans[node];
 
-        // TODO hash treeop by address
-        for (node, compiled_plan) in &compiled_plans {
-            let loop_start = Instant::now();
-            let build_plan = &build_plans[node];
+        let build_start = Instant::now();
+        let tables = build_tables(db, &views, build_plan);
+        let build_time = build_start.elapsed();
+        println!("Building takes {}", build_time.as_secs_f32());
+        total_building += build_time;
 
-            let build_start = Instant::now();
-            let tables = build_tables(&db, &views, build_plan);
-            let build_time = build_start.elapsed();
-            println!("Building takes {}", build_time.as_secs_f32());
-            total_building += build_time;
+        let mut intermediate = View {
+            vec: vec![],
+            arity: provides[node].len(),
+        };
 
-            let mut intermediate = View {
-                vec: vec![],
-                arity: provides[node].len(),
-            };
+        println!("Running join with {} tables", tables.len());
+        let join_start = Instant::now();
+        free_join(optimize, &tables, compiled_plan, &mut intermediate);
+        let join_time = join_start.elapsed();
+        println!("Join took {:?}", join_time.as_secs_f32());
+        total_joining += join_time;
 
-            println!("Running join with {} tables", tables.len());
-            let join_start = Instant::now();
-            free_join(&args, &tables, compiled_plan, &mut intermediate);
-            let join_time = join_start.elapsed();
-            println!("Join took {:?}", join_time.as_secs_f32());
-            total_joining += join_time;
-
-            views.insert(node, intermediate);
-            tables_buf.push(tables);
-            println!("Iter takes {:?}", loop_start.elapsed().as_secs_f32());
-        }
-
-        println!("Bushy join takes {:?}", start.elapsed().as_secs_f32());
-
-        let final_attrs = provides.get(&root).unwrap();
-        let final_view = views.get(&root).unwrap();
-
-        print!("output ");
-
-        let payload_ids: Vec<_> = payload
-            .iter()
-            .map(|p| {
-                final_attrs
-                    .iter()
-                    .position(|attrs| attrs.contains(p))
-                    .unwrap()
-            })
-            .collect();
-
-        let mut result = Vec::default();
-
-        // for row in final_view {
-        //     if result.is_empty() {
-        //         result = row.to_vec();
-        //     } else {
-        //         for (i, v) in row.iter().enumerate() {
-        //             if &result[i] > v {
-        //                 result[i] = v.clone();
-        //             }
-        //         }
-        //     }
-        // }
-
-        for row in final_view {
-            if result.is_empty() {
-                result = payload_ids.iter().map(|i| &row[*i]).collect();
-            } else {
-                for (j, i) in payload_ids.iter().enumerate() {
-                    if result[j] > &row[*i] {
-                        result[j] = &row[*i];
-                    }
+        views.insert(node, intermediate);
+        tables_buf.push(tables);
+        println!("Iter takes {:?}", loop_start.elapsed().as_secs_f32());
+    }
+    println!("Bushy join takes {:?}", start.elapsed().as_secs_f32());
+    let final_attrs = provides.get(&root).unwrap();
+    let final_view = views.get(&root).unwrap();
+    print!("output ");
+    let payload_ids: Vec<_> = payload
+        .iter()
+        .map(|p| {
+            final_attrs
+                .iter()
+                .position(|attrs| attrs.contains(p))
+                .unwrap()
+        })
+        .collect();
+    let mut result = Vec::default();
+    // for row in final_view {
+    //     if result.is_empty() {
+    //         result = row.to_vec();
+    //     } else {
+    //         for (i, v) in row.iter().enumerate() {
+    //             if &result[i] > v {
+    //                 result[i] = v.clone();
+    //             }
+    //         }
+    //     }
+    // }
+    for row in final_view {
+        if result.is_empty() {
+            result = payload_ids.iter().map(|i| &row[*i]).collect();
+        } else {
+            for (j, i) in payload_ids.iter().enumerate() {
+                if result[j] > &row[*i] {
+                    result[j] = &row[*i];
                 }
             }
         }
-
-        println!("{:?}", result);
-        println!("Total building takes {}", total_building.as_secs_f32());
-        println!("Total joining takes {}", total_joining.as_secs_f32());
-        println!("Total takes {}", start.elapsed().as_secs_f32());
-
-        // use trie::*;
-        // let mut stats = HashMap::default();
-        // for tables in tables_buf {
-        //     for table in tables {
-        //         if let Tb::Trie(t) = table {
-        //             t.compute_trie_stats(&mut stats)
-        //         }
-        //     }
-        // }
-        // let mut stats = stats
-        //     .into_iter()
-        //     .map(|(len, amt)| (amt, len))
-        //     .collect::<Vec<_>>();
-        // stats.sort_unstable();
-        // stats.reverse();
-        // stats.truncate(50);
-        // log::debug!("trie stats: {:?}", stats);
     }
+    println!("{:?}", result);
+    println!("Total building takes {}", total_building.as_secs_f32());
+    println!("Total joining takes {}", total_joining.as_secs_f32());
+    let total = start.elapsed();
+    println!("Total takes {}", total.as_secs_f32());
+
+    total.as_secs_f64()
+    // use trie::*;
+    // let mut stats = HashMap::default();
+    // for tables in tables_buf {
+    //     for table in tables {
+    //         if let Tb::Trie(t) = table {
+    //             t.compute_trie_stats(&mut stats)
+    //         }
+    //     }
+    // }
+    // let mut stats = stats
+    //     .into_iter()
+    //     .map(|(len, amt)| (amt, len))
+    //     .collect::<Vec<_>>();
+    // stats.sort_unstable();
+    // stats.reverse();
+    // stats.truncate(50);
+    // log::debug!("trie stats: {:?}", stats);
 }
 
 // mapping between the original query ID to duckdb's ID

@@ -4,7 +4,6 @@ use crate::{
     sql::{Attribute, FAKE},
     trie::*,
     util::*,
-    Args,
 };
 use smallvec::SmallVec;
 
@@ -88,7 +87,7 @@ pub fn merge_occurrences(plan: Vec<Instruction2>) -> Vec<Instruction2> {
     new_plan
 }
 
-pub fn combine_lookups(_args: &Args, plan: Vec<Instruction2>) -> Vec<Instruction2> {
+pub fn combine_lookups(_optimize: usize, plan: Vec<Instruction2>) -> Vec<Instruction2> {
     // combining lookups is unconditional
     let mut new_plan = vec![];
     let mut current_lookups: Vec<Lookup2> = vec![];
@@ -226,7 +225,12 @@ pub struct Lookup {
 }
 
 // Assumes that the first table is a scan
-pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], out: &mut View) {
+pub fn free_join(
+    optimize: usize,
+    tables: &[Table],
+    compiled_plan: &[Instruction2],
+    out: &mut View,
+) {
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
     if let Table::Arr { id_cols, data_cols } = &tables[0] {
@@ -244,7 +248,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
         let mut data_iters: Vec<_> = data_cols.iter().map(|c| c.values()).collect();
 
         // if args.optimize > 0 {
-        if args.optimize == 1 {
+        if optimize == 1 {
             for instr in &mut compiled_plan {
                 if let Instruction2::Lookup(lookups) = instr {
                     lookups.sort_unstable_by_key(|l| rels[l.relation].guess_len());

@@ -5,3 +5,5 @@ gj/*.log
 plot.png
 plot.pdf
 plot.html
+gj/out.json
+gj/gj.json
