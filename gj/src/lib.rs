@@ -99,7 +99,7 @@ pub struct Args {
     #[clap(short = 'O', long, default_value = "0")]
     pub optimize: usize,
     #[clap(long)]
-    pub cache: bool,
+    pub no_cache: bool,
     #[clap(long)]
     pub query: Option<String>,
 }

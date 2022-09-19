@@ -1,12 +1,11 @@
 // use core::slice::SlicePattern;
-use std::path;
-
 use parquet::{
     basic::{ConvertedType, Repetition, Type as PhysicalType},
     file::reader::{FileReader, SerializedFileReader},
     record::Field,
     schema::types::Type,
 };
+use std::path;
 
 use std::fs::File;
 use std::sync::Arc;
@@ -458,8 +457,6 @@ pub fn compute_full_plan<'a>(
     (out_schema, build_plan_out)
 }
 
-// static RELATIONS: Lazy<Mutex<HashMap<String, Relation>>> = Lazy::new(Default::default);
-
 pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
     let tables = scan
         .iter()
@@ -492,8 +489,6 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
                 continue;
             }
 
-            println!("Loading {} to DB", table_name);
-
             let mut col_types = attr
                 .attributes
                 .iter()
@@ -505,23 +500,49 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
                 .build()
                 .unwrap();
 
-            let pq = if tables.contains(table_name) || !args.cache {
+            let pq = if tables.contains(table_name) || args.no_cache {
+                println!("Loading {} to DB", table_name);
                 from_parquet(q, table_name, table_schema)
             } else {
-                todo!("caching isn't supported right now")
-                // not in tables, so it's a base table that we can maybe cache
-                // let mut rels = RELATIONS.lock().unwrap();
-                // let mut key = table_name.to_string();
-                // key += &format!("{:?}", table_schema);
-                // rels.entry(key)
-                //     .and_modify(|_| println!("Using cached table {}", table_name))
-                //     // no schema, we want to load the full relation
-                //     .or_insert_with(|| from_parquet(q, table_name, table_schema))
-                //     .clone()
+                use once_cell::unsync::Lazy;
+                use std::cell::RefCell;
+                thread_local! {
+                    static COLUMNS: Lazy<RefCell<HashMap<Attribute, Col>>> = Lazy::new(Default::default);
+                }
+
+                COLUMNS.with(|c| {
+                    let mut cols = Lazy::force(c).borrow_mut();
+                    let relation: Option<Relation> = attr
+                        .attributes
+                        .iter()
+                        .map(|a| {
+                            // construct new attribute with the table name
+                            let a = Attribute {
+                                table_name: table_name.to_string(),
+                                attr_name: a.attr_name.clone(),
+                            };
+                            cols.get(&a).cloned().map(|c| (a.clone(), c))
+                        })
+                        .collect();
+                    if let Some(relation) = relation {
+                        println!(
+                            "Loading {} to DB from cache (cache={} cols)",
+                            table_name,
+                            cols.len()
+                        );
+                        relation
+                    } else {
+                        println!("Loading {} to DB", table_name);
+                        let relation = from_parquet(q, table_name, table_schema);
+                        for (a, col) in relation.iter() {
+                            cols.insert(a.clone(), col.clone());
+                        }
+                        relation
+                    }
+                })
             };
 
             db.insert(table_name.to_string(), pq);
-
             loaded.insert(table_name);
         }
     }
