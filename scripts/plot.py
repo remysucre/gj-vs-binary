@@ -3,6 +3,7 @@
 import re
 
 import plotly.express as px
+import plotly.graph_objects as go
 
 # import matplotlib
 # matplotlib.rcParams['pdf.fonttype'] = 42
@@ -16,7 +17,7 @@ def parse_gj(filename):
         query=r'running query \w+: IMDBQ(\d+)',
         dd_total=r'DUCKDB total time: ([\d\.]*)',
         dd_filter=r'DUCKDB filter time: ([\d\.]*)',
-        dd_join=r'DUCKDB join time: ([\d\.]*)',
+        duck_db=r'DUCKDB join time: ([\d\.]*)',
         build=r'Total building takes ([\d\.]*)',
         join=r'Total joining takes ([\d\.]*)',
         total=r'Total takes ([\d\.]*)',
@@ -53,15 +54,25 @@ def plot(gjs):
     print(data[:5])
 
     # sort
-    def sort_key(x): return x['dd_join']
+    def sort_key(x): return x['duck_db']
     data.sort(key=sort_key)
 
-    ys = ['dd_total', 'dd_filter', 'dd_join', 'build'] + list(gjs.keys())
+    # ys = ['dd_total', 'dd_filter', 'duck_db', 'build']
+    ys = ['duck_db']
 
-    fig = px.line(
+    fig1 = px.line(
         data, x='query', y=ys,
         # barmode='group',
     )
+
+    zs = list(gjs.keys())
+
+    fig2 = px.scatter(
+        data, x='query', y=zs,
+    )
+
+    fig = go.Figure(data=fig1.data + fig2.data)
+
     fig.update_layout(
         title='IMDB Query Times',
         yaxis_title='Time (s)',
