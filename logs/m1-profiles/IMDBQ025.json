@@ -1,17 +1,17 @@
 {
    "name":  "Query", 
-   "result": 0.067180,
-   "timing": 0.067180,
+   "result": 0.301280,
+   "timing": 0.301280,
    "cardinality": 0,
    "extra_info": "SELECT MIN(n.name) AS of_person,\n       MIN(t.title) AS biography_movie\nFROM aka_name AS an,\n     cast_info AS ci,\n     info_type AS it,\n     link_type AS lt,\n     movie_link AS ml,\n     name AS n,\n     person_info AS pi,\n     title AS t\nWHERE an.name LIKE '%a%'\n  AND it.info ='mini biography'\n  AND lt.link ='features'\n  AND n.name_pcode_cf LIKE 'D%'\n  AND n.gender='m'\n  AND pi.note ='Volker Boehm'\n  AND t.production_year BETWEEN 1980 AND 1984\n  AND n.id = an.person_id\n  AND n.id = pi.person_id\n  AND ci.person_id = n.id\n  AND t.id = ci.movie_id\n  AND ml.linked_movie_id = t.id\n  AND lt.id = ml.link_type_id\n  AND it.id = pi.info_type_id\n  AND pi.person_id = an.person_id\n  AND pi.person_id = ci.person_id\n  AND an.person_id = ci.person_id\n  AND ci.movie_id = ml.linked_movie_id;\n\n", 
    "timings": [
    {
    "annotation": "optimizer", 
-   "timing": 0.001219
+   "timing": 0.001234
    },
    {
    "annotation": "optimizer > column_lifetime", 
-   "timing": 0.000009
+   "timing": 0.000010
    },
    {
    "annotation": "optimizer > common_aggregate", 
@@ -19,23 +19,23 @@
    },
    {
    "annotation": "optimizer > common_subexpressions", 
-   "timing": 0.000001
+   "timing": 0.000002
    },
    {
    "annotation": "optimizer > deliminator", 
-   "timing": 0.000000
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > expression_rewriter", 
-   "timing": 0.000027
+   "timing": 0.000028
    },
    {
    "annotation": "optimizer > filter_pullup", 
-   "timing": 0.000000
+   "timing": 0.000001
    },
    {
    "annotation": "optimizer > filter_pushdown", 
-   "timing": 0.000092
+   "timing": 0.000108
    },
    {
    "annotation": "optimizer > in_clause", 
@@ -43,19 +43,19 @@
    },
    {
    "annotation": "optimizer > join_order", 
-   "timing": 0.001002
+   "timing": 0.001003
    },
    {
    "annotation": "optimizer > regex_range", 
-   "timing": 0.000001
+   "timing": 0.000000
    },
    {
    "annotation": "optimizer > reorder_filter", 
-   "timing": 0.000002
+   "timing": 0.000003
    },
    {
    "annotation": "optimizer > statistics_propagation", 
-   "timing": 0.000073
+   "timing": 0.000069
    },
    {
    "annotation": "optimizer > top_n", 
@@ -63,11 +63,11 @@
    },
    {
    "annotation": "optimizer > unused_columns", 
-   "timing": 0.000006
+   "timing": 0.000005
    },
    {
    "annotation": "physical_planner", 
-   "timing": 0.000036
+   "timing": 0.000034
    },
    {
    "annotation": "physical_planner > column_binding", 
@@ -75,7 +75,7 @@
    },
    {
    "annotation": "physical_planner > create_plan", 
-   "timing": 0.000018
+   "timing": 0.000017
    },
    {
    "annotation": "physical_planner > resolve_types", 
@@ -83,17 +83,17 @@
    },
    {
    "annotation": "planner", 
-   "timing": 0.000103
+   "timing": 0.000134
    },
    {
    "annotation": "planner > binder", 
-   "timing": 0.000101
+   "timing": 0.000132
    }
    ],
    "children": [
     {
       "name": "RESULT_COLLECTOR",
-      "timing":0.000002,
+      "timing":0.000001,
       "cardinality":0,
       "extra_info": "",
       "timings": [
@@ -109,39 +109,39 @@
          "children": [
           {
             "name": "PROJECTION",
-            "timing":0.000001,
+            "timing":0.000000,
             "cardinality":16,
-            "extra_info": "name\ntitle\n",
+            "extra_info": "n.name\nt.title\n",
             "timings": [
             ],
             "children": [
              {
                "name": "HASH_JOIN",
-               "timing":0.017965,
+               "timing":0.007100,
                "cardinality":16,
-               "extra_info": "INNER\nperson_id = person_id\nid = person_id\nperson_id = person_id\n",
+               "extra_info": "INNER\npi.person_id = an.person_id\nn.id = an.person_id\nci.person_id = an.person_id\n",
                "timings": [
                ],
                "children": [
                 {
                   "name": "HASH_JOIN",
-                  "timing":0.000268,
+                  "timing":0.000174,
                   "cardinality":8,
-                  "extra_info": "INNER\nperson_id = person_id\nperson_id = id\n",
+                  "extra_info": "INNER\nci.person_id = pi.person_id\nci.person_id = n.id\n",
                   "timings": [
                   ],
                   "children": [
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.316699,
+                     "timing":0.196495,
                      "cardinality":33415,
-                     "extra_info": "INNER\nmovie_id = id\nmovie_id = linked_movie_id\n",
+                     "extra_info": "INNER\nci.movie_id = t.id\nci.movie_id = ml.linked_movie_id\n",
                      "timings": [
                      ],
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.035394,
+                        "timing":0.012289,
                         "cardinality":36244344,
                         "extra_info": "cast_info\n[INFOSEPARATOR]\nperson_id\nmovie_id",
                         "timings": [
@@ -152,23 +152,23 @@
 ,
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.000023,
+                        "timing":0.000011,
                         "cardinality":435,
-                        "extra_info": "INNER\nlink_type_id = id\n",
+                        "extra_info": "INNER\nml.link_type_id = lt.id\n",
                         "timings": [
                         ],
                         "children": [
                          {
                            "name": "HASH_JOIN",
-                           "timing":0.005999,
+                           "timing":0.003457,
                            "cardinality":1784,
-                           "extra_info": "INNER\nid = linked_movie_id\n",
+                           "extra_info": "INNER\nt.id = ml.linked_movie_id\n",
                            "timings": [
                            ],
                            "children": [
                             {
                               "name": "SEQ_SCAN",
-                              "timing":0.040015,
+                              "timing":0.029350,
                               "cardinality":76065,
                               "extra_info": "title\n[INFOSEPARATOR]\nproduction_year\nid\ntitle\n[INFOSEPARATOR]\nFilters: production_year>=1980 AND production_year<=1984 AND production_year IS NOT NULL\n",
                               "timings": [
@@ -179,7 +179,7 @@
 ,
                             {
                               "name": "SEQ_SCAN",
-                              "timing":0.000008,
+                              "timing":0.000007,
                               "cardinality":29997,
                               "extra_info": "movie_link\n[INFOSEPARATOR]\nlinked_movie_id\nlink_type_id",
                               "timings": [
@@ -192,7 +192,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.000005,
+                           "timing":0.000003,
                            "cardinality":1,
                            "extra_info": "link_type\n[INFOSEPARATOR]\nlink\nid\n[INFOSEPARATOR]\nFilters: link=features AND link IS NOT NULL\n",
                            "timings": [
@@ -207,23 +207,23 @@
 ,
                    {
                      "name": "HASH_JOIN",
-                     "timing":0.000006,
+                     "timing":0.000003,
                      "cardinality":3,
-                     "extra_info": "INNER\ninfo_type_id = id\n",
+                     "extra_info": "INNER\npi.info_type_id = it.id\n",
                      "timings": [
                      ],
                      "children": [
                       {
                         "name": "HASH_JOIN",
-                        "timing":0.001745,
+                        "timing":0.000352,
                         "cardinality":3,
-                        "extra_info": "INNER\nid = person_id\n",
+                        "extra_info": "INNER\nn.id = pi.person_id\n",
                         "timings": [
                         ],
                         "children": [
                          {
                            "name": "PROJECTION",
-                           "timing":0.000006,
+                           "timing":0.000005,
                            "cardinality":91976,
                            "extra_info": "#2\n#3\n",
                            "timings": [
@@ -231,15 +231,15 @@
                            "children": [
                             {
                               "name": "FILTER",
-                              "timing":0.000350,
+                              "timing":0.000249,
                               "cardinality":91976,
-                              "extra_info": "prefix(name_pcode_cf, 'D')",
+                              "extra_info": "prefix(n.name_pcode_cf, 'D')",
                               "timings": [
                               ],
                               "children": [
                                {
                                  "name": "SEQ_SCAN",
-                                 "timing":0.005485,
+                                 "timing":0.004068,
                                  "cardinality":91976,
                                  "extra_info": "name\n[INFOSEPARATOR]\nname_pcode_cf\ngender\nid\nname\n[INFOSEPARATOR]\nFilters: gender=m AND gender IS NOT NULL\nname_pcode_cf>=D AND name_pcode_cf<E AND name_pcode_cf IS NOT NULL\n",
                                  "timings": [
@@ -254,7 +254,7 @@
 ,
                          {
                            "name": "SEQ_SCAN",
-                           "timing":0.014140,
+                           "timing":0.009291,
                            "cardinality":64,
                            "extra_info": "person_info\n[INFOSEPARATOR]\nnote\nperson_id\ninfo_type_id\n[INFOSEPARATOR]\nFilters: note=Volker Boehm AND note IS NOT NULL\n",
                            "timings": [
@@ -282,7 +282,7 @@
 ,
                 {
                   "name": "PROJECTION",
-                  "timing":0.000070,
+                  "timing":0.000025,
                   "cardinality":674692,
                   "extra_info": "#1\n",
                   "timings": [
@@ -290,15 +290,15 @@
                   "children": [
                    {
                      "name": "FILTER",
-                     "timing":0.016675,
+                     "timing":0.011563,
                      "cardinality":674692,
-                     "extra_info": "contains(name, 'a')",
+                     "extra_info": "contains(an.name, 'a')",
                      "timings": [
                      ],
                      "children": [
                       {
                         "name": "SEQ_SCAN",
-                        "timing":0.007664,
+                        "timing":0.004940,
                         "cardinality":901343,
                         "extra_info": "aka_name\n[INFOSEPARATOR]\nname\nperson_id",
                         "timings": [

@@ -338,7 +338,7 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     if linear {
         queries.extend_from_slice(&[
             // ("32a", "IMDBQ109"), // TRIE SLOW // EMPTY
-            ("32b", "IMDBQ110"), // TRIE SLOW
+            ("32b", "IMDBQ110"),
         ])
     }
 
