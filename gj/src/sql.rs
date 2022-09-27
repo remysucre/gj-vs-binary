@@ -65,7 +65,7 @@ pub struct TreeOp {
     #[derivative(PartialEq = "ignore")]
     #[derivative(Hash = "ignore")]
     pub timing: f64,
-    pub cardinality: u32,
+    pub cardinality: u64,
     pub extra_info: String,
     pub children: Vec<Box<TreeOp>>,
     pub attr: Option<NodeAttr>,

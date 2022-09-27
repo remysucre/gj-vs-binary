@@ -122,33 +122,22 @@ fn main() {
             })
             .collect();
 
-        let mut result = Vec::default();
-
+        // let mut result = Vec::default();
         // for row in final_view {
         //     if result.is_empty() {
-        //         result = row.to_vec();
+        //         result = payload_ids.iter().map(|i| &row[*i]).collect();
         //     } else {
-        //         for (i, v) in row.iter().enumerate() {
-        //             if &result[i] > v {
-        //                 result[i] = v.clone();
+        //         for (j, i) in payload_ids.iter().enumerate() {
+        //             if result[j] > &row[*i] {
+        //                 result[j] = &row[*i];
         //             }
         //         }
         //     }
         // }
+        // println!("{:?}", result);
 
-        for row in final_view {
-            if result.is_empty() {
-                result = payload_ids.iter().map(|i| &row[*i]).collect();
-            } else {
-                for (j, i) in payload_ids.iter().enumerate() {
-                    if result[j] > &row[*i] {
-                        result[j] = &row[*i];
-                    }
-                }
-            }
-        }
+        println!("Result {:?}", final_view.vec.len() / final_view.arity);
 
-        println!("{:?}", result);
         println!("Total building takes {}", total_building.as_secs_f32());
         println!("Total joining takes {}", total_joining.as_secs_f32());
         println!("Total takes {}", start.elapsed().as_secs_f32());
@@ -175,7 +164,7 @@ fn main() {
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> IndexMap<&'static str, &'static str> {
-    // let queries = vec![("33c", "IMDBQ113")];
+    let queries = vec![("q3", "LSQB3")];
 
     // let queries = vec![
     //     ("15a", "IMDBQ052"),
@@ -190,7 +179,7 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     //     ("16d", "IMDBQ059"),
     // ];
 
-    // return queries.into_iter().collect();
+    return queries.into_iter().collect();
 
     let bushy = true;
     let linear = true;

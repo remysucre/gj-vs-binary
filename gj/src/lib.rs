@@ -24,7 +24,7 @@ pub type Col = Rc<ColInner>;
 
 #[derive(Debug, Clone)]
 pub enum ColInner {
-    Int(Vec<i32>),
+    Int(Vec<i64>),
     Str(Vec<Rc<String>>),
 }
 
@@ -43,7 +43,7 @@ impl ColInner {
         }
     }
 
-    pub fn ints(&self) -> &[i32] {
+    pub fn ints(&self) -> &[i64] {
         match self {
             ColInner::Int(v) => v,
             ColInner::Str(_) => panic!("not an int col"),

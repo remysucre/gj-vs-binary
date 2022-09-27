@@ -1,4 +1,4 @@
-use std::{collections::HashSet, mem::take};
+use std::{collections::HashSet, mem::take, ops::Rem};
 
 use crate::{
     sql::{Attribute, FAKE},
@@ -264,7 +264,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
         if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
             let mut local_rels = rels.clone();
             let batch_size = 1000.min(id_cols[0].len());
-            let mut tuple_cols: Vec<Vec<i32>> = vec![Vec::with_capacity(batch_size); id_cols.len()];
+            let mut tuple_cols: Vec<Vec<i64>> = vec![Vec::with_capacity(batch_size); id_cols.len()];
             let mut data_cols: Vec<Vec<Value>> =
                 vec![Vec::with_capacity(batch_size); data_cols.len()];
             let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
@@ -378,7 +378,7 @@ pub fn free_join(args: &Args, tables: &[Table], compiled_plan: &[Instruction2], 
 struct JoinContext<'a> {
     n_lookups: usize,
     singleton: Vec<Value>,
-    tuple: Vec<i32>,
+    tuple: Vec<i64>,
     out: &'a mut View,
 }
 
@@ -446,6 +446,10 @@ impl JoinContext<'_> {
     fn materialize(&mut self, relations: &[TrieRef]) {
         if relations.is_empty() {
             assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
+            let cnt = self.out.vec.len() / self.out.arity;
+            if cnt.rem(1000) == 0 {
+                println!("{}", cnt);
+            }
             self.out.vec.extend(
                 self.tuple
                     .iter()

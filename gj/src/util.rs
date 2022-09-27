@@ -538,7 +538,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
     let path = path::Path::new(&path_s);
     let file = File::open(path)
         .or_else(|_| {
-            let shared_name = find_shared(t_name);
+            let shared_name = find_shared(t_name).to_lowercase();
             let path_s = format!("../data/imdb/{}.parquet", shared_name);
             let path = path::Path::new(&path_s);
             File::open(path)
@@ -555,7 +555,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
         }
         for (col_name, field) in row.get_column_iter() {
             match field {
-                Field::Int(i) => {
+                Field::Long(i) => {
                     let col = table
                         .entry(Attribute {
                             table_name: t_name.to_string(),
@@ -613,7 +613,8 @@ fn find_shared(table_name: &str) -> &str {
         "pi" => "person_info",
         "rt" => "role_type",
         "t" => "title",
-        _ => panic!("unsupported table {}", table_name),
+        _lsqb => table_name,
+        // _ => panic!("unsupported table {}", table_name),
     }
 }
 
@@ -714,7 +715,7 @@ fn build_trie_from_view(
     id_ids: &[usize],
     data_ids: &[usize],
 ) -> TrieRoot {
-    let mut id_cols: Vec<Vec<i32>> = vec![vec![]; id_ids.len()];
+    let mut id_cols: Vec<Vec<i64>> = vec![vec![]; id_ids.len()];
     let mut data_cols: Vec<ColInner> = vec![ColInner::default(); data_ids.len()];
 
     // let mut ids = vec![0; id_ids.len()];
@@ -772,12 +773,21 @@ fn build_trie_from_db(
     // trie
 }
 
-fn type_of(col: &str) -> Type {
+fn type_of_imdb(col: &str) -> Type {
     let (physical_type, converted_type) = if col.ends_with("id") || col.ends_with("year") {
         (PhysicalType::INT32, ConvertedType::INT_32)
     } else {
         (PhysicalType::BYTE_ARRAY, ConvertedType::UTF8)
     };
+    Type::primitive_type_builder(col, physical_type)
+        .with_converted_type(converted_type)
+        .with_repetition(Repetition::OPTIONAL)
+        .build()
+        .unwrap()
+}
+
+fn type_of(col: &str) -> Type {
+    let (physical_type, converted_type) = (PhysicalType::INT64, ConvertedType::INT_64);
     Type::primitive_type_builder(col, physical_type)
         .with_converted_type(converted_type)
         .with_repetition(Repetition::OPTIONAL)
