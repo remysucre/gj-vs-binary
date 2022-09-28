@@ -47,14 +47,38 @@ fn main() {
         let db = load_db(&args, q, &scan, &plan);
 
         for &optimize in &args.optimize {
-            records.push(Record {
-                query: i.into(),
-                query_short: q.into(),
-                optimize,
-                total_times: (0..args.n_trials)
-                    .map(|_| run_query(&plan_tree, optimize, &db, &payload))
-                    .collect(),
-            });
+            if optimize == 1 {
+                for strategy in &args.strategy {
+                    let build_strategy = match strategy {
+                        0 => BuildStrategy::Full,
+                        1 => BuildStrategy::SLT,
+                        2 => BuildStrategy::COLT,
+                        _ => panic!("unknown build strategy"),
+                    };
+
+                    records.push(Record {
+                        query: i.into(),
+                        query_short: q.into(),
+                        optimize,
+                        strategy: *strategy,
+                        total_times: (0..args.n_trials)
+                            .map(|_| run_query(&plan_tree, optimize, build_strategy, &db, &payload))
+                            .collect(),
+                    });
+                }
+            } else {
+                records.push(Record {
+                    query: i.into(),
+                    query_short: q.into(),
+                    optimize,
+                    strategy: 2,
+                    total_times: (0..args.n_trials)
+                        .map(|_| {
+                            run_query(&plan_tree, optimize, BuildStrategy::COLT, &db, &payload)
+                        })
+                        .collect(),
+                });
+            }
         }
     }
 
@@ -73,6 +97,7 @@ struct Record {
     query: String,
     query_short: String,
     optimize: usize,
+    strategy: usize,
     total_times: Vec<f64>,
 }
 
@@ -85,7 +110,13 @@ struct DuckDbRecord {
     filter_time: f64,
 }
 
-fn run_query(plan_tree: &TreeOp, optimize: usize, db: &DB, payload: &[&Attribute]) -> f64 {
+fn run_query(
+    plan_tree: &TreeOp,
+    optimize: usize,
+    build_strategy: BuildStrategy,
+    db: &DB,
+    payload: &[&Attribute],
+) -> f64 {
     let mut in_view = HashMap::default();
     let mut provides = IndexMap::default();
     let mut build_plans = IndexMap::default();
@@ -127,7 +158,7 @@ fn run_query(plan_tree: &TreeOp, optimize: usize, db: &DB, payload: &[&Attribute
         let build_plan = &build_plans[node];
 
         let build_start = Instant::now();
-        let tables = build_tables(db, &views, build_plan);
+        let tables = build_tables(db, &views, build_plan, build_strategy);
         let build_time = build_start.elapsed();
         println!("Building takes {}", build_time.as_secs_f32());
         total_building += build_time;

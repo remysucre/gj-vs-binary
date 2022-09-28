@@ -638,8 +638,20 @@ fn find_shared(table_name: &str) -> &str {
     }
 }
 
+#[derive(Clone, Copy)]
+pub enum BuildStrategy {
+    Full,
+    SLT,
+    COLT,
+}
+
 // TODO lots of repetition, refactor this
-pub fn build_tables(db: &DB, views: &HashMap<&TreeOp, View>, plan: &BuildPlan) -> Vec<Table> {
+pub fn build_tables(
+    db: &DB,
+    views: &HashMap<&TreeOp, View>,
+    plan: &BuildPlan,
+    strategy: BuildStrategy,
+) -> Vec<Table> {
     let mut tables = vec![];
 
     let (t_id, id_col_ids, data_col_ids) = &plan[0];
@@ -660,6 +672,17 @@ pub fn build_tables(db: &DB, views: &HashMap<&TreeOp, View>, plan: &BuildPlan) -
         let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
         let flat_table = build_flat_table(db, t, &id_attrs, &data_attrs);
         tables.push(flat_table);
+        match strategy {
+            BuildStrategy::Full => {
+                let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
+                trie.as_ref().force_all();
+            }
+            BuildStrategy::SLT => {
+                let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
+                trie.as_ref().force_one();
+            }
+            BuildStrategy::COLT => {}
+        }
     } else {
         unreachable!("Left table cannot be a view");
     }
@@ -681,6 +704,12 @@ pub fn build_tables(db: &DB, views: &HashMap<&TreeOp, View>, plan: &BuildPlan) -
                 let id_attrs: Vec<_> = id_col_ids.iter().map(to_attr).collect();
                 let data_attrs: Vec<_> = data_col_ids.iter().map(to_attr).collect();
                 let trie = build_trie_from_db(db, t, &id_attrs, &data_attrs);
+                match strategy {
+                    BuildStrategy::Full => trie.as_ref().force_all(),
+                    BuildStrategy::SLT => trie.as_ref().force_one(),
+                    BuildStrategy::COLT => {}
+                }
+
                 tables.push(Table::Trie(trie));
             }
             TableID::Node(node) => {
@@ -695,6 +724,11 @@ pub fn build_tables(db: &DB, views: &HashMap<&TreeOp, View>, plan: &BuildPlan) -
                 let id_ids: Vec<_> = id_col_ids.iter().map(to_id).collect();
                 let data_ids: Vec<_> = data_col_ids.iter().map(to_id).collect();
                 let trie = build_trie_from_view(views, node, &id_ids, &data_ids);
+                match strategy {
+                    BuildStrategy::Full => trie.as_ref().force_all(),
+                    BuildStrategy::SLT => trie.as_ref().force_one(),
+                    BuildStrategy::COLT => {}
+                }
                 tables.push(Table::Trie(trie));
             }
         }

@@ -352,6 +352,17 @@ impl<'a> TrieRef<'a> {
         self.trie.inner.get_or_init(|thunk| self.make_trie(thunk))
     }
 
+    pub fn force_one(self) {
+        self.force();
+    }
+
+    pub fn force_all(self) {
+        match self.force() {
+            TrieInner::Data(_) | TrieInner::DenseSet(..) | TrieInner::Set(..) => {}
+            TrieInner::Map(..) => self.for_each(|_, t| t.force_all()),
+        }
+    }
+
     fn mk_ref(self, trie: &'a Trie) -> TrieRef<'a> {
         TrieRef {
             schema: self.schema.next(),

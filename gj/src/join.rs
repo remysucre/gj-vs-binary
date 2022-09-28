@@ -268,6 +268,7 @@ pub fn free_join(
         if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
             let mut local_rels = rels.clone();
             let batch_size = 1000.min(id_cols[0].len());
+            // let batch_size = 1.min(id_cols[0].len()); // ABLATION
             let mut tuple_cols: Vec<Vec<i32>> = vec![Vec::with_capacity(batch_size); id_cols.len()];
             let mut data_cols: Vec<Vec<Value>> =
                 vec![Vec::with_capacity(batch_size); data_cols.len()];

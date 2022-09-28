@@ -96,6 +96,8 @@ use clap::Parser;
 
 #[derive(Parser)]
 pub struct Args {
+    #[clap(short = 'S', long, default_value = "2")]
+    pub strategy: Vec<usize>,
     #[clap(short = 'O', long, default_value = "0")]
     pub optimize: Vec<usize>,
     #[clap(short = 'n', long, default_value = "1")]
