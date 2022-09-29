@@ -449,23 +449,57 @@ impl JoinContext<'_> {
     }
 
     fn materialize(&mut self, relations: &[TrieRef]) {
-        if relations.is_empty() {
-            assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
-            self.out.vec.extend(
-                self.tuple
-                    .iter()
-                    .map(|i| Value::Num(*i))
-                    .chain(self.singleton.iter().cloned()),
-            );
-        } else if !relations[0].has_data() {
-            self.materialize(&relations[1..]);
-        } else {
-            relations[0].for_each_data(|vs| {
+        let out = &mut self.out.vec;
+        match relations {
+            [] => {
+                assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
+                out.extend(self.tuple.iter().map(|i| Value::Num(*i)));
+                out.extend_from_slice(&self.singleton);
+            }
+            [r] => r.for_each_data(|vs| {
+                out.extend(self.tuple.iter().map(|i| Value::Num(*i)));
+                out.extend_from_slice(&self.singleton);
+                out.extend_from_slice(vs);
+            }),
+            [r0, r1] => r0.for_each_data(|vs0| {
+                r1.for_each_data(|vs1| {
+                    out.extend(self.tuple.iter().map(|i| Value::Num(*i)));
+                    out.extend_from_slice(&self.singleton);
+                    out.extend_from_slice(vs0);
+                    out.extend_from_slice(vs1);
+                })
+            }),
+            [r0, r1, r2] => r0.for_each_data(|vs0| {
+                r1.for_each_data(|vs1| {
+                    r2.for_each_data(|vs2| {
+                        out.extend(self.tuple.iter().map(|i| Value::Num(*i)));
+                        out.extend_from_slice(&self.singleton);
+                        out.extend_from_slice(vs0);
+                        out.extend_from_slice(vs1);
+                        out.extend_from_slice(vs2);
+                    })
+                })
+            }),
+            [r0, r1, r2, r3] => r0.for_each_data(|vs0| {
+                r1.for_each_data(|vs1| {
+                    r2.for_each_data(|vs2| {
+                        r3.for_each_data(|vs3| {
+                            out.extend(self.tuple.iter().map(|i| Value::Num(*i)));
+                            out.extend_from_slice(&self.singleton);
+                            out.extend_from_slice(vs0);
+                            out.extend_from_slice(vs1);
+                            out.extend_from_slice(vs2);
+                            out.extend_from_slice(vs3);
+                        })
+                    })
+                })
+            }),
+            _ => relations[0].for_each_data(|vs| {
                 let len = self.singleton.len();
                 self.singleton.extend_from_slice(vs);
                 self.materialize(&relations[1..]);
                 self.singleton.truncate(len);
-            })
+            }),
         }
     }
 }

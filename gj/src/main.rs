@@ -8,7 +8,7 @@ use clap::Parser;
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    let mut json = std::fs::File::create(&args.json).unwrap();
+    // let mut json = std::fs::File::create(&args.json).unwrap();
 
     let mut queries = queries();
     if let Some(q) = &args.query {
@@ -82,14 +82,14 @@ fn main() {
         }
     }
 
-    serde_json::to_writer_pretty(
-        &mut json,
-        &serde_json::json!({
-            "gj": records,
-            "duckdb": ddb_records,
-        }),
-    )
-    .unwrap();
+    // serde_json::to_writer_pretty(
+    //     &mut json,
+    //     &serde_json::json!({
+    //         "gj": records,
+    //         "duckdb": ddb_records,
+    //     }),
+    // )
+    // .unwrap();
 }
 
 #[derive(Serialize)]
@@ -243,7 +243,7 @@ fn run_query(
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> IndexMap<&'static str, &'static str> {
-    // let queries = vec![("33c", "IMDBQ113")];
+    let queries = vec![("26a", "IMDBQ113")];
 
     // let queries = vec![
     //     ("29a", "IMDBQ100"),
@@ -258,7 +258,7 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     //     // ("32b", "IMDBQ110"),
     // ];
 
-    // return queries.into_iter().collect();
+    return queries.into_iter().collect();
 
     let bushy = true;
     let linear = true;

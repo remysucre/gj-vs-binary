@@ -130,8 +130,11 @@ impl Thunk {
         self.0.push(idx)
     }
 
-    fn for_each(&self, f: impl FnMut(u32)) {
-        self.0.iter().copied().for_each(f)
+    #[inline(always)]
+    fn for_each(&self, mut f: impl FnMut(u32)) {
+        for &i in &self.0 {
+            f(i)
+        }
     }
 }
 
@@ -468,14 +471,18 @@ impl<'a> TrieRef<'a> {
             TrieInner::Set(..) => panic!(),
             TrieInner::DenseSet(..) => panic!(),
             TrieInner::Data(thunk) => {
-                let mut row = vec![];
-                thunk.for_each(|idx| {
-                    for col in self.schema.data_cols() {
-                        row.push(col.get_value(idx as usize).clone());
-                    }
-                    f(&row);
-                    row.clear();
-                })
+                if thunk.is_empty() {
+                    f(&[])
+                } else {
+                    let mut row = SmallVec::<[Value; 4]>::default();
+                    thunk.for_each(|idx| {
+                        for col in self.schema.data_cols() {
+                            row.push(col.get_value(idx as usize).clone());
+                        }
+                        f(&row);
+                        row.clear();
+                    })
+                }
             }
         }
     }
