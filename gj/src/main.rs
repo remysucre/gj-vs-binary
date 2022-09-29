@@ -137,7 +137,7 @@ fn run_query(
         let (out_schema, build_plan) = compute_full_plan(db, node, &mut plan, &provides, &in_view);
         log::debug!("out schema: {:?}", out_schema);
 
-        plan = combine_lookups(optimize, plan);
+        // plan = combine_lookups(optimize, plan); // TODO disabled for cyclic queries
         // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
         build_plans.insert(node, build_plan);
@@ -182,6 +182,7 @@ fn run_query(
     println!("Bushy join takes {:?}", start.elapsed().as_secs_f32());
     let final_attrs = provides.get(&root).unwrap();
     let final_view = views.get(&root).unwrap();
+    println!("out rows: {}", final_view.vec.len() / final_view.arity);
     print!("output ");
     let payload_ids: Vec<_> = payload
         .iter()

@@ -348,17 +348,18 @@ pub fn get_scan_join_attrs<'a>(root: &'a TreeOp) -> IndexSet<Attribute> {
 
     traverse_left(root, &mut |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(join)) = &node.attr {
-            let eql = &join.equalizers[0];
-            let l = &eql.left_attr;
+            for eql in &join.equalizers {
+                let l = &eql.left_attr;
 
-            if left_table.is_none() {
-                left_table = Some(&l.table_name);
-            }
-            if &l.table_name == left_table.unwrap() {
-                scan_join_attrs.insert(Attribute {
-                    table_name: l.table_name.clone(),
-                    attr_name: l.attr_name.clone(),
-                });
+                if left_table.is_none() {
+                    left_table = Some(&l.table_name);
+                }
+                if &l.table_name == left_table.unwrap() {
+                    scan_join_attrs.insert(Attribute {
+                        table_name: l.table_name.clone(),
+                        attr_name: l.attr_name.clone(),
+                    });
+                }
             }
         }
     });
@@ -371,41 +372,57 @@ pub const FAKE: usize = 9999;
 pub fn to_binary_plan2<'a>(root: &'a TreeOp) -> Vec<Instruction2> {
     let mut program = vec![];
 
-    let mut attrs = get_scan_join_attrs(root);
+    let attrs = get_scan_join_attrs(root);
+
+    let mut groups: Vec<_> = attrs.iter().map(|a| vec![a.clone()]).collect();
 
     traverse_left(root, &mut |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(join)) = &node.attr {
-            let lattr = &join.equalizers[0].left_attr;
-            let rattr = &join.equalizers[0].right_attr;
+            for equalizer in &join.equalizers {
+                let lattr = &equalizer.left_attr;
+                let rattr = &equalizer.right_attr;
 
-            assert!(!attrs.contains(rattr));
+                let l_pos_opt = groups.iter().position(|g| g.contains(lattr));
+                let r_pos_opt = groups.iter().position(|g| g.contains(rattr));
 
-            let instr = if attrs.contains(lattr) {
-                Instruction2::Lookup(vec![Lookup2 {
-                    key: FAKE,
-                    relation: FAKE,
-                    left: lattr.clone(),
-                    right: rattr.clone(),
-                }])
-            } else {
-                Instruction2::Intersect(vec![
-                    Intersection2 {
-                        relation: FAKE,
-                        attr: lattr.clone(),
-                    },
-                    Intersection2 {
-                        relation: FAKE,
-                        attr: rattr.clone(),
-                    },
-                ])
-            };
-
-            for eq in &join.equalizers {
-                attrs.insert(eq.left_attr.clone());
-                attrs.insert(eq.right_attr.clone());
+                match (l_pos_opt, r_pos_opt) {
+                    (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
+                    (Some(lpos), None) => {
+                        let instr = Instruction2::Lookup(vec![Lookup2 {
+                            key: FAKE,
+                            relation: FAKE,
+                            left: groups[lpos][0].clone(),
+                            right: rattr.clone(),
+                        }]);
+                        groups[lpos].push(rattr.clone());
+                        program.push(instr);
+                    }
+                    (None, Some(rpos)) => {
+                        let instr = Instruction2::Lookup(vec![Lookup2 {
+                            key: FAKE,
+                            relation: FAKE,
+                            left: lattr.clone(),
+                            right: groups[rpos][0].clone(),
+                        }]);
+                        groups[rpos].push(lattr.clone());
+                        program.push(instr);
+                    }
+                    (None, None) => {
+                        let instr = Instruction2::Intersect(vec![
+                            Intersection2 {
+                                relation: FAKE,
+                                attr: lattr.clone(),
+                            },
+                            Intersection2 {
+                                relation: FAKE,
+                                attr: rattr.clone(),
+                            },
+                        ]);
+                        groups.push(vec![lattr.clone(), rattr.clone()]);
+                        program.push(instr);
+                    }
+                }
             }
-
-            program.push(instr);
         }
     });
 
