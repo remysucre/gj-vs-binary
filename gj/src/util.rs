@@ -561,7 +561,8 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
     let file = File::open(path)
         .or_else(|_| {
             let shared_name = find_shared(t_name);
-            let path_s = format!("../data/imdb/{}.parquet", shared_name);
+            // TODO fix this!
+            let path_s = format!("../data/{}.parquet", shared_name);
             let path = path::Path::new(&path_s);
             File::open(path)
         })
@@ -635,7 +636,8 @@ fn find_shared(table_name: &str) -> &str {
         "pi" => "person_info",
         "rt" => "role_type",
         "t" => "title",
-        _ => panic!("unsupported table {}", table_name),
+        other => other,
+        // _ => panic!("unsupported table {}", table_name),
     }
 }
 
@@ -829,7 +831,13 @@ fn build_trie_from_db(
 }
 
 fn type_of(col: &str) -> Type {
-    let (physical_type, converted_type) = if col.ends_with("id") || col.ends_with("year") {
+    let (physical_type, converted_type) = if col.ends_with("id")
+        || col.ends_with("year")
+        || col.ends_with('x')
+        || col.ends_with('y')
+        || col.ends_with('z')
+    // TODO fix this!
+    {
         (PhysicalType::INT32, ConvertedType::INT_32)
     } else {
         (PhysicalType::BYTE_ARRAY, ConvertedType::UTF8)

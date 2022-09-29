@@ -243,7 +243,7 @@ fn run_query(
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> IndexMap<&'static str, &'static str> {
-    let queries = vec![("26a", "IMDBQ113")];
+    let queries = vec![("00", "IMDBQ113")];
 
     // let queries = vec![
     //     ("29a", "IMDBQ100"),
