@@ -42,7 +42,8 @@ test: preprocessor/test.sh $(DATA)
 GJ_SRC=$(shell find gj/src -name "*.rs")
 
 gj/gj.json: $(GJ_SRC)
-	(cd gj && time cargo run --profile=release-final -- -O0 -O1 -O2 -n5 --json=gj.json)
+	# (cd gj && time cargo run --profile=release-final -- -O0 -O1 -O2 -n5 --json=gj.json)
+	(cd gj && time cargo run --profile=release-final -- -O1 -n1 --json=gj.json)
 
 plot.html: ./scripts/plot.py gj/gj.json
 	$^

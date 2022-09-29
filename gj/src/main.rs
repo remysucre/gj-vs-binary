@@ -18,11 +18,11 @@ fn main() {
     let mut records = Vec::new();
     let mut ddb_records = Vec::new();
 
-    for (q, i) in queries {
-        println!("running query {}: {} ", q, i);
+    for (q, _i) in queries {
+        println!("running query {} ", q);
 
         let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
-        let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", i)).unwrap();
+        let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", q)).unwrap();
 
         let total_time = plan_tree.timing;
         let filter_time = get_filter_cost(&plan_tree);
@@ -33,7 +33,7 @@ fn main() {
         println!("DUCKDB join time: {}", join_time);
 
         ddb_records.push(DuckDbRecord {
-            query: i.into(),
+            query: q.into(),
             query_short: q.into(),
             total_time,
             filter_time,
@@ -57,7 +57,7 @@ fn main() {
                     };
 
                     records.push(Record {
-                        query: i.into(),
+                        query: q.into(),
                         query_short: q.into(),
                         optimize,
                         strategy: *strategy,
@@ -68,7 +68,7 @@ fn main() {
                 }
             } else {
                 records.push(Record {
-                    query: i.into(),
+                    query: q.into(),
                     query_short: q.into(),
                     optimize,
                     strategy: 2,
@@ -246,16 +246,15 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     // let queries = vec![("33c", "IMDBQ113")];
 
     // let queries = vec![
-    //     ("15a", "IMDBQ052"),
-    //     ("15d", "IMDBQ055"),
-    //     ("8c", "IMDBQ029"),
-    //     ("8d", "IMDBQ030"),
-    //     ("17e", "IMDBQ064"),
-    //     ("6f", "IMDBQ023"),
-    //     ("16a", "IMDBQ056"),
-    //     ("16b", "IMDBQ057"),
-    //     ("16c", "IMDBQ058"),
-    //     ("16d", "IMDBQ059"),
+    //     // ("29b", "IMDBQ101"),
+    //     // ("29c", "IMDBQ102"),
+    //     ("30a", "IMDBQ103"),
+    //     ("30b", "IMDBQ104"),
+    //     ("30c", "IMDBQ105"),
+    //     ("31a", "IMDBQ106"),
+    //     ("31b", "IMDBQ107"),
+    //     ("31c", "IMDBQ108"),
+    //     ("32b", "IMDBQ110"),
     // ];
 
     // return queries.into_iter().collect();
@@ -391,9 +390,9 @@ fn queries() -> IndexMap<&'static str, &'static str> {
             ("28a", "IMDBQ097"),
             ("28b", "IMDBQ098"),
             ("28c", "IMDBQ099"),
-            ("29a", "IMDBQ100"),
-            ("29b", "IMDBQ101"),
-            ("29c", "IMDBQ102"),
+            // ("29a", "IMDBQ100"),
+            // ("29b", "IMDBQ101"),
+            // ("29c", "IMDBQ102"),
             ("30a", "IMDBQ103"),
             ("30b", "IMDBQ104"),
             ("30c", "IMDBQ105"),
