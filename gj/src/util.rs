@@ -355,6 +355,7 @@ pub fn compute_full_plan<'a>(
             }
             Instruction2::Lookup(lookups) => {
                 for lookup in lookups {
+                    dbg!(&lookup.left);
                     let i = attr_positions[&lookup.left];
                     attr_positions.insert(lookup.right.clone(), i);
                     lookup.key = i;

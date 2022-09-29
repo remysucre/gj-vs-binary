@@ -28,7 +28,7 @@
             "name": "HASH_JOIN",
             "timing":0.004863,
             "cardinality":16308,
-            "extra_info": "INNER\ncc.movie_id = mi.movie_id\nt.id = ci.movie_id\nt.id = mc.movie_id\nt.id = mi.movie_id\nmk.movie_id = ci.movie_id\nmk.movie_id = mc.movie_id\nmk.movie_id = mi.movie_id\ncc.movie_id = mc.movie_id\ncc.movie_id = ci.movie_id\n",
+            "extra_info": "INNER\nmk.movie_id = mi.movie_id\nt.id = ci.movie_id\nt.id = mc.movie_id\nt.id = mi.movie_id\nmk.movie_id = ci.movie_id\nmk.movie_id = mc.movie_id\ncc.movie_id = mi.movie_id\ncc.movie_id = mc.movie_id\ncc.movie_id = ci.movie_id\n",
             "timings": [
             ],
             "children": [

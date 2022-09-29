@@ -246,15 +246,16 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     // let queries = vec![("33c", "IMDBQ113")];
 
     // let queries = vec![
-    //     // ("29b", "IMDBQ101"),
-    //     // ("29c", "IMDBQ102"),
-    //     ("30a", "IMDBQ103"),
-    //     ("30b", "IMDBQ104"),
-    //     ("30c", "IMDBQ105"),
-    //     ("31a", "IMDBQ106"),
-    //     ("31b", "IMDBQ107"),
-    //     ("31c", "IMDBQ108"),
-    //     ("32b", "IMDBQ110"),
+    //     ("29a", "IMDBQ100"),
+    //     ("29b", "IMDBQ101"),
+    //     ("29c", "IMDBQ102"),
+    //     // ("30a", "IMDBQ103"),
+    //     // ("30b", "IMDBQ104"),
+    //     // ("30c", "IMDBQ105"),
+    //     // ("31a", "IMDBQ106"),
+    //     // ("31b", "IMDBQ107"),
+    //     // ("31c", "IMDBQ108"),
+    //     // ("32b", "IMDBQ110"),
     // ];
 
     // return queries.into_iter().collect();
@@ -320,10 +321,10 @@ fn queries() -> IndexMap<&'static str, &'static str> {
             ("12a", "IMDBQ042"),
             ("12b", "IMDBQ043"), // TRIE SLOW
             ("12c", "IMDBQ044"),
-            ("13a", "IMDBQ045"),
+            // ("13a", "IMDBQ045"),
             ("13b", "IMDBQ046"), // TRIE SLOW
             ("13c", "IMDBQ047"), // TRIE SLOW
-            ("13d", "IMDBQ048"),
+            // ("13d", "IMDBQ048"),
             ("14a", "IMDBQ049"),
             ("14b", "IMDBQ050"),
             ("14c", "IMDBQ051"),
@@ -390,9 +391,9 @@ fn queries() -> IndexMap<&'static str, &'static str> {
             ("28a", "IMDBQ097"),
             ("28b", "IMDBQ098"),
             ("28c", "IMDBQ099"),
-            // ("29a", "IMDBQ100"),
-            // ("29b", "IMDBQ101"),
-            // ("29c", "IMDBQ102"),
+            ("29a", "IMDBQ100"),
+            ("29b", "IMDBQ101"),
+            ("29c", "IMDBQ102"),
             ("30a", "IMDBQ103"),
             ("30b", "IMDBQ104"),
             ("30c", "IMDBQ105"),
