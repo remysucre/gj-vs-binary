@@ -193,30 +193,20 @@ fn run_query(
                 .unwrap()
         })
         .collect();
-    let mut result = Vec::default();
+    // let mut result = Vec::default();
     // for row in final_view {
     //     if result.is_empty() {
-    //         result = row.to_vec();
+    //         result = payload_ids.iter().map(|i| &row[*i]).collect();
     //     } else {
-    //         for (i, v) in row.iter().enumerate() {
-    //             if &result[i] > v {
-    //                 result[i] = v.clone();
+    //         for (j, i) in payload_ids.iter().enumerate() {
+    //             if result[j] > &row[*i] {
+    //                 result[j] = &row[*i];
     //             }
     //         }
     //     }
     // }
-    for row in final_view {
-        if result.is_empty() {
-            result = payload_ids.iter().map(|i| &row[*i]).collect();
-        } else {
-            for (j, i) in payload_ids.iter().enumerate() {
-                if result[j] > &row[*i] {
-                    result[j] = &row[*i];
-                }
-            }
-        }
-    }
-    println!("{:?}", result);
+    println!("Result {:?}", final_view.vec.len() / final_view.arity);
+    // println!("{:?}", result);
     println!("Total building takes {}", total_building.as_secs_f32());
     println!("Total joining takes {}", total_joining.as_secs_f32());
     let total = start.elapsed();

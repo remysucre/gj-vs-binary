@@ -75,7 +75,7 @@ mod cell {
     }
 }
 
-pub type Id = i32;
+pub type Id = i64;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Value {
