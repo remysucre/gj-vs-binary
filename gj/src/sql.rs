@@ -369,7 +369,11 @@ pub fn get_scan_join_attrs<'a>(root: &'a TreeOp) -> IndexSet<Attribute> {
 
 pub const FAKE: usize = 9999;
 
-pub fn to_binary_plan2<'a>(root: &'a TreeOp) -> Vec<Instruction2> {
+pub fn to_binary_plan2<'a>(
+    root: &'a TreeOp,
+    in_view: &HashMap<&str, &'a TreeOp>,
+    provides: &IndexMap<&'a TreeOp, Vec<Vec<Attribute>>>,
+) -> Vec<Instruction2> {
     let mut program = vec![];
 
     let attrs = get_scan_join_attrs(root);
@@ -379,8 +383,29 @@ pub fn to_binary_plan2<'a>(root: &'a TreeOp) -> Vec<Instruction2> {
     traverse_left(root, &mut |node: &'a TreeOp| {
         if let Some(NodeAttr::Join(join)) = &node.attr {
             for equalizer in &join.equalizers {
-                let lattr = &equalizer.left_attr;
-                let rattr = &equalizer.right_attr;
+                // the attribute can be from a view, so we find its representative
+                let lattr = if let Some(node) = in_view.get(equalizer.left_attr.table_name.as_str())
+                {
+                    let attrs = &provides[node];
+                    let i = attrs
+                        .iter()
+                        .position(|a| a.contains(&equalizer.left_attr))
+                        .unwrap();
+                    &attrs[i][0]
+                } else {
+                    &equalizer.left_attr
+                };
+                let rattr =
+                    if let Some(node) = in_view.get(equalizer.right_attr.table_name.as_str()) {
+                        let attrs = &provides[node];
+                        let i = attrs
+                            .iter()
+                            .position(|a| a.contains(&equalizer.right_attr))
+                            .unwrap();
+                        &attrs[i][0]
+                    } else {
+                        &equalizer.right_attr
+                    };
 
                 let l_pos_opt = groups.iter().position(|g| g.contains(lattr));
                 let r_pos_opt = groups.iter().position(|g| g.contains(rattr));

@@ -125,7 +125,7 @@ fn run_query(
     let root = tm[tm.len() - 1];
     for node in to_materialize(plan_tree) {
         // let groups = to_left_deep_plan(node);
-        let mut plan = to_binary_plan2(node);
+        let mut plan = to_binary_plan2(node, &in_view, &provides);
         // let compiled_plan = compile_plan(&groups, node, &in_view);
         log::debug!("binary plan: {:?}", plan);
 
@@ -137,8 +137,8 @@ fn run_query(
         let (out_schema, build_plan) = compute_full_plan(db, node, &mut plan, &provides, &in_view);
         log::debug!("out schema: {:?}", out_schema);
 
-        // plan = combine_lookups(optimize, plan); // TODO disabled for cyclic queries
-        // compute_full_plan(&db, &groups, &provides, &in_view, node);
+        plan = combine_lookups(optimize, plan); // TODO disabled for cyclic queries
+                                                // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
         build_plans.insert(node, build_plan);
         provides.insert(node, out_schema);
@@ -244,7 +244,7 @@ fn run_query(
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> IndexMap<&'static str, &'static str> {
-    let queries = vec![("00", "IMDBQ113")];
+    // let queries = vec![("19a", "IMDBQ113")];
 
     // let queries = vec![
     //     ("29a", "IMDBQ100"),
@@ -259,7 +259,7 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     //     // ("32b", "IMDBQ110"),
     // ];
 
-    return queries.into_iter().collect();
+    // return queries.into_iter().collect();
 
     let bushy = true;
     let linear = true;
