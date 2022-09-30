@@ -771,7 +771,7 @@ fn build_trie_from_view(
     id_ids: &[usize],
     data_ids: &[usize],
 ) -> TrieRoot {
-    let mut id_cols: Vec<Vec<i32>> = vec![vec![]; id_ids.len()];
+    let mut id_cols: Vec<Vec<Id>> = vec![vec![]; id_ids.len()];
     let mut data_cols: Vec<ColInner> = vec![ColInner::default(); data_ids.len()];
 
     // let mut ids = vec![0; id_ids.len()];

@@ -269,7 +269,7 @@ pub fn free_join(
             let mut local_rels = rels.clone();
             let batch_size = 1000.min(id_cols[0].len());
             // let batch_size = 1.min(id_cols[0].len()); // ABLATION
-            let mut tuple_cols: Vec<Vec<i32>> = vec![Vec::with_capacity(batch_size); id_cols.len()];
+            let mut tuple_cols: Vec<Vec<Id>> = vec![Vec::with_capacity(batch_size); id_cols.len()];
             let mut data_cols: Vec<Vec<Value>> =
                 vec![Vec::with_capacity(batch_size); data_cols.len()];
             let mut trie_cols = vec![vec![None; batch_size]; lookups.len()];
@@ -383,7 +383,7 @@ pub fn free_join(
 struct JoinContext<'a> {
     n_lookups: usize,
     singleton: Vec<Value>,
-    tuple: Vec<i32>,
+    tuple: Vec<Id>,
     out: &'a mut View,
 }
 

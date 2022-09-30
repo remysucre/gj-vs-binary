@@ -14,7 +14,7 @@ pub type IndexSet<K> = indexmap::IndexSet<K, BuildHasher>;
 use std::rc::Rc;
 
 use sql::Attribute;
-use trie::Value;
+use trie::{Id, Value};
 
 // pub type Col = Vec<Value<'a>>;
 // pub type Relation = HashMap<Attribute, Col<'a>>;
@@ -24,7 +24,7 @@ pub type Col = Rc<ColInner>;
 
 #[derive(Debug, Clone)]
 pub enum ColInner {
-    Int(Vec<i32>),
+    Int(Vec<Id>),
     Str(Vec<Rc<String>>),
 }
 
@@ -43,7 +43,7 @@ impl ColInner {
         }
     }
 
-    pub fn ints(&self) -> &[i32] {
+    pub fn ints(&self) -> &[Id] {
         match self {
             ColInner::Int(v) => v,
             ColInner::Str(_) => panic!("not an int col"),

@@ -75,16 +75,16 @@ mod cell {
     }
 }
 
-type Id = i32;
+pub type Id = i32;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub enum Value {
     Str(Rc<String>),
-    Num(i32),
+    Num(Id),
 }
 
 impl Value {
-    pub fn as_num(&self) -> i32 {
+    pub fn as_num(&self) -> Id {
         match self {
             Value::Num(n) => *n,
             Value::Str(_) => panic!("Value is not a number"),
@@ -305,7 +305,7 @@ impl<'a> TrieRef<'a> {
             assert!(!set.is_empty());
             // println!("Trie len: {}", set.len());
 
-            if (max - min) < ((set.len() * 2) as i32) {
+            if (max - min) < ((set.len() * 2) as Id) {
                 let mut denseset = DenseMap::new(min, max);
                 for id in set {
                     denseset.insert(id, ());
