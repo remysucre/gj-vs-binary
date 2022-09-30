@@ -8,7 +8,7 @@ use clap::Parser;
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    // let mut json = std::fs::File::create(&args.json).unwrap();
+    let mut json = std::fs::File::create(&args.json).unwrap();
 
     let mut queries = queries();
     if let Some(q) = &args.query {
@@ -82,14 +82,14 @@ fn main() {
         }
     }
 
-    // serde_json::to_writer_pretty(
-    //     &mut json,
-    //     &serde_json::json!({
-    //         "gj": records,
-    //         "duckdb": ddb_records,
-    //     }),
-    // )
-    // .unwrap();
+    serde_json::to_writer_pretty(
+        &mut json,
+        &serde_json::json!({
+            "gj": records,
+            "duckdb": ddb_records,
+        }),
+    )
+    .unwrap();
 }
 
 #[derive(Serialize)]
