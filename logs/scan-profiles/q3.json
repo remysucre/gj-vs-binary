@@ -1,0 +1,200 @@
+{
+   "name":  "Query", 
+   "result": 132.022332,
+   "timing": 132.022332,
+   "cardinality": 1,
+   "extra_info": "SELECT count(*)\nFROM City AS CityA\nJOIN City AS CityB\n  ON CityB.isPartOf_CountryId = CityA.isPartOf_CountryId\nJOIN City AS CityC\n  ON CityC.isPartOf_CountryId = CityA.isPartOf_CountryId\nJOIN Person AS PersonA\n  ON PersonA.isLocatedIn_CityId = CityA.CityId\nJOIN Person AS PersonB\n  ON PersonB.isLocatedIn_CityId = CityB.CityId\nJOIN Person AS PersonC\n  ON PersonC.isLocatedIn_CityId = CityC.CityId\nJOIN Person_knows_Person AS pkp1\n  ON pkp1.Person1Id = PersonA.PersonId\n AND pkp1.Person2Id = PersonB.PersonId\nJOIN Person_knows_Person AS pkp2\n  ON pkp2.Person1Id = PersonB.PersonId\n AND pkp2.Person2Id = PersonC.PersonId\nJOIN Person_knows_Person AS pkp3\n  ON pkp3.Person1Id = PersonC.PersonId\n AND pkp3.Person2Id = PersonA.PersonId;", 
+   "timings": [
+
+   ],
+   "children": [
+    {
+      "name": "SIMPLE_AGGREGATE",
+      "timing":0.000769,
+      "cardinality":1,
+      "extra_info": "count_star()",
+      "timings": [
+      ],
+      "children": [
+       {
+         "name": "HASH_JOIN",
+         "timing":0.048633,
+         "cardinality":753570,
+         "extra_info": "INNER\nisLocatedIn_CityId = CityId\nisPartOf_CountryId = isPartOf_CountryId\nisPartOf_CountryId = isPartOf_CountryId\n",
+         "timings": [
+         ],
+         "children": [
+          {
+            "name": "HASH_JOIN",
+            "timing":0.004362,
+            "cardinality":3107478,
+            "extra_info": "INNER\nisLocatedIn_CityId = CityId\n",
+            "timings": [
+            ],
+            "children": [
+             {
+               "name": "HASH_JOIN",
+               "timing":0.004906,
+               "cardinality":3107478,
+               "extra_info": "INNER\nisLocatedIn_CityId = CityId\n",
+               "timings": [
+               ],
+               "children": [
+                {
+                  "name": "HASH_JOIN",
+                  "timing":53.473991,
+                  "cardinality":3107478,
+                  "extra_info": "INNER\nPerson2Id = PersonId\nPerson1Id = PersonId\n",
+                  "timings": [
+                  ],
+                  "children": [
+                   {
+                     "name": "HASH_JOIN",
+                     "timing":69.088880,
+                     "cardinality":6686724246,
+                     "extra_info": "INNER\nPersonId = Person1Id\n",
+                     "timings": [
+                     ],
+                     "children": [
+                      {
+                        "name": "HASH_JOIN",
+                        "timing":0.006583,
+                        "cardinality":452586,
+                        "extra_info": "INNER\nPerson2Id = PersonId\n",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "SEQ_SCAN",
+                           "timing":0.001842,
+                           "cardinality":452586,
+                           "extra_info": "pkp1\n[INFOSEPARATOR]\nPerson1Id\nPerson2Id",
+                           "timings": [
+                           ],
+                           "children": [
+                           ]
+                         }
+,
+                         {
+                           "name": "SEQ_SCAN",
+                           "timing":0.000019,
+                           "cardinality":11000,
+                           "extra_info": "PersonA\n[INFOSEPARATOR]\nisLocatedIn_CityId\nPersonId",
+                           "timings": [
+                           ],
+                           "children": [
+                           ]
+                         }
+                        ]
+                      }
+,
+                      {
+                        "name": "HASH_JOIN",
+                        "timing":0.442511,
+                        "cardinality":72042796,
+                        "extra_info": "INNER\nPersonId = Person1Id\n",
+                        "timings": [
+                        ],
+                        "children": [
+                         {
+                           "name": "HASH_JOIN",
+                           "timing":0.005900,
+                           "cardinality":452586,
+                           "extra_info": "INNER\nPerson2Id = PersonId\n",
+                           "timings": [
+                           ],
+                           "children": [
+                            {
+                              "name": "SEQ_SCAN",
+                              "timing":0.000368,
+                              "cardinality":452586,
+                              "extra_info": "pkp2\n[INFOSEPARATOR]\nPerson1Id\nPerson2Id",
+                              "timings": [
+                              ],
+                              "children": [
+                              ]
+                            }
+,
+                            {
+                              "name": "SEQ_SCAN",
+                              "timing":0.000009,
+                              "cardinality":11000,
+                              "extra_info": "PersonB\n[INFOSEPARATOR]\nisLocatedIn_CityId\nPersonId",
+                              "timings": [
+                              ],
+                              "children": [
+                              ]
+                            }
+                           ]
+                         }
+,
+                         {
+                           "name": "SEQ_SCAN",
+                           "timing":0.000284,
+                           "cardinality":452586,
+                           "extra_info": "pkp3\n[INFOSEPARATOR]\nPerson1Id\nPerson2Id",
+                           "timings": [
+                           ],
+                           "children": [
+                           ]
+                         }
+                        ]
+                      }
+                     ]
+                   }
+,
+                   {
+                     "name": "SEQ_SCAN",
+                     "timing":0.000006,
+                     "cardinality":11000,
+                     "extra_info": "PersonC\n[INFOSEPARATOR]\nisLocatedIn_CityId\nPersonId",
+                     "timings": [
+                     ],
+                     "children": [
+                     ]
+                   }
+                  ]
+                }
+,
+                {
+                  "name": "SEQ_SCAN",
+                  "timing":0.000003,
+                  "cardinality":1343,
+                  "extra_info": "CityA\n[INFOSEPARATOR]\nisPartOf_CountryId\nCityId",
+                  "timings": [
+                  ],
+                  "children": [
+                  ]
+                }
+               ]
+             }
+,
+             {
+               "name": "SEQ_SCAN",
+               "timing":0.000001,
+               "cardinality":1343,
+               "extra_info": "CityB\n[INFOSEPARATOR]\nisPartOf_CountryId\nCityId",
+               "timings": [
+               ],
+               "children": [
+               ]
+             }
+            ]
+          }
+,
+          {
+            "name": "SEQ_SCAN",
+            "timing":0.000002,
+            "cardinality":1343,
+            "extra_info": "CityC\n[INFOSEPARATOR]\nisPartOf_CountryId\nCityId",
+            "timings": [
+            ],
+            "children": [
+            ]
+          }
+         ]
+       }
+      ]
+    }
+   ]
+}

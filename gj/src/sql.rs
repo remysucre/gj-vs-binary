@@ -411,7 +411,9 @@ pub fn to_binary_plan2<'a>(
                 let r_pos_opt = groups.iter().position(|g| g.contains(rattr));
 
                 match (l_pos_opt, r_pos_opt) {
-                    (Some(lpos), Some(rpos)) => assert_eq!(lpos, rpos),
+                    (Some(lpos), Some(rpos)) => {
+                        assert_eq!(lpos, rpos, "left {:?}, right {:?}", &lattr, &rattr)
+                    }
                     (Some(lpos), None) => {
                         let instr = Instruction2::Lookup(vec![Lookup2 {
                             key: FAKE,

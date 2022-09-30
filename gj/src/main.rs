@@ -8,7 +8,7 @@ use clap::Parser;
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    let mut json = std::fs::File::create(&args.json).unwrap();
+    // let mut json = std::fs::File::create(&args.json).unwrap();
 
     let mut queries = queries();
     if let Some(q) = &args.query {
@@ -82,14 +82,14 @@ fn main() {
         }
     }
 
-    serde_json::to_writer_pretty(
-        &mut json,
-        &serde_json::json!({
-            "gj": records,
-            "duckdb": ddb_records,
-        }),
-    )
-    .unwrap();
+    // serde_json::to_writer_pretty(
+    //     &mut json,
+    //     &serde_json::json!({
+    //         "gj": records,
+    //         "duckdb": ddb_records,
+    //     }),
+    // )
+    // .unwrap();
 }
 
 #[derive(Serialize)]
@@ -137,8 +137,8 @@ fn run_query(
         let (out_schema, build_plan) = compute_full_plan(db, node, &mut plan, &provides, &in_view);
         log::debug!("out schema: {:?}", out_schema);
 
-        plan = combine_lookups(optimize, plan); // TODO disabled for cyclic queries
-                                                // compute_full_plan(&db, &groups, &provides, &in_view, node);
+        // plan = combine_lookups(optimize, plan); // TODO disabled for cyclic queries
+        // compute_full_plan(&db, &groups, &provides, &in_view, node);
 
         build_plans.insert(node, build_plan);
         provides.insert(node, out_schema);
@@ -234,7 +234,13 @@ fn run_query(
 
 // mapping between the original query ID to duckdb's ID
 fn queries() -> IndexMap<&'static str, &'static str> {
-    // let queries = vec![("19a", "IMDBQ113")];
+    let queries = vec![
+        ("q1", "LSQB3"),
+        ("q2", "LSQB3"),
+        ("q3", "LSQB3"),
+        ("q4", "LSQB3"),
+        ("q5", "LSQB3"),
+    ];
 
     // let queries = vec![
     //     ("29a", "IMDBQ100"),
@@ -249,7 +255,7 @@ fn queries() -> IndexMap<&'static str, &'static str> {
     //     // ("32b", "IMDBQ110"),
     // ];
 
-    // return queries.into_iter().collect();
+    return queries.into_iter().collect();
 
     let bushy = true;
     let linear = true;
