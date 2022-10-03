@@ -562,7 +562,7 @@ pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
         .or_else(|_| {
             let shared_name = find_shared(t_name).to_lowercase();
             // TODO fix this!
-            let path_s = format!("../data/imdb/{}.parquet", shared_name);
+            let path_s = format!("../data/lsqb/sf03/{}.parquet", shared_name);
             let path = path::Path::new(&path_s);
             File::open(path)
         })
