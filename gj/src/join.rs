@@ -230,6 +230,7 @@ pub fn free_join(
     tables: &[Table],
     compiled_plan: &[Instruction2],
     out: &mut View,
+    count: Option<usize>,
 ) {
     let mut compiled_plan = compiled_plan.to_vec();
     println!("n instructions: {}", compiled_plan.len());
@@ -263,6 +264,7 @@ pub fn free_join(
             singleton: vec![],
             tuple: vec![],
             out,
+            count,
         };
 
         if let [Instruction2::Lookup(lookups), tail @ ..] = &mut compiled_plan[..] {
@@ -364,6 +366,8 @@ pub fn free_join(
 
         log::debug!("{} lookups", ctx.n_lookups);
 
+        dbg!(ctx.count);
+
         // for i in 0..id_cols[0].len() {
         //     let singleton: SmallVec<[_; 4]> = id_cols
         //         .iter()
@@ -385,6 +389,7 @@ struct JoinContext<'a> {
     singleton: Vec<Value>,
     tuple: Vec<Id>,
     out: &'a mut View,
+    count: Option<usize>,
 }
 
 impl JoinContext<'_> {
@@ -448,7 +453,21 @@ impl JoinContext<'_> {
         }
     }
 
+    fn count(cnt: &mut usize, relations: &[TrieRef]) {
+        let n: usize = relations
+            .iter()
+            .map(|r| r.len())
+            .filter(|n| n > &0)
+            .product();
+
+        *cnt += n;
+    }
+
     fn materialize(&mut self, relations: &[TrieRef]) {
+        if let Some(cnt) = &mut self.count {
+            JoinContext::count(cnt, relations);
+            return;
+        }
         let out = &mut self.out.vec;
         match relations {
             [] => {

@@ -153,7 +153,7 @@ fn run_query(
     let mut total_joining = Duration::default();
     let start = Instant::now();
     // TODO hash treeop by address
-    for (node, compiled_plan) in &compiled_plans {
+    for (i, (node, compiled_plan)) in compiled_plans.iter().enumerate() {
         let loop_start = Instant::now();
         let build_plan = &build_plans[node];
 
@@ -168,9 +168,14 @@ fn run_query(
             arity: provides[node].len(),
         };
 
+        let count = if i == compiled_plans.len() - 1 {
+            Some(0)
+        } else {
+            None
+        };
         println!("Running join with {} tables", tables.len());
         let join_start = Instant::now();
-        free_join(optimize, &tables, compiled_plan, &mut intermediate);
+        free_join(optimize, &tables, compiled_plan, &mut intermediate, count);
         let join_time = join_start.elapsed();
         println!("Join took {:?}", join_time.as_secs_f32());
         total_joining += join_time;
@@ -178,6 +183,7 @@ fn run_query(
         views.insert(node, intermediate);
         tables_buf.push(tables);
         println!("Iter takes {:?}", loop_start.elapsed().as_secs_f32());
+        println!("COUNT {:?}", count);
     }
     println!("Bushy join takes {:?}", start.elapsed().as_secs_f32());
     let final_attrs = provides.get(&root).unwrap();

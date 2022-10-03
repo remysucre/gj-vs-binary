@@ -254,7 +254,7 @@ impl<'a> TrieRef<'a> {
             TrieInner::Map(map, _) => map.len(),
             TrieInner::Set(set, _t) => set.len(),
             TrieInner::DenseSet(set, _t) => set.len(),
-            TrieInner::Data(..) => panic!(),
+            TrieInner::Data(thunk) => thunk.len(),
         }
     }
 
