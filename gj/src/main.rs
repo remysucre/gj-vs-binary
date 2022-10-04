@@ -103,7 +103,7 @@ fn main() {
                             })
                             .collect(),
                     });
-                    if sf != "sf3" {
+                    if !(sf == "sf3" && q == "q3") {
                         records.push(Record {
                             sf: scaling_factor,
                             query: q.into(),

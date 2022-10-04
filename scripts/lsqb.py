@@ -45,19 +45,31 @@ def plot(data):
         'q5': (5, (10, 3)),
     }
 
+    # '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00'
+    colors = {
+        'q1': '#377eb8',
+        'q2': '#ff7f00',
+        'q3': '#4daf4a',
+        'q4': '#f781bf',
+        'q5': '#a65628',
+    }
+
     # for each query make a line plot of the query times over sf
     for q in ddb.keys():
         ddb_q = ddb[q]
         gj_q = gj[q]
         fj_q = fj[q]
 
-        print(gj_q)
+        x = ddb_q.values()
+        y = fj_q.values()
+        ax.plot(x, y, linestyle=lines[q],  # linewidth=1,
+                color='black', label='FJ {}'.format(q))
+        # ax.scatter(ddb_q[0.1], fj_q[0.1], color=colors[q], marker="o", s=12)
 
-        ax.plot(ddb_q.values(), fj_q.values(),
-                linestyle=lines[q], label='FJ {}'.format(q))
-
-        # ax.plot(ddb_q.values(), gj_q.values(),
-        #         linestyle=lines[q], label='GJ {}'.format(q))
+        y = gj_q.values()
+        ax.plot(x, y, linestyle=lines[q], alpha=0.35,
+                color='black', label='GJ {}'.format(q))
+        # ax.scatter(ddb_q[0.1], gj_q[0.1], color=colors[q], marker="s", s=12)
 
         lims = [
             np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
