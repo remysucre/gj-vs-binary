@@ -62,13 +62,11 @@ def plot(data):
 
         x = ddb_q.values()
         y = fj_q.values()
-        ax.plot(x, y, linestyle=lines[q],  # linewidth=1,
-                color='black', label='FJ {}'.format(q))
+        ax.plot(x, y, linestyle=lines[q], color='black', label=q)
         # ax.scatter(ddb_q[0.1], fj_q[0.1], color=colors[q], marker="o", s=12)
 
         y = gj_q.values()
-        ax.plot(x, y, linestyle=lines[q], alpha=0.35,
-                color='black', label='GJ {}'.format(q))
+        ax.plot(x, y, linestyle=lines[q], alpha=0.35, color='black')
         # ax.scatter(ddb_q[0.1], gj_q[0.1], color=colors[q], marker="s", s=12)
 
         lims = [
@@ -78,8 +76,11 @@ def plot(data):
 
     ax.plot(lims, lims, color='gray', linewidth=0.5)
     ax.set_aspect('equal')
+    ax.set_xlabel('Binary Join time (s)')
+    ax.set_ylabel('Free Join / Generic Join time (s)')
     ax.set_xlim(lims)
     ax.set_ylim(lims)
+    ax.legend(loc='upper left')  # , fontsize=8)
 
     plt.show()
 
