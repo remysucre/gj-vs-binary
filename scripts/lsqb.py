@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import json
-import statistics
-import itertools
 import numpy as np
-
 import matplotlib.pyplot as plt
+
 plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams['ps.fonttype'] = 42
 plt.rcParams['savefig.bbox'] = 'tight'
@@ -13,7 +11,6 @@ plt.rcParams['savefig.bbox'] = 'tight'
 
 def plot(data):
 
-    # maps each sf to a map query -> time
     ddb = {}
     fj = {}
     gj = {}
@@ -45,7 +42,6 @@ def plot(data):
         'q5': (5, (10, 3)),
     }
 
-    # '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999', '#e41a1c', '#dede00'
     colors = {
         'q1': '#377eb8',
         'q2': '#ff7f00',
@@ -54,7 +50,6 @@ def plot(data):
         'q5': '#a65628',
     }
 
-    # for each query make a line plot of the query times over sf
     for q in ddb.keys():
         ddb_q = ddb[q]
         gj_q = gj[q]
@@ -63,11 +58,9 @@ def plot(data):
         x = ddb_q.values()
         y = fj_q.values()
         ax.plot(x, y, linestyle=lines[q], color='black', label=q)
-        # ax.scatter(ddb_q[0.1], fj_q[0.1], color=colors[q], marker="o", s=12)
 
         y = gj_q.values()
         ax.plot(x, y, linestyle=lines[q], alpha=0.35, color='black')
-        # ax.scatter(ddb_q[0.1], gj_q[0.1], color=colors[q], marker="s", s=12)
 
         lims = [
             np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
@@ -82,7 +75,9 @@ def plot(data):
     ax.set_ylim(lims)
     ax.legend(loc='upper left')  # , fontsize=8)
 
-    plt.show()
+    # save plot as pdf
+    plt.savefig('lsqb.pdf', format='pdf')
+    # plt.show()
 
 
 if __name__ == '__main__':
