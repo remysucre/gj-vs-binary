@@ -355,7 +355,6 @@ pub fn compute_full_plan<'a>(
             }
             Instruction2::Lookup(lookups) => {
                 for lookup in lookups {
-                    dbg!(&lookup.left);
                     let i = attr_positions[&lookup.left];
                     attr_positions.insert(lookup.right.clone(), i);
                     lookup.key = i;
@@ -458,7 +457,7 @@ pub fn compute_full_plan<'a>(
     (out_schema, build_plan_out)
 }
 
-pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
+pub fn load_db(args: &Args, q: &str, sf: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>]) -> DB {
     let tables = scan
         .iter()
         .map(|s| s.table_name.as_str())
@@ -503,7 +502,7 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
 
             let pq = if tables.contains(table_name) || args.no_cache {
                 println!("Loading {} to DB", table_name);
-                from_parquet(q, table_name, table_schema)
+                from_parquet(q, sf, table_name, table_schema)
             } else {
                 use once_cell::unsync::Lazy;
                 use std::cell::RefCell;
@@ -534,7 +533,7 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
                         relation
                     } else {
                         println!("Loading {} to DB", table_name);
-                        let relation = from_parquet(q, table_name, table_schema);
+                        let relation = from_parquet(q, sf, table_name, table_schema);
                         for (a, col) in relation.iter() {
                             cols.insert(a.clone(), col.clone());
                         }
@@ -551,22 +550,12 @@ pub fn load_db(args: &Args, q: &str, scan: &[&ScanAttr], plan: &[Vec<&Attribute>
     db
 }
 
-pub fn from_parquet(query: &str, t_name: &str, schema: Type) -> Relation {
+pub fn from_parquet(query: &str, sf: &str, t_name: &str, schema: Type) -> Relation {
     let mut table = HashMap::<Attribute, ColInner>::default();
-    let path_s = format!(
-        "../queries/preprocessed/join-order-benchmark/data/{}/{}.parquet",
-        query, t_name
-    );
+
+    let path_s = format!("../data/lsqb/{}/{}.parquet", sf, t_name);
     let path = path::Path::new(&path_s);
-    let file = File::open(path)
-        .or_else(|_| {
-            let shared_name = find_shared(t_name).to_lowercase();
-            // TODO fix this!
-            let path_s = format!("../data/lsqb/sf03/{}.parquet", shared_name);
-            let path = path::Path::new(&path_s);
-            File::open(path)
-        })
-        .unwrap();
+    let file = File::open(path).unwrap();
 
     let reader = SerializedFileReader::new(file).unwrap();
 

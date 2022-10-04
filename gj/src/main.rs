@@ -1,5 +1,8 @@
 use serde::Serialize;
-use std::time::{Duration, Instant};
+use std::{
+    time::{Duration, Instant},
+    vec,
+};
 
 use gj::{join::*, sql::*, util::*, *};
 
@@ -8,7 +11,7 @@ use clap::Parser;
 fn main() {
     env_logger::init();
     let args = Args::parse();
-    // let mut json = std::fs::File::create(&args.json).unwrap();
+    let mut json = std::fs::File::create(&args.json).unwrap();
 
     let mut queries = queries();
     if let Some(q) = &args.query {
@@ -16,103 +19,142 @@ fn main() {
     }
 
     let mut records = Vec::new();
-    let mut ddb_records = Vec::new();
+    // let mut ddb_records = Vec::new();
 
-    for (q, _i) in queries {
-        println!("running query {} ", q);
+    for sf in ["sf01", "sf03", "sf1", "sf3"] {
+        println!("{}", sf);
+        let scaling_factor = match sf {
+            "sf01" => 0.1,
+            "sf03" => 0.3,
+            "sf1" => 1.0,
+            "sf3" => 3.0,
+            _ => panic!(),
+        };
+        for (&q, _i) in &queries {
+            println!("running query {} ", q);
 
-        let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
-        let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", q)).unwrap();
+            let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
+            let plan_tree =
+                get_join_tree(&format!("../logs/plan-profiles/{}/{}.json", sf, q)).unwrap();
 
-        let total_time = plan_tree.timing;
-        let filter_time = get_filter_cost(&plan_tree);
-        let join_time = total_time - filter_time;
+            let total_time = plan_tree.timing;
+            let filter_time = get_filter_cost(&plan_tree);
+            let join_time = total_time - filter_time;
 
-        println!("DUCKDB total time: {}", total_time);
-        println!("DUCKDB filter time: {}", filter_time);
-        println!("DUCKDB join time: {}", join_time);
+            println!("DUCKDB total time: {}", total_time);
+            println!("DUCKDB filter time: {}", filter_time);
+            println!("DUCKDB join time: {}", join_time);
 
-        ddb_records.push(DuckDbRecord {
-            query: q.into(),
-            query_short: q.into(),
-            total_time,
-            filter_time,
-            join_time,
-        });
+            // ddb_records.push(DuckDbRecord {
+            //     query: q.into(),
+            //     join_time,
+            // });
 
-        let scan = get_scans(&scan_tree);
-        let payload = get_payload(&plan_tree);
-        let plan = to_gj_plan(&plan_tree);
+            let scan = get_scans(&scan_tree);
+            let payload = get_payload(&plan_tree);
+            let plan = to_gj_plan(&plan_tree);
 
-        let db = load_db(&args, q, &scan, &plan);
+            let db = load_db(&args, q, sf, &scan, &plan);
 
-        for &optimize in &args.optimize {
-            if optimize == 1 {
-                for strategy in &args.strategy {
-                    let build_strategy = match strategy {
-                        0 => BuildStrategy::Full,
-                        1 => BuildStrategy::SLT,
-                        2 => BuildStrategy::COLT,
-                        _ => panic!("unknown build strategy"),
-                    };
+            for &optimize in &args.optimize {
+                if optimize == 1 {
+                    for strategy in &args.strategy {
+                        let build_strategy = match strategy {
+                            0 => BuildStrategy::Full,
+                            1 => BuildStrategy::SLT,
+                            2 => BuildStrategy::COLT,
+                            _ => panic!("unknown build strategy"),
+                        };
 
+                        panic!("use opt=0 for lsqb");
+                        // records.push(Record {
+                        //     query: q.into(),
+                        //     algo: unreachable!(),
+                        //     time: unreachable!(),
+                        //     // time: (0..args.n_trials)
+                        //     //     .map(|_| {
+                        //     //         run_query(
+                        //     //             &plan_tree,
+                        //     //             optimize,
+                        //     //             1000,
+                        //     //             build_strategy,
+                        //     //             &db,
+                        //     //             &payload,
+                        //     //         )
+                        //     //     })
+                        //     //     .collect(),
+                        // });
+                    }
+                } else {
                     records.push(Record {
+                        sf: scaling_factor,
                         query: q.into(),
-                        query_short: q.into(),
-                        optimize,
-                        strategy: *strategy,
-                        total_times: (0..args.n_trials)
-                            .map(|_| run_query(&plan_tree, optimize, build_strategy, &db, &payload))
+                        algo: "fj".to_string(),
+                        time: (0..args.n_trials)
+                            .map(|_| {
+                                run_query(
+                                    &plan_tree,
+                                    optimize,
+                                    1000,
+                                    BuildStrategy::COLT,
+                                    &db,
+                                    &payload,
+                                )
+                            })
                             .collect(),
                     });
+                    if sf != "sf3" {
+                        records.push(Record {
+                            sf: scaling_factor,
+                            query: q.into(),
+                            algo: "gj".to_string(),
+                            time: (0..args.n_trials)
+                                .map(|_| {
+                                    run_query(
+                                        &plan_tree,
+                                        optimize,
+                                        1,
+                                        BuildStrategy::Full,
+                                        &db,
+                                        &payload,
+                                    )
+                                })
+                                .collect(),
+                        });
+                    }
                 }
-            } else {
-                records.push(Record {
-                    query: q.into(),
-                    query_short: q.into(),
-                    optimize,
-                    strategy: 2,
-                    total_times: (0..args.n_trials)
-                        .map(|_| {
-                            run_query(&plan_tree, optimize, BuildStrategy::COLT, &db, &payload)
-                        })
-                        .collect(),
-                });
             }
         }
     }
 
-    // serde_json::to_writer_pretty(
-    //     &mut json,
-    //     &serde_json::json!({
-    //         "gj": records,
-    //         "duckdb": ddb_records,
-    //     }),
-    // )
-    // .unwrap();
+    serde_json::to_writer_pretty(
+        &mut json,
+        &serde_json::json!({
+            "gj": records,
+            // "duckdb": ddb_records,
+        }),
+    )
+    .unwrap();
 }
 
 #[derive(Serialize)]
 struct Record {
+    sf: f64,
     query: String,
-    query_short: String,
-    optimize: usize,
-    strategy: usize,
-    total_times: Vec<f64>,
+    algo: String,
+    time: Vec<f64>,
 }
 
 #[derive(Serialize)]
 struct DuckDbRecord {
     query: String,
-    query_short: String,
-    total_time: f64,
     join_time: f64,
-    filter_time: f64,
 }
 
 fn run_query(
     plan_tree: &TreeOp,
     optimize: usize,
+    vectorize: usize,
     build_strategy: BuildStrategy,
     db: &DB,
     payload: &[&Attribute],
@@ -175,7 +217,14 @@ fn run_query(
         };
         println!("Running join with {} tables", tables.len());
         let join_start = Instant::now();
-        free_join(optimize, &tables, compiled_plan, &mut intermediate, count);
+        free_join(
+            vectorize,
+            optimize,
+            &tables,
+            compiled_plan,
+            &mut intermediate,
+            count,
+        );
         let join_time = join_start.elapsed();
         println!("Join took {:?}", join_time.as_secs_f32());
         total_joining += join_time;
