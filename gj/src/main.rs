@@ -22,7 +22,7 @@ fn main() {
         println!("running query {} ", q);
 
         let scan_tree = get_join_tree(&format!("../logs/scan-profiles/{}.json", q)).unwrap();
-        let plan_tree = get_join_tree(&format!("../logs/bad-plan-profiles/{}.json", q)).unwrap();
+        let plan_tree = get_join_tree(&format!("../logs/plan-profiles/{}.json", q)).unwrap();
 
         let total_time = plan_tree.timing;
         let filter_time = get_filter_cost(&plan_tree);
@@ -43,65 +43,65 @@ fn main() {
 
         let db = load_db(&args, q, &scan, &plan);
 
-        // for optimize in [0, 1, 2] {
-        //     records.push(Record {
-        //         query: q.into(),
-        //         vectorize: 1000,
-        //         optimize,
-        //         strategy: 2,
-        //         time: (0..args.n_trials)
-        //             .map(|_| {
-        //                 run_query(
-        //                     &plan_tree,
-        //                     1000,
-        //                     optimize,
-        //                     BuildStrategy::COLT,
-        //                     &db,
-        //                     &payload,
-        //                 )
-        //             })
-        //             .collect(),
-        //     });
-        // }
+        for optimize in [0, 1, 2] {
+            records.push(Record {
+                query: q.into(),
+                vectorize: 1000,
+                optimize,
+                strategy: 2,
+                time: (0..args.n_trials)
+                    .map(|_| {
+                        run_query(
+                            &plan_tree,
+                            1000,
+                            optimize,
+                            BuildStrategy::COLT,
+                            &db,
+                            &payload,
+                        )
+                    })
+                    .collect(),
+            });
+        }
 
-        // for (i, strategy) in [BuildStrategy::Full, BuildStrategy::SLT, BuildStrategy::COLT]
-        //     .into_iter()
-        //     .enumerate()
-        // {
-        //     records.push(Record {
-        //         query: q.into(),
-        //         vectorize: 1000,
-        //         optimize: 1,
-        //         strategy: i,
-        //         time: (0..args.n_trials)
-        //             .map(|_| run_query(&plan_tree, 1000, 1, strategy, &db, &payload))
-        //             .collect(),
-        //     });
-        // }
+        for (i, strategy) in [BuildStrategy::Full, BuildStrategy::SLT, BuildStrategy::COLT]
+            .into_iter()
+            .enumerate()
+        {
+            records.push(Record {
+                query: q.into(),
+                vectorize: 1000,
+                optimize: 1,
+                strategy: i,
+                time: (0..args.n_trials)
+                    .map(|_| run_query(&plan_tree, 1000, 1, strategy, &db, &payload))
+                    .collect(),
+            });
+        }
 
-        // for vectorize in [1, 10, 100, 1000] {
-        //     records.push(Record {
-        //         query: q.into(),
-        //         vectorize,
-        //         optimize: 1,
-        //         strategy: 2,
-        //         time: (0..args.n_trials)
-        //             .map(|_| {
-        //                 run_query(&plan_tree, vectorize, 1, BuildStrategy::COLT, &db, &payload)
-        //             })
-        //             .collect(),
-        //     });
-        // }
+        for vectorize in [1, 10, 100, 1000] {
+            records.push(Record {
+                query: q.into(),
+                vectorize,
+                optimize: 1,
+                strategy: 2,
+                time: (0..args.n_trials)
+                    .map(|_| {
+                        run_query(&plan_tree, vectorize, 1, BuildStrategy::COLT, &db, &payload)
+                    })
+                    .collect(),
+            });
+        }
 
-        records.push(Record {
-            query: q.into(),
-            vectorize: 10,
-            optimize: 1,
-            strategy: 2,
-            time: (0..args.n_trials)
-                .map(|_| run_query(&plan_tree, 10, 1, BuildStrategy::COLT, &db, &payload))
-                .collect(),
-        });
+        // records.push(Record {
+        //     query: q.into(),
+        //     vectorize: 10,
+        //     optimize: 1,
+        //     strategy: 2,
+        //     time: (0..args.n_trials)
+        //         .map(|_| run_query(&plan_tree, 10, 1, BuildStrategy::COLT, &db, &payload))
+        //         .collect(),
+        // });
 
         records.push(Record {
             query: q.into(),
