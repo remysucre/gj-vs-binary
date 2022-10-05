@@ -30,12 +30,13 @@ def plot(good_data, bad_data):
     gj_slowdown = [gj_bad[q][0] / gj_good[q][0] for q in gj_good]
 
     fig, ax = plt.subplots()
-    # plt.xscale('log')
-    # plt.yscale('log')
+    plt.xscale('log')
+    plt.yscale('log')
 
-    ax.plot(ddb_slowdown, label='DuckDB', color=colors[0])
-    # ax.scatter(ddb_slowdown, fj_slowdown, s=5, color='silver', label='SLT')
-    # ax.scatter(ddb_slowdown, gj_slowdown, s=5, color='black', label='COLT')
+    ax.scatter(ddb_bad.values(), fj_bad.values(), s=5,
+               color='black', label='Free Join')
+    ax.scatter(ddb_bad.values(), gj_bad.values(), s=5,
+               color='silver', label='Generic Join')
 
     lims = [
         np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
@@ -44,8 +45,8 @@ def plot(good_data, bad_data):
 
     ax.plot(lims, lims, color='gray', linewidth=0.5)
     ax.set_aspect('equal')
-    ax.set_xlabel('Binary Join slowdown (s)')
-    ax.set_ylabel('Free Join / Generic Join slowdown (s)')
+    ax.set_xlabel('Binary Join time (s)')
+    ax.set_ylabel('Free Join / Generic Join time (s)')
     ax.set_xlim(lims)
     ax.set_ylim(lims)
 
