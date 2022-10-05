@@ -20,6 +20,7 @@ def plot(data):
 
     ablate_opt = {}
     ablate_trie = {}
+    ablate_vec = {}
 
     for i, record in enumerate(gj):
         j = i % 10
@@ -32,6 +33,10 @@ def plot(data):
                 if ablate_trie.get(j) is None:
                     ablate_trie[j] = {}
                 ablate_trie[j][record['query']] = record['time'][0]
+            case 6 | 7 | 8 | 9:
+                if ablate_vec.get(j) is None:
+                    ablate_vec[j] = {}
+                ablate_vec[j][record['query']] = record['time'][0]
 
     # merging ablation
     fig, ax = plt.subplots()
@@ -77,13 +82,42 @@ def plot(data):
 
     ax.plot(lims, lims, color='gray', linewidth=0.5)
     ax.set_aspect('equal')
-    ax.set_xlabel('time w/ basic merging (s)')
-    ax.set_ylabel('time w/ further merging (s)')
+    ax.set_xlabel('time w/ simple trie (s)')
+    ax.set_ylabel('time w/ lazy tries (s)')
     ax.set_xlim(lims)
     ax.set_ylim(lims)
 
     plt.legend(loc='upper left')
     plt.savefig('trie.pdf', format='pdf')
+
+    # vector ablation
+    fig, ax = plt.subplots()
+    plt.xscale('log')
+    plt.yscale('log')
+
+    y0 = ablate_vec[6].values()
+    y1 = ablate_vec[7].values()
+    y2 = ablate_vec[8].values()
+    y3 = ablate_vec[9].values()
+
+    ax.scatter(y0, y1, s=5, color='lightgray', label='batch 10x')
+    ax.scatter(y0, y2, s=5, color='lightgray', label='batch 100x')
+    ax.scatter(y0, y3, s=5, color='black', label='batch 1000x')
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+    ]
+
+    ax.plot(lims, lims, color='gray', linewidth=0.5)
+    ax.set_aspect('equal')
+    ax.set_xlabel('time w/ simple trie (s)')
+    ax.set_ylabel('time w/ lazy tries (s)')
+    ax.set_xlim(lims)
+    ax.set_ylim(lims)
+
+    plt.legend(loc='upper left')
+    plt.savefig('vec.pdf', format='pdf')
 
     # indexes = {d['query']: i for i, d in enumerate(ddb)}
     # gj = sorted(data['gj'], key=lambda x: indexes[x['query']])
