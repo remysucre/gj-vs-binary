@@ -26,18 +26,15 @@ fn main() {
 
         let total_time = plan_tree.timing;
         let filter_time = get_filter_cost(&plan_tree);
-        let join_time = total_time - filter_time;
+        let time = total_time - filter_time;
 
         println!("DUCKDB total time: {}", total_time);
         println!("DUCKDB filter time: {}", filter_time);
-        println!("DUCKDB join time: {}", join_time);
+        println!("DUCKDB join time: {}", time);
 
         ddb_records.push(DuckDbRecord {
             query: q.into(),
-            query_short: q.into(),
-            total_time,
-            filter_time,
-            join_time,
+            time,
         });
 
         let scan = get_scans(&scan_tree);
@@ -46,39 +43,54 @@ fn main() {
 
         let db = load_db(&args, q, &scan, &plan);
 
-        for &optimize in &args.optimize {
-            if optimize == 1 {
-                for strategy in &args.strategy {
-                    let build_strategy = match strategy {
-                        0 => BuildStrategy::Full,
-                        1 => BuildStrategy::SLT,
-                        2 => BuildStrategy::COLT,
-                        _ => panic!("unknown build strategy"),
-                    };
+        for optimize in [0, 1, 2] {
+            records.push(Record {
+                query: q.into(),
+                vectorize: 1000,
+                optimize,
+                strategy: 2,
+                time: (0..args.n_trials)
+                    .map(|_| {
+                        run_query(
+                            &plan_tree,
+                            1000,
+                            optimize,
+                            BuildStrategy::COLT,
+                            &db,
+                            &payload,
+                        )
+                    })
+                    .collect(),
+            });
+        }
 
-                    records.push(Record {
-                        query: q.into(),
-                        query_short: q.into(),
-                        optimize,
-                        strategy: *strategy,
-                        total_times: (0..args.n_trials)
-                            .map(|_| run_query(&plan_tree, optimize, build_strategy, &db, &payload))
-                            .collect(),
-                    });
-                }
-            } else {
-                records.push(Record {
-                    query: q.into(),
-                    query_short: q.into(),
-                    optimize,
-                    strategy: 2,
-                    total_times: (0..args.n_trials)
-                        .map(|_| {
-                            run_query(&plan_tree, optimize, BuildStrategy::COLT, &db, &payload)
-                        })
-                        .collect(),
-                });
-            }
+        for (i, strategy) in [BuildStrategy::Full, BuildStrategy::SLT, BuildStrategy::COLT]
+            .into_iter()
+            .enumerate()
+        {
+            records.push(Record {
+                query: q.into(),
+                vectorize: 1000,
+                optimize: 1,
+                strategy: i,
+                time: (0..args.n_trials)
+                    .map(|_| run_query(&plan_tree, 1000, 1, strategy, &db, &payload))
+                    .collect(),
+            });
+        }
+
+        for vectorize in [1, 10, 100, 1000] {
+            records.push(Record {
+                query: q.into(),
+                vectorize,
+                optimize: 1,
+                strategy: 2,
+                time: (0..args.n_trials)
+                    .map(|_| {
+                        run_query(&plan_tree, vectorize, 1, BuildStrategy::COLT, &db, &payload)
+                    })
+                    .collect(),
+            });
         }
     }
 
@@ -95,23 +107,21 @@ fn main() {
 #[derive(Serialize)]
 struct Record {
     query: String,
-    query_short: String,
+    vectorize: usize,
     optimize: usize,
     strategy: usize,
-    total_times: Vec<f64>,
+    time: Vec<f64>,
 }
 
 #[derive(Serialize)]
 struct DuckDbRecord {
     query: String,
-    query_short: String,
-    total_time: f64,
-    join_time: f64,
-    filter_time: f64,
+    time: f64,
 }
 
 fn run_query(
     plan_tree: &TreeOp,
+    vectorize: usize,
     optimize: usize,
     build_strategy: BuildStrategy,
     db: &DB,
@@ -170,7 +180,13 @@ fn run_query(
 
         println!("Running join with {} tables", tables.len());
         let join_start = Instant::now();
-        free_join(optimize, &tables, compiled_plan, &mut intermediate);
+        free_join(
+            vectorize,
+            optimize,
+            &tables,
+            compiled_plan,
+            &mut intermediate,
+        );
         let join_time = join_start.elapsed();
         println!("Join took {:?}", join_time.as_secs_f32());
         total_joining += join_time;
