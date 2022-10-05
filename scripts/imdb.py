@@ -52,7 +52,7 @@ def plot(data):
     y = ablate_opt[1].values()
     z = gj_e2e[10].values()
     ax.scatter(x, y, s=5, color='black', label='Free Join')
-    ax.scatter(x, z, s=5, color='lightgray', label='Generic Join')
+    ax.scatter(x, z, s=5, color='silver', label='Generic Join')
 
     lims = [
         np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
