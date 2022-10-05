@@ -11,6 +11,38 @@ plt.rcParams['savefig.bbox'] = 'tight'
 colors = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628']
 
 
+def plote2e(data):
+
+    ddb = data['duckdb']
+    ddb = {d['query']: d['time'] for d in ddb}
+
+    gj = data['gj']
+    gj = {d['query']: d['time'] for d in gj}
+
+    fig, ax = plt.subplots()
+    plt.xscale('log')
+    plt.yscale('log')
+
+    x = ddb.values()
+    y = gj.values()
+    ax.scatter(x, y, s=5, label='occurence merging')
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+    ]
+
+    ax.plot(lims, lims, color='gray', linewidth=0.5)
+    ax.set_aspect('equal')
+    ax.set_xlabel('time w/ basic merging (s)')
+    ax.set_ylabel('time w/ further merging (s)')
+    ax.set_xlim(lims)
+    ax.set_ylim(lims)
+
+    plt.legend(loc='upper left')
+    plt.savefig('e2e.pdf', format='pdf')
+
+
 def plot(data):
 
     ddb = data['duckdb']
@@ -37,6 +69,30 @@ def plot(data):
                 if ablate_vec.get(j) is None:
                     ablate_vec[j] = {}
                 ablate_vec[j][record['query']] = record['time'][0]
+
+    # e2e
+    fig, ax = plt.subplots()
+    plt.xscale('log')
+    plt.yscale('log')
+
+    x = ddb.values()
+    y = ablate_opt[1].values()
+    ax.scatter(x, y, s=5, label='occurence merging')
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
+        np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
+    ]
+
+    ax.plot(lims, lims, color='gray', linewidth=0.5)
+    ax.set_aspect('equal')
+    ax.set_xlabel('time w/ basic merging (s)')
+    ax.set_ylabel('time w/ further merging (s)')
+    ax.set_xlim(lims)
+    ax.set_ylim(lims)
+
+    plt.legend(loc='upper left')
+    plt.savefig('e2e.pdf', format='pdf')
 
     # merging ablation
     fig, ax = plt.subplots()
@@ -197,4 +253,5 @@ if __name__ == '__main__':
     with open(sys.argv[1]) as f:
         data = json.load(f)
 
+    # plote2e(data)
     plot(data)
