@@ -12,16 +12,16 @@ plt.rcParams['savefig.bbox'] = 'tight'
 def plot():
 
     fig, ax = plt.subplots()
-    # plt.xscale('log')
-    # plt.yscale('log')
+    plt.xscale('log')
+    plt.yscale('log')
 
     n = [100, 300, 1000, 3000, 10000, 30000]
     x = [0.000755, 0.002428, 0.017643, 0.092013, 0.658043, 6.264033]
     y = [0.000049083, 0.000066666, 0.000104,
          0.000186458, 0.000343791, 0.000739166]
 
-    ax.plot(n, y, marker='o', color='black', label='Free Join')
-    ax.plot(n, x, marker='o', color='silver', label='Binary Join')
+    ax.plot(n, y, marker='o', ms=4, color='black', label='Free Join')
+    ax.plot(n, x, marker='o', ms=4, color='silver', label='Binary Join')
 
     # lims = [
     #     np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
