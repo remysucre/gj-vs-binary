@@ -1,19 +1,19 @@
 {
   "gj": [
     {
-      "query": "s3",
+      "query": "s4",
       "vectorize": 10,
       "optimize": 1,
       "strategy": 2,
       "time": [
-        0.000104
+        0.0004795
       ]
     }
   ],
   "duckdb": [
     {
-      "query": "s3",
-      "time": 0.658043
+      "query": "s4",
+      "time": 0.695543
     }
   ]
 }

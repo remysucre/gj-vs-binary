@@ -1,6 +1,6 @@
 import csv
 
-N = 10000
+N = 1000
 k = 3
 
 names = ['sr', 'ss', 'st', 'su', 'sv', 'sw']

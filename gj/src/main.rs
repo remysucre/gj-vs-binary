@@ -282,7 +282,12 @@ fn run_query(
 fn queries() -> IndexMap<&'static str, &'static str> {
     // let queries = vec![("19a", "IMDBQ113")];
 
-    let queries = vec![("s3", "IMDBQ110")];
+    let queries = vec![
+        ("s3", "IMDBQ110"),
+        // ("s4", "IMDBQ110"),
+        // ("s5", "IMDBQ110"),
+        // ("s6", "IMDBQ110"),
+    ];
 
     return queries.into_iter().collect();
 
