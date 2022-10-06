@@ -1,0 +1,84 @@
+{
+  "gj": [
+    {
+      "query": "s100",
+      "vectorize": 10,
+      "optimize": 1,
+      "strategy": 2,
+      "time": [
+        0.000049083
+      ]
+    },
+    {
+      "query": "s300",
+      "vectorize": 10,
+      "optimize": 1,
+      "strategy": 2,
+      "time": [
+        0.000066666
+      ]
+    },
+    {
+      "query": "s1000",
+      "vectorize": 10,
+      "optimize": 1,
+      "strategy": 2,
+      "time": [
+        0.000104
+      ]
+    },
+    {
+      "query": "s3000",
+      "vectorize": 10,
+      "optimize": 1,
+      "strategy": 2,
+      "time": [
+        0.000186458
+      ]
+    },
+    {
+      "query": "s10000",
+      "vectorize": 10,
+      "optimize": 1,
+      "strategy": 2,
+      "time": [
+        0.000343791
+      ]
+    },
+    {
+      "query": "s30000",
+      "vectorize": 10,
+      "optimize": 1,
+      "strategy": 2,
+      "time": [
+        0.000739166
+      ]
+    }
+  ],
+  "duckdb": [
+    {
+      "query": "s100",
+      "time": 0.000755
+    },
+    {
+      "query": "s300",
+      "time": 0.002428
+    },
+    {
+      "query": "s1000",
+      "time": 0.017643
+    },
+    {
+      "query": "s3000",
+      "time": 0.092013
+    },
+    {
+      "query": "s10000",
+      "time": 0.658043
+    },
+    {
+      "query": "s30000",
+      "time": 6.264033
+    }
+  ]
+}
