@@ -1,3 +1,11 @@
+# Note to SIGMOD reviewers
+This README contains project planning notes, some of which are out of date.
+We will prepare detailed instructions for reproducing our results 
+when it comes time for artifact submission.
+Currently it is likely challenging for a third party to reproduce our
+results, and we provide the code only as a reference for the "ground truth"
+implementation.
+
 # Comparing and Unifying WCOJ with Binary Join
 The goal of this project is to compare [generic join](https://gitlab.com/remywang/blog/-/blob/master/posts/wcoj.md) with traditional binary join. We conjecture that the performance of any *linear* binary join plan can be matched by a plan using only generic joins (with a few optimizations). 
 
