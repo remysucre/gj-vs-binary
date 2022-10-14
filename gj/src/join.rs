@@ -455,13 +455,21 @@ impl JoinContext<'_> {
     }
 
     fn count(cnt: &mut usize, relations: &[TrieRef]) {
-        let n: usize = relations
-            .iter()
-            .map(|r| r.len())
-            .filter(|n| n > &0)
-            .product();
+        if relations.is_empty() {
+            *cnt += 1;
+        } else {
+            let r = &relations[0];
+            // r.for_each_id(|_| JoinContext::count(cnt, &relations[1..]))
+            r.for_each_data(|_| JoinContext::count(cnt, &relations[1..]))
+        }
 
-        *cnt += n;
+        // let n: usize = relations
+        //     .iter()
+        //     .map(|r| r.len())
+        //     .filter(|n| n > &0)
+        //     .product();
+
+        // *cnt += n;
     }
 
     fn materialize(&mut self, relations: &[TrieRef]) {

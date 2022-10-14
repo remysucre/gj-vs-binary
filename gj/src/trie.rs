@@ -465,6 +465,15 @@ impl<'a> TrieRef<'a> {
         }
     }
 
+    pub fn for_each_id(self, f: impl FnMut(u32)) {
+        match self.force() {
+            TrieInner::Map(..) => panic!(),
+            TrieInner::Set(..) => panic!(),
+            TrieInner::DenseSet(..) => panic!(),
+            TrieInner::Data(thunk) => thunk.for_each(f),
+        }
+    }
+
     pub fn for_each_data(self, mut f: impl FnMut(&[Value])) {
         match self.force() {
             TrieInner::Map(..) => panic!(),
