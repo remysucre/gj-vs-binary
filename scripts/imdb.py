@@ -11,6 +11,11 @@ plt.rcParams['savefig.bbox'] = 'tight'
 colors = ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628']
 
 
+def geo_mean(iterable):
+    a = np.array(iterable)
+    return a.prod()**(1.0/len(a))
+
+
 def plot(data):
 
     ddb = data['duckdb']
@@ -53,6 +58,27 @@ def plot(data):
     z = gj_e2e[10].values()
     ax.scatter(x, y, s=5, color='black', label='Free Join')
     ax.scatter(x, z, s=5, color='silver', label='Generic Join')
+
+    print('average speed up of free join over binary join: ',
+          geo_mean(np.array(list(x)) / np.array(list(y))))
+
+    print('average speed up of free join over generic join: ',
+          geo_mean(np.array(list(z)) / np.array(list(y))))
+
+    print('maximum speed up of free join over binary join: ',
+          max(np.array(list(x)) / np.array(list(y))))
+
+    print('maximum speed up of free join over generic join: ',
+          max(np.array(list(z)) / np.array(list(y))))
+
+    print('minimum speed up of free join over binary join: ',
+          min(np.array(list(x)) / np.array(list(y))))
+
+    print('maximum slow down of free join over binary join: ',
+          max((np.array(list(y)) - np.array(list(x))) / np.array(list(x))))
+
+    print('minimum speed up of free join over generic join: ',
+          min(np.array(list(z)) / np.array(list(y))))
 
     lims = [
         np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
