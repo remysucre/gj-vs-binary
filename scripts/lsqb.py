@@ -28,7 +28,7 @@ def plot(data):
         q = record['query']
         if xj.get(q) is None:
             xj[q] = {}
-        xj[q][sf] = record['time']
+        xj[q][sf] = record['time'][0]
 
     fig, ax = plt.subplots()
     plt.xscale('log')
@@ -59,8 +59,14 @@ def plot(data):
         y = fj_q.values()
         ax.plot(x, y, linestyle=lines[q], color='black', label=q)
 
-        y = gj_q.values()
-        ax.plot(x, y, linestyle=lines[q], alpha=0.35, color='black')
+        print('maximum speed up over binary join for query {}: {}'.format(
+            q, max([x / y for x, y in zip(x, y)])))
+
+        z = gj_q.values()
+        ax.plot(x, z, linestyle=lines[q], alpha=0.35, color='black')
+
+        print('maximum speed up over generic join for query {}: {}'.format(
+            q, max([z / y for z, y in zip(z, y)])))
 
         lims = [
             np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
