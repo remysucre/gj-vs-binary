@@ -5,7 +5,7 @@ PREPROCESSOR=preprocessor/target/release/preprocessor
 IMDB=data/imdb/imdb_plain.db
 IMDB_PAR=data/imdb/name.parquet
 DATA=queries/preprocessed/join-order-benchmark/data
-
+PROFILE=logs/scan-profiles
 IMDB_JSON_NAMES=$(shell for i in $$(seq 113); do printf 'IMDBQ%03d.json\n' $$i; done)
 IMDB_JSONS=$(addprefix logs/plan-profiles/,$(IMDB_JSON_NAMES))
 
@@ -21,6 +21,8 @@ $(PREPROCESSOR):
 $(IMDB): duckdb
 	$(MAKE) -C data/imdb
 
+${PROFILE}: ${DUCKDB} ${IMDB} scripts/profile.sh scripts/profile.sql
+	bash scripts/profile.sh
 
 .PHONY: imdb_jsons
 imdb_jsons: $(IMDB_JSONS)
@@ -37,7 +39,7 @@ $(IMDB_JSONS) &: $(DUCKDB) $(IMDB)
 $(IMDB_PAR): $(DUCKDB) scripts/transform.sql
 	$(DUCKDB) -c ".read './scripts/transform.sql'"
 
-$(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(IMDB_PAR) $(PREPROCESSOR)
+$(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(IMDB_PAR) ${PROFILE} $(PREPROCESSOR)
 	cd preprocessor && bash run.sh join-order-benchmark imdb && touch ../$@
 
 test: preprocessor/test.sh $(DATA)
@@ -58,7 +60,10 @@ clean_all: clean
 	cd queries/preprocessed/join-order-benchmark \
 	&& rm -f -d -r filters \
 	&& rm -f -d -r joins \
-	&& rm -f -d -r data
+	&& rm -f -d -r data \
+	&& cd - \
+	&& rm -f -d -r logs/plan-profiles \
+	&& rm -f -d -r logs/scan-profiles
 
 clean:
 	$(MAKE) -C duckdb clean

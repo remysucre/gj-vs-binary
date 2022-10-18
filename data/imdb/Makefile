@@ -42,4 +42,7 @@ clean:
 clean_all:
 	rm -f *.db
 	rm -f *.csv
+	rm -f *.parquet
+	rm load.sql
+	rm schema.sql
 	rm -f schematext.sql
