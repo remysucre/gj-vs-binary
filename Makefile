@@ -13,14 +13,13 @@ all: $(DATA)
 $(DUCKDB): duckdb/src
 	BUILD_BENCHMARK=1 $(MAKE) -C duckdb -j
 
-duckdb/src: .gitmodules
-	git submodule update --init
 
 $(PREPROCESSOR):
 	cd preprocessor && cargo build --release
 
 $(IMDB): duckdb
 	$(MAKE) -C data/imdb
+
 
 .PHONY: imdb_jsons
 imdb_jsons: $(IMDB_JSONS)
@@ -33,7 +32,11 @@ $(IMDB_JSONS) &: $(DUCKDB) $(IMDB)
 	 GJ_TABLE=1 build/release/benchmark/benchmark_runner --threads=1 'IMDBQ.*' && \
 	 mv IMDB*.json ../logs/plan-profiles/)
 
-$(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(PREPROCESSOR)
+
+csv2par: duckdb/build/release/duckdb scripts/csv2parquet.sh scripts/transform.sql
+	bash ./scripts/csv2parquet.sh
+
+$(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) csv2par $(PREPROCESSOR)
 	cd preprocessor && bash run.sh join-order-benchmark imdb && touch ../$@
 
 test: preprocessor/test.sh $(DATA)
