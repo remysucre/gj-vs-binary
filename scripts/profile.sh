@@ -15,4 +15,4 @@ cd ${top_dir}
 
 cd ${log_scan_dir}
 ${duckdb_binary} -c ".read ${profile_sql}"
-cd {top_dir}
+cd ${top_dir}
