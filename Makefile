@@ -3,7 +3,7 @@
 DUCKDB=duckdb/build/release/duckdb
 PREPROCESSOR=preprocessor/target/release/preprocessor
 IMDB=data/imdb/imdb_plain.db
-IMDB_PAR=data/imdb_parquet
+IMDB_PAR=data/imdb/name.parquet
 DATA=queries/preprocessed/join-order-benchmark/data
 
 IMDB_JSON_NAMES=$(shell for i in $$(seq 113); do printf 'IMDBQ%03d.json\n' $$i; done)
@@ -34,8 +34,8 @@ $(IMDB_JSONS) &: $(DUCKDB) $(IMDB)
 	 mv IMDB*.json ../logs/plan-profiles/)
 
 
-$(IMDB_PAR): $(DUCKDB) scripts/csv2parquet.sh scripts/transform.sql
-	bash ./scripts/csv2parquet.sh
+$(IMDB_PAR): $(DUCKDB) scripts/transform.sql
+	$(DUCKDB) -c ".read './scripts/transform.sql'"
 
 $(DATA): preprocessor/run.sh $(DUCKDB) $(IMDB) $(IMDB_PAR) $(PREPROCESSOR)
 	cd preprocessor && bash run.sh join-order-benchmark imdb && touch ../$@

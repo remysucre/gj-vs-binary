@@ -7,7 +7,7 @@ main_database="../../../data/$1/$1.db"
 for filter in `ls filters`
 do
     cd data
-    mkdir ${filter%.*}
+    mkdir -p ${filter%.*}
     cd ..
 
     cd filters
@@ -21,6 +21,7 @@ cd filters
 .open '../$main_database'
 .read '../temp.sql'
 EOF
+
 cd ..
 
 rm temp.sql

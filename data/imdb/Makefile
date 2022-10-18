@@ -23,7 +23,7 @@ CSVS= \
 	role_type.csv \
 	title.csv
 
-all: $(CSVS)
+all: $(CSVS) imdb_plain.db
 
 imdb_plain.db: import.sh $(IMDB)
 	rm -f $@
@@ -31,12 +31,10 @@ imdb_plain.db: import.sh $(IMDB)
 
 # don't delete the csvs, they take a long time to extract
 .PRECIOUS: $(CSVS)
-# use the grouped operator &: to ensure it only runs once
-$(CSVS) &: imdb.tgz
-	tar xvf $< --touch
 
-imdb.tgz:
+$(CSVS):
 	wget -nc http://homepages.cwi.nl/~boncz/job/imdb.tgz
+	tar xvf imdb.tgz
 
 clean:
 	rm -f *.db

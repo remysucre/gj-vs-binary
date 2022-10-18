@@ -191,4 +191,4 @@ COPY person_info FROM './data/imdb/person_info.csv' (escape '\');
 COPY role_type FROM './data/imdb/role_type.csv' (escape '\');
 COPY title FROM './data/imdb/title.csv' (escape '\');
 
-EXPORT DATABASE './data/imdb_parquet' (FORMAT PARQUET);
+EXPORT DATABASE './data/imdb' (FORMAT PARQUET);

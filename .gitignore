@@ -2,6 +2,7 @@ temp
 temp.sql
 .vscode
 gj/*.log
+gj/.idea
 plot.png
 plot.pdf
 plot.html
