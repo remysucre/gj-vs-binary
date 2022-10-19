@@ -5,7 +5,7 @@ PREPROCESSOR=preprocessor/target/release/preprocessor
 IMDB=data/imdb/imdb_plain.db
 IMDB_PAR=data/imdb/name.parquet
 DATA=queries/preprocessed/join-order-benchmark/data
-PROFILE=logs/scan-profiles
+PROFILE=logs/plan-profiles
 IMDB_JSON_NAMES=$(shell for i in $$(seq 113); do printf 'IMDBQ%03d.json\n' $$i; done)
 IMDB_JSONS=$(addprefix logs/plan-profiles/,$(IMDB_JSON_NAMES))
 
