@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 
 def plot(data):
     # get the sorted query names
-    ddb = sorted(data['duckdb'], key=lambda x: x['join_time'])
+    ddb = sorted(data['duckdb'], key=lambda x: x['time'])
     indexes = {d['query']: i for i, d in enumerate(ddb)}
     gj = sorted(data['gj'], key=lambda x: indexes[x['query']])
 
@@ -24,12 +24,12 @@ def plot(data):
         d['query'] = d['query'].lstrip('IMDBQ')
 
     fig1 = px.line(
-        ddb, x='query', y='join_time',
+        ddb, x='query', y='time',
     )
 
     # preprocess gj data
     for d in gj:
-        d['total'] = statistics.mean(d['total_times'])
+        d['total'] = statistics.mean(d['time'])
         d['optimize'] = 'O{}'.format(d['optimize'])
 
     fig2 = px.line(
