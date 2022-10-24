@@ -1,1 +1,0 @@
-COPY (SELECT COUNT(*) FROM aka_title GROUP BY movie_id) TO './tables/aka_title_movie_id.csv' (HEADER, DELIMITER ',');

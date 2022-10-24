@@ -1,1 +1,0 @@
-COPY (SELECT COUNT(*) FROM movie_link GROUP BY link_type_id) TO './tables/movie_link_link_type_id.csv' (HEADER, DELIMITER ',');

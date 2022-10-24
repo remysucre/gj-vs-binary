@@ -1,1 +1,0 @@
-COPY (SELECT COUNT(*) FROM person_info GROUP BY info_type_id) TO './tables/person_info_info_type_id.csv' (HEADER, DELIMITER ',');

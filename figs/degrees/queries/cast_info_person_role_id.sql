@@ -1,1 +1,0 @@
-COPY (SELECT COUNT(*) FROM cast_info GROUP BY person_role_id) TO './tables/cast_info_person_role_id.csv' (HEADER, DELIMITER ',');

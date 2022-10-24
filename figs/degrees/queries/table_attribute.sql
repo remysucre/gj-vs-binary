@@ -1,1 +1,0 @@
-COPY (SELECT COUNT(*) FROM table GROUP BY attribute) TO './tables/table_attribute.csv' (HEADER, DELIMITER ',');
