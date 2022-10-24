@@ -5,7 +5,6 @@ gj/*.log
 gj/.idea
 plot.png
 plot.pdf
-plot.html
 gj/out.json
 gj/gj.json
 logs/plan-profiles
