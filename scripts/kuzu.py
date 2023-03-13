@@ -69,12 +69,11 @@ def plot(data):
             q, max([x / y for x, y in zip(x, y)])))
 
         z = gj_q.values()
-        ax.plot(x, z, linestyle=lines[q], alpha=0.35, color='black')
+        ax.plot(x, z, linestyle=lines[q], alpha=0.4, color='black')
 
         w = kz_q.values()
 
-        # ax.plot(list(x)[0:len(w)], w, linestyle=lines[q], color='orange')
-        ax.plot(list(x)[0:len(w)], w, linestyle=lines[q], alpha=0.5, color='orange')
+        ax.plot(list(x)[0:len(w)], w, linestyle=lines[q], alpha=0.15, color='black')
 
         print('maximum speed up over generic join for query {}: {}'.format(
             q, max([z / y for z, y in zip(z, y)])))
