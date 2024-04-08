@@ -1,3 +1,23 @@
+## Steps to reproduce LSQB experiments
+
+1. Clone [this repository](https://github.com/remysucre/gj-vs-binary/tree/lsqb) and switch to the `lsqb` branch.
+2. Download the dataset from [here](https://repository.surfsara.nl/datasets/cwi/lsqb), make sure to get the files with `merged-fk` in the name.
+3. Move the files to `data/imdb`.
+4. Load the data into DuckDB with the SQL commands [here](https://github.com/ldbc/lsqb/tree/main/sql).
+5. Export to parquet with `COPY tbl TO 'output.parquet' (FORMAT PARQUET);`
+6. Try to run free join with `cargo run --release` in `gj`. It will error and complain about missing tables. Take a look at the query and you’ll be able to link the error to the table name. Make a copy of that table with the right name.
+
+For example, if you see:
+
+```
+Loading pkp1 to DB
+thread 'main' panicked at src/util.rs:546:10:
+```
+
+Looking at [q3.sql](https://github.com/ldbc/lsqb/blob/main/sql/q3.sql), you’ll see `pkp1` is an alias for `Person_knows_Person`, so make a copy of that table with `cp Person_knows_Person.parquet pkp1.parquet`.
+
+Repeat step 6 until no more errors.
+
 # Comparing and Unifying WCOJ with Binary Join
 The goal of this project is to compare [generic join](https://gitlab.com/remywang/blog/-/blob/master/posts/wcoj.md) with traditional binary join. We conjecture that the performance of any *linear* binary join plan can be matched by a plan using only generic joins (with a few optimizations). 
 

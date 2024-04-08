@@ -447,9 +447,9 @@ impl JoinContext<'_> {
         if relations.is_empty() {
             assert_eq!(self.out.arity, self.tuple.len() + self.singleton.len());
             let cnt = self.out.vec.len() / self.out.arity;
-            if cnt.rem(1000) == 0 {
-                println!("{}", cnt);
-            }
+            // if cnt.rem(1000) == 0 {
+            //     println!("{}", cnt);
+            // }
             self.out.vec.extend(
                 self.tuple
                     .iter()
